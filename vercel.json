@@ -1,0 +1,28 @@
+{
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "destination": "https://craudiovizai.com/#javari",
+      "permanent": false,
+      "host": "javariai.com"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "https://craudiovizai.com/#craiverse",
+      "permanent": false,
+      "host": "craiverse.com"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "https://craudiovizai.com/#craiverse",
+      "permanent": false,
+      "host": "craiverse.net"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "https://craudiovizai.com/#craiverse",
+      "permanent": false,
+      "host": "craiverse.org"
+    }
+  ]
+}
