@@ -3,613 +3,1083 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CR AudioViz AI - The unified platform for audio, video, and AI tools. Create, learn, and earn with intelligent automation.">
+    <meta name="keywords" content="AI, audio tools, video tools, automation, content creation">
+    <meta property="og:title" content="CR AudioViz AI - Create, Learn, and Earn with AI">
+    <meta property="og:description" content="Professional AI-powered tools for creators, businesses, and innovators">
+    <meta property="og:image" content="/assets/og-image.jpg">
     <title>CR AudioViz AI - Create, Learn, and Earn with AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         
-        body {
+        * {
             font-family: 'Inter', sans-serif;
         }
         
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        body {
+            margin: 0;
+            padding: 0;
         }
         
-        .gradient-text {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        /* Logo Colors */
+        .logo-c { color: #4285F4; }
+        .logo-r { color: #EA4335; }
+        .logo-a { color: #FBBC04; }
+        .logo-i { color: #34A853; }
+        
+        /* Gradient backgrounds */
+        .gradient-blue { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .gradient-green { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+        
+        /* CR Banner Animation */
+        .cr-banner {
+            background: linear-gradient(90deg, #4285F4, #EA4335, #FBBC04, #34A853);
+            background-size: 300% 100%;
+            animation: gradient-shift 8s ease infinite;
         }
         
-        .bot-card {
+        @keyframes gradient-shift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        /* Smooth transitions */
+        .transition-all {
+            transition: all 0.3s ease;
+        }
+        
+        /* Chat bot */
+        .chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .chat-window {
+            width: 380px;
+            height: 600px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            display: none;
+            flex-direction: column;
+        }
+        
+        .chat-window.active {
+            display: flex;
+        }
+        
+        /* Mobile menu */
+        .mobile-menu {
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .mobile-menu.active {
+            transform: translateX(0);
+        }
+        
+        /* Status indicator */
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #34A853;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Card hover effects */
+        .feature-card {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
         
-        .bot-card:hover {
+        .feature-card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
         }
         
-        .feature-card {
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.9);
+        /* Toast notifications */
+        .toast {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 9999;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
         }
         
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
+        .toast.show {
+            transform: translateX(0);
         }
         
-        .float-animation {
-            animation: float 3s ease-in-out infinite;
+        /* Loading spinner */
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4285F4;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
         }
         
-        .nav-link {
-            position: relative;
-            transition: color 0.3s ease;
-            padding-bottom: 5px;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
-        .nav-link.active {
-            color: #667eea;
-            font-weight: 600;
-        }
-        
-        .nav-link.active:after {
-            content: '';
+        /* Accessibility */
+        .skip-link {
             position: absolute;
-            width: 100%;
-            height: 2px;
+            top: -40px;
+            left: 0;
+            background: #000;
+            color: white;
+            padding: 8px;
+            z-index: 100;
+        }
+        
+        .skip-link:focus {
+            top: 0;
+        }
+        
+        /* Dark mode */
+        body.dark-mode {
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+        
+        body.dark-mode .bg-white {
+            background: #2a2a2a !important;
+        }
+        
+        body.dark-mode .text-gray-900 {
+            color: #ffffff !important;
+        }
+        
+        body.dark-mode .text-gray-600 {
+            color: #cccccc !important;
+        }
+        
+        /* Back to top button */
+        .back-to-top {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: #4285F4;
+            color: white;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 999;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .back-to-top.show {
+            display: flex;
+        }
+        
+        /* Cookie banner */
+        .cookie-banner {
+            position: fixed;
             bottom: 0;
             left: 0;
-            background: #667eea;
+            right: 0;
+            background: rgba(0,0,0,0.95);
+            color: white;
+            padding: 20px;
+            z-index: 9998;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
         }
         
-        .nav-link:hover {
-            color: #667eea;
-        }
-        
-        .stats-counter {
-            font-size: 2.5rem;
-            font-weight: 800;
+        .cookie-banner.show {
+            transform: translateY(0);
         }
     </style>
 </head>
-<body class="bg-gray-50">
+<body>
     
-    <!-- Navigation -->
-    <nav class="bg-white shadow-lg sticky top-0 z-50">
+    <!-- Skip to main content -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
-                <div class="flex items-center">
-                    <div class="text-2xl font-bold gradient-text">CR AudioViz AI</div>
-                </div>
-                <div class="hidden md:flex space-x-8">
-                    <a href="#home" class="nav-link" onclick="setActive(event, 'home')">Home</a>
-                    <a href="#features" class="nav-link" onclick="setActive(event, 'features')">Features</a>
-                    <a href="#javari" class="nav-link" onclick="setActive(event, 'javari')">Javari Apps</a>
-                    <a href="#craiverse" class="nav-link" onclick="setActive(event, 'craiverse')">CRAIverse</a>
-                    <a href="#pricing" class="nav-link" onclick="setActive(event, 'pricing')">Pricing</a>
-                    <a href="#learn" class="nav-link" onclick="setActive(event, 'learn')">Learn</a>
-                </div>
+                <!-- Logo -->
+                <a href="#home" class="flex items-center space-x-2 text-2xl font-bold cursor-pointer" onclick="scrollToSection('home')">
+                    <span class="logo-c">C</span><span class="logo-r">R</span><span class="logo-a">A</span><span class="logo-i">I</span>
+                    <span class="text-gray-700 text-sm font-normal hidden md:inline">CR AudioViz AI</span>
+                </a>
+                
+                <!-- Desktop Navigation -->
+                <nav class="hidden lg:flex space-x-8">
+                    <a href="#home" onclick="setActive(event, 'home')" class="nav-link text-gray-700 hover:text-blue-600 font-medium transition-all">Home</a>
+                    <a href="#apps" onclick="setActive(event, 'apps')" class="nav-link text-gray-700 hover:text-blue-600 font-medium transition-all">Apps</a>
+                    <a href="#games" onclick="setActive(event, 'games')" class="nav-link text-gray-700 hover:text-blue-600 font-medium transition-all">Games</a>
+                    <a href="#javari" onclick="setActive(event, 'javari')" class="nav-link text-gray-700 hover:text-blue-600 font-medium transition-all">Javari</a>
+                    <a href="#pricing" onclick="setActive(event, 'pricing')" class="nav-link text-gray-700 hover:text-blue-600 font-medium transition-all">Pricing</a>
+                    <a href="#craiverse" onclick="setActive(event, 'craiverse')" class="nav-link text-gray-700 hover:text-blue-600 font-medium transition-all">CRAIverse</a>
+                    <a href="#contact" onclick="setActive(event, 'contact')" class="nav-link text-gray-700 hover:text-blue-600 font-medium transition-all">Contact</a>
+                </nav>
+                
+                <!-- Right side actions -->
                 <div class="flex items-center space-x-4">
-                    <button onclick="showLogin()" class="text-gray-700 hover:text-purple-600 font-medium">Login</button>
-                    <button onclick="showSignup()" class="gradient-bg text-white px-6 py-2 rounded-lg font-medium hover:opacity-90 transition">Get Started</button>
+                    <!-- Search -->
+                    <button onclick="toggleSearch()" class="hidden md:block text-gray-600 hover:text-blue-600">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    
+                    <!-- Bookmark -->
+                    <button onclick="toggleBookmark()" class="hidden md:block text-gray-600 hover:text-blue-600">
+                        <i class="far fa-bookmark"></i>
+                    </button>
+                    
+                    <!-- Dark Mode -->
+                    <button onclick="toggleDarkMode()" class="hidden md:block text-gray-600 hover:text-blue-600">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    
+                    <!-- Status -->
+                    <div class="hidden md:flex items-center space-x-2">
+                        <div class="status-dot"></div>
+                        <span class="text-xs text-gray-600">All Systems Operational</span>
+                    </div>
+                    
+                    <!-- User section -->
+                    <div id="authSection" class="flex items-center space-x-3">
+                        <button onclick="showLogin()" class="text-gray-700 hover:text-blue-600 font-medium">Login</button>
+                        <button onclick="showSignup()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-all">Sign Up</button>
+                    </div>
+                    
+                    <!-- Mobile menu button -->
+                    <button onclick="toggleMobileMenu()" class="lg:hidden text-gray-700">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
                 </div>
             </div>
         </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section id="home" class="gradient-bg text-white py-20">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid md:grid-cols-2 gap-12 items-center">
-                <div>
-                    <h1 class="text-5xl font-bold mb-6">Create Amazing Content with AI</h1>
-                    <p class="text-xl mb-8 text-purple-100">The unified platform for audio, video, and AI tools. Build with Javari, explore the CRAIverse, and bring your creative vision to life.</p>
-                    <div class="flex space-x-4">
-                        <button onclick="showSignup()" class="bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">Start Creating Free</button>
-                        <button onclick="scrollToSection('craiverse')" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-purple-600 transition">Explore CRAIverse</button>
+    </header>
+    
+    <!-- Mobile Menu -->
+    <div id="mobileMenu" class="mobile-menu fixed top-0 right-0 h-full w-64 bg-white shadow-2xl z-50 p-6">
+        <button onclick="toggleMobileMenu()" class="absolute top-4 right-4 text-gray-600">
+            <i class="fas fa-times text-xl"></i>
+        </button>
+        <nav class="mt-12 space-y-4">
+            <a href="#home" onclick="setActive(event, 'home'); toggleMobileMenu();" class="block text-gray-700 hover:text-blue-600 font-medium">Home</a>
+            <a href="#apps" onclick="setActive(event, 'apps'); toggleMobileMenu();" class="block text-gray-700 hover:text-blue-600 font-medium">Apps</a>
+            <a href="#games" onclick="setActive(event, 'games'); toggleMobileMenu();" class="block text-gray-700 hover:text-blue-600 font-medium">Games</a>
+            <a href="#javari" onclick="setActive(event, 'javari'); toggleMobileMenu();" class="block text-gray-700 hover:text-blue-600 font-medium">Javari</a>
+            <a href="#pricing" onclick="setActive(event, 'pricing'); toggleMobileMenu();" class="block text-gray-700 hover:text-blue-600 font-medium">Pricing</a>
+            <a href="#craiverse" onclick="setActive(event, 'craiverse'); toggleMobileMenu();" class="block text-gray-700 hover:text-blue-600 font-medium">CRAIverse</a>
+            <a href="#contact" onclick="setActive(event, 'contact'); toggleMobileMenu();" class="block text-gray-700 hover:text-blue-600 font-medium">Contact</a>
+        </nav>
+    </div>
+    
+    <!-- CR Rotating Banner - ALWAYS VISIBLE -->
+    <div class="cr-banner text-white py-3 text-center font-bold text-lg">
+        <span id="crText">CR = Creative Revolution</span>
+    </div>
+    
+    <!-- Credits Bar - Only when logged in -->
+    <div id="creditsBar" class="bg-gray-900 text-white py-2 px-4 hidden">
+        <div class="max-w-7xl mx-auto flex items-center justify-between text-sm">
+            <div class="flex items-center space-x-6">
+                <span>Plan: <strong id="userPlan">Free</strong></span>
+                <span>Credits: <strong id="userCredits">1000</strong></span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button onclick="window.location.href='#pricing'" class="text-blue-400 hover:text-blue-300">Top Up</button>
+                <button onclick="window.location.href='#pricing'" class="bg-blue-600 px-4 py-1 rounded hover:bg-blue-700">Upgrade</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Search Overlay -->
+    <div id="searchOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-start justify-center pt-20">
+        <div class="bg-white rounded-lg shadow-2xl w-full max-w-2xl mx-4">
+            <div class="p-4">
+                <input type="text" placeholder="Search apps, tools, docs..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" oninput="performSearch(this.value)">
+            </div>
+            <div id="searchResults" class="max-h-96 overflow-y-auto p-4">
+                <div class="text-gray-500 text-center py-8">Start typing to search...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <main id="main-content">
+        
+        <!-- Hero Section -->
+        <section id="home" class="gradient-blue text-white py-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <h1 class="text-5xl font-bold mb-6">Avatars, Tools, and Apps—All from One Modular Ecosystem</h1>
+                        <p class="text-xl mb-8 text-blue-100">CR AudioViz AI, LLC is a modular SaaS company that builds intelligent tools, custom apps, and branded AI/Avatar solutions using JavariAI—our ecosystem platform designed to help businesses and individuals work powered by AI-driven systems that connect, automate, and evolve.</p>
+                        <div class="flex space-x-4">
+                            <button onclick="showSignup()" class="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all">Start Creating</button>
+                            <button onclick="scrollToSection('craiverse')" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-all">Explore CRAIverse</button>
+                        </div>
+                        <div class="mt-8 flex items-center space-x-8">
+                            <div>
+                                <div class="text-3xl font-bold">50+</div>
+                                <div class="text-sm text-blue-100">AI Tools</div>
+                            </div>
+                            <div>
+                                <div class="text-3xl font-bold">100%</div>
+                                <div class="text-sm text-blue-100">Credit Based</div>
+                            </div>
+                            <div>
+                                <div class="text-3xl font-bold">24/7</div>
+                                <div class="text-sm text-blue-100">AI Support</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mt-8 flex items-center space-x-8">
+                    <div class="flex justify-center">
+                        <div class="text-center">
+                            <div class="text-9xl mb-4">🤖</div>
+                            <p class="text-lg text-blue-100">Powered by Javari - Your Ecosystem Builder</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Apps Section -->
+        <section id="apps" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-bold text-gray-900 mb-4">Powerful Apps for Every Need</h2>
+                    <p class="text-xl text-gray-600">Professional tools powered by AI, ready to use instantly</p>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-8 mb-12">
+                    <div class="feature-card bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="text-5xl">🎙️</div>
+                            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Popular</span>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3">Audio AI Studio</h3>
+                        <p class="text-gray-600 mb-4">Professional voice cloning, music generation, and audio enhancement in one place.</p>
+                        <ul class="space-y-2 text-sm text-gray-600 mb-6">
+                            <li>✓ Voice synthesis & cloning</li>
+                            <li>✓ AI music composition</li>
+                            <li>✓ Audio transcription</li>
+                            <li>✓ Sound enhancement</li>
+                        </ul>
+                        <button onclick="comingSoon('Audio AI Studio')" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-all">Try Now</button>
+                    </div>
+                    
+                    <div class="feature-card bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="text-5xl">🎬</div>
+                            <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Featured</span>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3">Video AI Suite</h3>
+                        <p class="text-gray-600 mb-4">Intelligent video editing, generation, and enhancement with AI automation.</p>
+                        <ul class="space-y-2 text-sm text-gray-600 mb-6">
+                            <li>✓ Automated editing</li>
+                            <li>✓ AI avatars & generation</li>
+                            <li>✓ Smart captioning</li>
+                            <li>✓ Visual effects</li>
+                        </ul>
+                        <button onclick="comingSoon('Video AI Suite')" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-all">Try Now</button>
+                    </div>
+                    
+                    <div class="feature-card bg-white p-8 rounded-xl border border-gray-200 shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="text-5xl">📊</div>
+                            <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">New</span>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3">Data Analytics Pro</h3>
+                        <p class="text-gray-600 mb-4">Real-time insights and performance tracking powered by Pulse AI.</p>
+                        <ul class="space-y-2 text-sm text-gray-600 mb-6">
+                            <li>✓ Real-time dashboards</li>
+                            <li>✓ Predictive analytics</li>
+                            <li>✓ Custom reports</li>
+                            <li>✓ AI recommendations</li>
+                        </ul>
+                        <button onclick="comingSoon('Data Analytics Pro')" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-all">Try Now</button>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <button onclick="showAllApps()" class="bg-gray-100 text-gray-800 px-8 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-all">View All Apps <i class="fas fa-arrow-right ml-2"></i></button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Games Section -->
+        <section id="games" class="py-20 bg-gray-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-bold text-gray-900 mb-4">AI-Powered Games</h2>
+                    <p class="text-xl text-gray-600">Interactive gaming experiences with intelligent gameplay</p>
+                </div>
+                
+                <div class="grid md:grid-cols-4 gap-6">
+                    <div class="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all">
+                        <div class="text-6xl mb-4 text-center">🎮</div>
+                        <h3 class="text-xl font-bold mb-2 text-center">Strategy Games</h3>
+                        <p class="text-sm text-gray-600 text-center mb-4">AI-powered opponents that adapt to your play style</p>
+                        <button onclick="comingSoon('Strategy Games')" class="w-full bg-blue-600 text-white py-2 rounded-lg text-sm hover:bg-blue-700">Play Now</button>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all">
+                        <div class="text-6xl mb-4 text-center">🎯</div>
+                        <h3 class="text-xl font-bold mb-2 text-center">Puzzle Games</h3>
+                        <p class="text-sm text-gray-600 text-center mb-4">AI-generated puzzles that match your skill level</p>
+                        <button onclick="comingSoon('Puzzle Games')" class="w-full bg-blue-600 text-white py-2 rounded-lg text-sm hover:bg-blue-700">Play Now</button>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all">
+                        <div class="text-6xl mb-4 text-center">🎲</div>
+                        <h3 class="text-xl font-bold mb-2 text-center">Card Games</h3>
+                        <p class="text-sm text-gray-600 text-center mb-4">Classic card games with intelligent AI players</p>
+                        <button onclick="comingSoon('Card Games')" class="w-full bg-blue-600 text-white py-2 rounded-lg text-sm hover:bg-blue-700">Play Now</button>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all">
+                        <div class="text-6xl mb-4 text-center">🏆</div>
+                        <h3 class="text-xl font-bold mb-2 text-center">Tournaments</h3>
+                        <p class="text-sm text-gray-600 text-center mb-4">Compete against others and climb the leaderboards</p>
+                        <button onclick="comingSoon('Tournaments')" class="w-full bg-blue-600 text-white py-2 rounded-lg text-sm hover:bg-blue-700">Join Now</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Javari Section -->
+        <section id="javari" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <div class="text-8xl mb-4">🎵</div>
+                    <h2 class="text-4xl font-bold text-gray-900 mb-4">Meet Javari - Your Ecosystem Builder</h2>
+                    <p class="text-xl text-gray-600">A continuously learning engine that powers every tool, app, and avatar with adaptive intelligence</p>
+                </div>
+                
+                <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-8 md:p-12 mb-12">
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
                         <div>
-                            <div class="stats-counter gradient-text bg-white px-4 py-2 rounded-lg">50+</div>
-                            <div class="text-sm text-purple-100 mt-1">AI Tools</div>
+                            <h3 class="text-3xl font-bold mb-4">Hello! I'm Javari</h3>
+                            <p class="text-lg text-gray-700 mb-6">I'm here to help with audio processing, music creation, and technical support. What would you like to work on today?</p>
+                            <ul class="space-y-3 mb-6">
+                                <li class="flex items-center space-x-3">
+                                    <i class="fas fa-check-circle text-green-600"></i>
+                                    <span>Intelligent tool and app orchestration</span>
+                                </li>
+                                <li class="flex items-center space-x-3">
+                                    <i class="fas fa-check-circle text-green-600"></i>
+                                    <span>Adaptive learning from your workflow</span>
+                                </li>
+                                <li class="flex items-center space-x-3">
+                                    <i class="fas fa-check-circle text-green-600"></i>
+                                    <span>Seamless avatar and bot integration</span>
+                                </li>
+                                <li class="flex items-center space-x-3">
+                                    <i class="fas fa-check-circle text-green-600"></i>
+                                    <span>24/7 support and guidance</span>
+                                </li>
+                            </ul>
+                            <button onclick="chatWithJavari()" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-all">Chat with Javari</button>
+                        </div>
+                        <div class="flex justify-center">
+                            <div class="w-64 h-64 bg-blue-200 rounded-full flex items-center justify-center text-8xl">
+                                🤖
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Javari Apps Showcase -->
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
+                        <h4 class="font-bold text-lg mb-2">Podcast Production Suite</h4>
+                        <p class="text-sm text-gray-600 mb-3">Complete podcast workflow automation</p>
+                        <span class="text-blue-600 font-semibold">50 credits</span>
+                    </div>
+                    <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-200">
+                        <h4 class="font-bold text-lg mb-2">Music Composer AI</h4>
+                        <p class="text-sm text-gray-600 mb-3">Generate original music in any style</p>
+                        <span class="text-blue-600 font-semibold">75 credits</span>
+                    </div>
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                        <h4 class="font-bold text-lg mb-2">Voice Clone Studio</h4>
+                        <p class="text-sm text-gray-600 mb-3">Create realistic voice clones instantly</p>
+                        <span class="text-blue-600 font-semibold">100 credits</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Pricing Section -->
+        <section id="pricing" class="py-20 bg-gray-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-bold text-gray-900 mb-4">Plans & Shared Credits</h2>
+                    <p class="text-xl text-gray-600">One credit pool for Apps, Games, and JavariAI. Top up anytime. Paid plans enable more while you subscribed. If your plan lapses, re-activate within 180 days to restore access and unused credit balances.</p>
+                </div>
+                
+                <div class="grid md:grid-cols-4 gap-6 mb-12">
+                    <!-- Free Tier -->
+                    <div class="bg-white rounded-xl p-8 border-2 border-gray-200 hover:border-blue-500 transition-all">
+                        <h3 class="text-2xl font-bold mb-2">Free</h3>
+                        <div class="text-4xl font-bold text-blue-600 mb-4">$0<span class="text-lg text-gray-500">/month</span></div>
+                        <p class="text-gray-600 mb-6">Basic access to get started</p>
+                        <ul class="space-y-3 mb-8 text-sm">
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>1000 free credits</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>Create unlimited Apps (free templates)</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>Basic chat</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>Limited history</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>No auto-renew</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>Shareable via link</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>No subscription required</li>
+                        </ul>
+                        <button onclick="showSignup()" class="w-full bg-gray-100 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-all">Get Started</button>
+                    </div>
+                    
+                    <!-- Starter Plan -->
+                    <div class="bg-white rounded-xl p-8 border-2 border-gray-200 hover:border-blue-500 transition-all">
+                        <h3 class="text-2xl font-bold mb-2">Starter</h3>
+                        <div class="text-4xl font-bold text-blue-600 mb-4">$3<span class="text-lg text-gray-500">/month</span></div>
+                        <p class="text-gray-600 mb-6">250 credits/month</p>
+                        <ul class="space-y-3 mb-8 text-sm">
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>All Free features</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>API integration for Apps (if selected)</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>Javari: fast & 3x context</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>Longer chat sessions</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></li>Priority support</li>
+                        </ul>
+                        <button onclick="choosePlan('starter')" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-all">Choose Plan</button>
+                    </div>
+                    
+                    <!-- Pro Plan - Popular -->
+                    <div class="bg-white rounded-xl p-8 border-2 border-blue-500 relative shadow-xl transform scale-105">
+                        <div class="absolute top-0 right-0 bg-blue-500 text-white px-4 py-1 rounded-bl-lg rounded-tr-lg text-sm font-semibold">Popular</div>
+                        <h3 class="text-2xl font-bold mb-2">Pro</h3>
+                        <div class="text-4xl font-bold text-blue-600 mb-4">$25<span class="text-lg text-gray-500">/month</span></div>
+                        <p class="text-gray-600 mb-6">2,500 credits/month</p>
+                        <ul class="space-y-3 mb-8 text-sm">
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>All Starter features</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>API included standard tier</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>Priority response</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>Advanced templates</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>Team collaboration</li>
+                        </ul>
+                        <button onclick="choosePlan('pro')" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-all">Choose Plan</button>
+                    </div>
+                    
+                    <!-- Enterprise -->
+                    <div class="bg-white rounded-xl p-8 border-2 border-gray-200 hover:border-blue-500 transition-all">
+                        <h3 class="text-2xl font-bold mb-2">Enterprise</h3>
+                        <div class="text-4xl font-bold text-blue-600 mb-4">$50+<span class="text-lg text-gray-500">/month</span></div>
+                        <p class="text-gray-600 mb-6">5,000+ credits/month</p>
+                        <ul class="space-y-3 mb-8 text-sm">
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>All Pro features</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>Unlimited API calls</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>Premium support</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>Custom integrations</li>
+                            <li class="flex items-center"><i class="fas fa-check text-green-600 mr-2"></i>SLA guarantee</li>
+                        </ul>
+                        <button onclick="contactSales()" class="w-full bg-gray-100 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-all">Contact Sales</button>
+                    </div>
+                </div>
+                
+                <!-- Credit Top-up Options -->
+                <div class="bg-white rounded-xl p-8 max-w-4xl mx-auto">
+                    <h3 class="text-2xl font-bold mb-6 text-center">Top-up credit packs</h3>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div class="border border-gray-200 rounded-lg p-4 text-center hover:border-blue-500 transition-all cursor-pointer">
+                            <div class="text-2xl font-bold mb-2">250 credits</div>
+                            <div class="text-3xl font-bold text-blue-600 mb-2">$3</div>
+                            <button onclick="buyCredits(250, 3)" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-all">Buy Now</button>
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4 text-center hover:border-blue-500 transition-all cursor-pointer">
+                            <div class="text-2xl font-bold mb-2">1,500 credits</div>
+                            <div class="text-3xl font-bold text-blue-600 mb-2">$15</div>
+                            <button onclick="buyCredits(1500, 15)" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-all">Buy Now</button>
+                        </div>
+                        <div class="border border-gray-200 rounded-lg p-4 text-center hover:border-blue-500 transition-all cursor-pointer">
+                            <div class="text-2xl font-bold mb-2">5,000 credits</div>
+                            <div class="text-3xl font-bold text-blue-600 mb-2">$50</div>
+                            <button onclick="buyCredits(5000, 50)" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 transition-all">Buy Now</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- CRAIverse Section -->
+        <section id="craiverse" class="py-20 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-bold text-gray-900 mb-4">Welcome to the CRAIverse</h2>
+                    <p class="text-xl text-gray-600">Step into our immersive virtual universe where AI agents, Avatars, and tools unite—designed to support individuals, businesses, nonprofits, and organizations through intelligent interfaces, modular apps, and seamless integration</p>
+                </div>
+                
+                <!-- Meet the Avatars -->
+                <div class="mb-16">
+                    <h3 class="text-3xl font-bold text-center mb-12">Meet the Avatars</h3>
+                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <!-- JavariAI -->
+                        <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 text-center hover:shadow-lg transition-all">
+                            <div class="w-32 h-32 bg-blue-200 rounded-full mx-auto mb-4 flex items-center justify-center text-6xl">
+                                🎵
+                            </div>
+                            <h4 class="text-xl font-bold mb-2">JavariAI</h4>
+                            <p class="text-sm text-blue-600 font-semibold mb-3">AI Assistant</p>
+                            <p class="text-sm text-gray-600">An AI assistant that can build your tool, app, and branded system content for JavariAI-to-Disperse to modalities, platforms, and code frameworks—complete audio/video workflows, content optimization, and multimodal learning features.</p>
+                        </div>
+                        
+                        <!-- CRAI -->
+                        <div class="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-xl p-6 text-center hover:shadow-lg transition-all">
+                            <div class="w-32 h-32 bg-orange-200 rounded-full mx-auto mb-4 flex items-center justify-center text-6xl">
+                                🤖
+                            </div>
+                            <h4 class="text-xl font-bold mb-2">CRAI</h4>
+                            <p class="text-sm text-orange-600 font-semibold mb-3">Customer Director</p>
+                            <p class="text-sm text-gray-600">CRAIverse intelligence offers the ecosystem and audio/video hub. When you engage, you work with our customer-data insights, and unified platform optimization.</p>
+                        </div>
+                        
+                        <!-- Kairo -->
+                        <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 text-center hover:shadow-lg transition-all">
+                            <div class="w-32 h-32 bg-purple-200 rounded-full mx-auto mb-4 flex items-center justify-center text-6xl">
+                                🎬
+                            </div>
+                            <h4 class="text-xl font-bold mb-2">Kairo</h4>
+                            <p class="text-sm text-purple-600 font-semibold mb-3">Creative Director</p>
+                            <p class="text-sm text-gray-600">Offerings intelligence offers the ecosystem and audio/video hub. When you engage workflows and system-centric creation workflows.</p>
+                        </div>
+                        
+                        <!-- Scout (Data Quality Specialist) -->
+                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 text-center hover:shadow-lg transition-all">
+                            <div class="w-32 h-32 bg-green-200 rounded-full mx-auto mb-4 flex items-center justify-center text-6xl">
+                                🔍
+                            </div>
+                            <h4 class="text-xl font-bold mb-2">Scout</h4>
+                            <p class="text-sm text-green-600 font-semibold mb-3">Data Quality Specialist</p>
+                            <p class="text-sm text-gray-600">Monitors data integrity and system insights. You provide sentry insights and research for ecosystem performance.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Social Platform Buttons -->
+                <div class="bg-gray-50 rounded-xl p-8">
+                    <h3 class="text-2xl font-bold text-center mb-6">Subscribe for updates</h3>
+                    <p class="text-center text-gray-600 mb-8">Get product announcements and new app drops—subscription curated.</p>
+                    
+                    <div class="flex justify-center mb-8">
+                        <input type="email" placeholder="youremail@mail.com" class="px-4 py-3 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-64">
+                        <button onclick="subscribe()" class="bg-blue-600 text-white px-6 py-3 rounded-r-lg font-semibold hover:bg-blue-700 transition-all">Subscribe</button>
+                    </div>
+                    
+                    <!-- Social Buttons Grid -->
+                    <div class="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-12 gap-3 max-w-5xl mx-auto">
+                        <button onclick="socialClick('angellist')" class="bg-black text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">AngelList</button>
+                        <button onclick="socialClick('behance')" class="bg-blue-600 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">Behance</button>
+                        <button onclick="socialClick('clubhouse')" class="bg-yellow-600 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">Clubhouse</button>
+                        <button onclick="socialClick('discord')" class="bg-indigo-600 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">Discord</button>
+                        <button onclick="socialClick('dribbble')" class="bg-pink-500 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">Dribbble</button>
+                        <button onclick="socialClick('facebook')" class="bg-blue-700 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">Facebook</button>
+                        <button onclick="socialClick('github')" class="bg-gray-800 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">GitHub</button>
+                        <button onclick="socialClick('google')" class="bg-red-600 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">Google</button>
+                        <button onclick="socialClick('instagram')" class="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">Instagram</button>
+                        <button onclick="socialClick('linkedin')" class="bg-blue-700 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">LinkedIn</button>
+                        <button onclick="socialClick('mastodon')" class="bg-purple-600 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">Mastodon</button>
+                        <button onclick="socialClick('medium')" class="bg-black text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">Medium</button>
+                        <button onclick="socialClick('patreon')" class="bg-red-500 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">Patreon</button>
+                        <button onclick="socialClick('pinterest')" class="bg-red-600 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">Pinterest</button>
+                        <button onclick="socialClick('producthunt')" class="bg-orange-600 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">ProductHunt</button>
+                        <button onclick="socialClick('reddit')" class="bg-orange-500 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">Reddit</button>
+                        <button onclick="socialClick('slack')" class="bg-purple-700 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">Slack</button>
+                        <button onclick="socialClick('snapchat')" class="bg-yellow-400 text-black px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">Snapchat</button>
+                        <button onclick="socialClick('soundcloud')" class="bg-orange-600 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">SoundCloud</button>
+                        <button onclick="socialClick('spotify')" class="bg-green-600 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">Spotify</button>
+                        <button onclick="socialClick('substack')" class="bg-orange-500 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">Substack</button>
+                        <button onclick="socialClick('threads')" class="bg-black text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">Threads</button>
+                        <button onclick="socialClick('tiktok')" class="bg-black text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">TikTok</button>
+                        <button onclick="socialClick('tumblr')" class="bg-indigo-900 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">Tumblr</button>
+                        <button onclick="socialClick('twitch')" class="bg-purple-600 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">Twitch</button>
+                        <button onclick="socialClick('twitter')" class="bg-blue-400 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">Twitter</button>
+                        <button onclick="socialClick('vimeo')" class="bg-blue-500 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">Vimeo</button>
+                        <button onclick="socialClick('whatsapp')" class="bg-green-500 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">WhatsApp</button>
+                        <button onclick="socialClick('youtube')" class="bg-red-600 text-white px-4 py-2 rounded-full text-xs font-semibold hover:opacity-80 transition-all">YouTube</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Contact Section -->
+        <section id="contact" class="py-20 bg-gray-50">
+            <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl font-bold text-gray-900 mb-4">Get in Touch</h2>
+                    <p class="text-xl text-gray-600">Have questions? We're here to help 24/7</p>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-8">
+                    <form onsubmit="submitContact(event)" class="space-y-6">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                                <input type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                                <input type="text" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            </div>
                         </div>
                         <div>
-                            <div class="stats-counter gradient-text bg-white px-4 py-2 rounded-lg">100%</div>
-                            <div class="text-sm text-purple-100 mt-1">Credit Based</div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                         <div>
-                            <div class="stats-counter gradient-text bg-white px-4 py-2 rounded-lg">70%</div>
-                            <div class="text-sm text-purple-100 mt-1">Creator Split</div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                            <textarea rows="5" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                         </div>
-                    </div>
-                </div>
-                <div class="flex justify-center">
-                    <div class="text-center float-animation">
-                        <div class="text-9xl mb-4">🎵</div>
-                        <p class="text-lg text-purple-100">Powered by Javari - Your Ecosystem Builder</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features Section -->
-    <section id="features" class="py-20 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">Everything You Need in One Platform</h2>
-                <p class="text-xl text-gray-600">No more juggling subscriptions. One platform, one credit system, endless possibilities.</p>
-            </div>
-            
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="feature-card p-8 rounded-xl border border-gray-200 hover:shadow-xl transition">
-                    <div class="text-5xl mb-4">🎵</div>
-                    <h3 class="text-2xl font-bold mb-3">Audio AI Tools</h3>
-                    <p class="text-gray-600 mb-4">Voice cloning, music generation, podcast editing, and audio enhancement powered by cutting-edge AI.</p>
-                    <ul class="space-y-2 text-sm text-gray-600">
-                        <li>✓ Voice synthesis & cloning</li>
-                        <li>✓ Music composition</li>
-                        <li>✓ Audio transcription</li>
-                        <li>✓ Sound enhancement</li>
-                    </ul>
+                        <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-all">Send Message</button>
+                    </form>
                 </div>
                 
-                <div class="feature-card p-8 rounded-xl border border-gray-200 hover:shadow-xl transition">
-                    <div class="text-5xl mb-4">🎬</div>
-                    <h3 class="text-2xl font-bold mb-3">Video AI Tools</h3>
-                    <p class="text-gray-600 mb-4">AI-powered video editing, generation, and enhancement. From concept to final cut in minutes.</p>
-                    <ul class="space-y-2 text-sm text-gray-600">
-                        <li>✓ Automated editing</li>
-                        <li>✓ AI avatars & generation</li>
-                        <li>✓ Smart captioning</li>
-                        <li>✓ Visual effects</li>
-                    </ul>
-                </div>
-                
-                <div class="feature-card p-8 rounded-xl border border-gray-200 hover:shadow-xl transition">
-                    <div class="text-5xl mb-4">🎓</div>
-                    <h3 class="text-2xl font-bold mb-3">Learn & Certify</h3>
-                    <p class="text-gray-600 mb-4">Use the same credits for learning. Get certified in AI and creative tools with industry-recognized credentials.</p>
-                    <ul class="space-y-2 text-sm text-gray-600">
-                        <li>✓ AI fundamentals</li>
-                        <li>✓ Tool mastery courses</li>
-                        <li>✓ Certifications included</li>
-                        <li>✓ Learn as you create</li>
-                    </ul>
-                </div>
-                
-                <div class="feature-card p-8 rounded-xl border border-gray-200 hover:shadow-xl transition">
-                    <div class="text-5xl mb-4">🏪</div>
-                    <h3 class="text-2xl font-bold mb-3">Build & Earn</h3>
-                    <p class="text-gray-600 mb-4">Create apps with Javari, host them on our platform, and earn 70% revenue share. We handle hosting and payments.</p>
-                    <ul class="space-y-2 text-sm text-gray-600">
-                        <li>✓ No-code app builder</li>
-                        <li>✓ 70/30 revenue split</li>
-                        <li>✓ Built-in marketplace</li>
-                        <li>✓ Affiliate income</li>
-                    </ul>
-                </div>
-                
-                <div class="feature-card p-8 rounded-xl border border-gray-200 hover:shadow-xl transition">
-                    <div class="text-5xl mb-4">🌐</div>
-                    <h3 class="text-2xl font-bold mb-3">Branded Pages</h3>
-                    <p class="text-gray-600 mb-4">Get a free branded page automatically generated from your website. Professional portfolio in minutes.</p>
-                    <ul class="space-y-2 text-sm text-gray-600">
-                        <li>✓ Auto-branded from site</li>
-                        <li>✓ Custom domain option</li>
-                        <li>✓ Portfolio showcase</li>
-                        <li>✓ Lead generation</li>
-                    </ul>
-                </div>
-                
-                <div class="feature-card p-8 rounded-xl border border-gray-200 hover:shadow-xl transition">
-                    <div class="text-5xl mb-4">🤝</div>
-                    <h3 class="text-2xl font-bold mb-3">Refer & Earn</h3>
-                    <p class="text-gray-600 mb-4">Earn credits and cash for every friend who joins. Multi-tier rewards with milestone bonuses up to $5,000.</p>
-                    <ul class="space-y-2 text-sm text-gray-600">
-                        <li>✓ 100 credits per signup</li>
-                        <li>✓ Milestone bonuses</li>
-                        <li>✓ Cash rewards</li>
-                        <li>✓ Lifetime tracking</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Javari Apps Section -->
-    <section id="javari" class="py-20 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <div class="text-8xl mb-4">🎵</div>
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">Javari - Your Ecosystem Builder</h2>
-                <p class="text-xl text-gray-600">Build apps, earn revenue, and power your creative ecosystem with Javari's intelligent platform</p>
-            </div>
-            
-            <div class="grid md:grid-cols-3 gap-8 mb-12">
-                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-200">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="text-4xl">🎙️</div>
-                        <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Featured</span>
+                <div class="mt-12 grid md:grid-cols-3 gap-6 text-center">
+                    <div>
+                        <i class="fas fa-envelope text-blue-600 text-3xl mb-3"></i>
+                        <h4 class="font-semibold mb-1">Email</h4>
+                        <p class="text-sm text-gray-600">support@craudiovizai.com</p>
                     </div>
-                    <h3 class="text-xl font-bold mb-2">Podcast Intro Generator</h3>
-                    <p class="text-sm text-gray-600 mb-4">AI-powered branded podcast intros in seconds</p>
-                    <div class="flex items-center justify-between">
-                        <span class="text-purple-600 font-semibold">50 credits</span>
-                        <span class="text-sm text-gray-500">⭐ 4.9 (234)</span>
+                    <div>
+                        <i class="fas fa-comments text-blue-600 text-3xl mb-3"></i>
+                        <h4 class="font-semibold mb-1">Live Chat</h4>
+                        <p class="text-sm text-gray-600">Click the chat icon below</p>
                     </div>
-                </div>
-                
-                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border-2 border-blue-200">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="text-4xl">📹</div>
-                        <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">Trending</span>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">Auto Subtitle Magic</h3>
-                    <p class="text-sm text-gray-600 mb-4">Perfect captions for any video, any language</p>
-                    <div class="flex items-center justify-between">
-                        <span class="text-blue-600 font-semibold">25 credits</span>
-                        <span class="text-sm text-gray-500">⭐ 5.0 (892)</span>
-                    </div>
-                </div>
-                
-                <div class="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-xl p-6 border-2 border-orange-200">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="text-4xl">🎨</div>
-                        <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">New</span>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">Thumbnail Creator Pro</h3>
-                    <p class="text-sm text-gray-600 mb-4">Eye-catching thumbnails that get clicks</p>
-                    <div class="flex items-center justify-between">
-                        <span class="text-orange-600 font-semibold">15 credits</span>
-                        <span class="text-sm text-gray-500">⭐ 4.8 (156)</span>
+                    <div>
+                        <i class="fas fa-clock text-blue-600 text-3xl mb-3"></i>
+                        <h4 class="font-semibold mb-1">Response Time</h4>
+                        <p class="text-sm text-gray-600">Usually within 1 hour</p>
                     </div>
                 </div>
             </div>
-            
-            <div class="text-center">
-                <button onclick="alert('Coming soon to javariai.com!')" class="gradient-bg text-white px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition mr-4">Browse All Apps</button>
-                <button onclick="alert('Creator portal coming soon!')" class="border-2 border-purple-600 text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-purple-50 transition">Become a Creator</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- CRAIverse Section -->
-    <section id="craiverse" class="py-20 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">Welcome to the CRAIverse</h2>
-                <p class="text-xl text-gray-600">Meet the AI avatars that power your creative journey</p>
-            </div>
-            
-            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <!-- Javari -->
-                <div class="bot-card bg-white p-6 rounded-xl shadow-lg text-center">
-                    <div class="text-7xl mb-4">🎵</div>
-                    <h3 class="text-xl font-bold mb-2">Javari</h3>
-                    <p class="text-sm text-purple-600 font-semibold mb-3">Ecosystem Builder</p>
-                    <p class="text-sm text-gray-600">Master of the platform. Javari builds your creative ecosystem, manages apps, and orchestrates your entire workflow.</p>
-                    <div class="mt-4 text-xs text-gray-500 italic">"Let's build something amazing!"</div>
-                </div>
-                
-                <!-- Kairo -->
-                <div class="bot-card bg-white p-6 rounded-xl shadow-lg text-center">
-                    <div class="text-7xl mb-4">🎬</div>
-                    <h3 class="text-xl font-bold mb-2">Kairo</h3>
-                    <p class="text-sm text-purple-600 font-semibold mb-3">Video Specialist</p>
-                    <p class="text-sm text-gray-600">Visual storyteller and editing maestro. Kairo transforms your footage into cinematic content.</p>
-                    <div class="mt-4 text-xs text-gray-500 italic">"Lights, camera, AI!"</div>
-                </div>
-                
-                <!-- Pulse -->
-                <div class="bot-card bg-white p-6 rounded-xl shadow-lg text-center">
-                    <div class="text-7xl mb-4">📊</div>
-                    <h3 class="text-xl font-bold mb-2">Pulse</h3>
-                    <p class="text-sm text-purple-600 font-semibold mb-3">Data Analyst</p>
-                    <p class="text-sm text-gray-600">Insights and analytics expert. Pulse helps you understand your performance and optimize results.</p>
-                    <div class="mt-4 text-xs text-gray-500 italic">"Let's analyze that!"</div>
-                </div>
-                
-                <!-- Scout -->
-                <div class="bot-card bg-white p-6 rounded-xl shadow-lg text-center">
-                    <div class="text-7xl mb-4">🔍</div>
-                    <h3 class="text-xl font-bold mb-2">Scout</h3>
-                    <p class="text-sm text-purple-600 font-semibold mb-3">Innovation Finder</p>
-                    <p class="text-sm text-gray-600">AI world explorer. Scout discovers trends and opportunities so we can build better tools for you.</p>
-                    <div class="mt-4 text-xs text-gray-500 italic">"Found something brilliant!"</div>
-                </div>
-            </div>
-            
-            <div class="mt-12 text-center">
-                <p class="text-gray-600 mb-6">The CRAIverse is your virtual avatar world where AI assistants collaborate to help you create, learn, and succeed.</p>
-                <button onclick="alert('Full CRAIverse experience coming soon to craiverse.com!')" class="gradient-bg text-white px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition">Enter the CRAIverse</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- Pricing Section -->
-    <section id="pricing" class="py-20 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">Simple, Credit-Based Pricing</h2>
-                <p class="text-xl text-gray-600">Pay for what you use. Credits never expire. No subscriptions required.</p>
-            </div>
-            
-            <div class="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto">
-                <div class="bg-white border-2 border-gray-200 rounded-xl p-8 hover:border-purple-500 transition">
-                    <h3 class="text-2xl font-bold mb-2">Starter</h3>
-                    <div class="text-4xl font-bold text-purple-600 mb-4">$49</div>
-                    <div class="text-gray-600 mb-6">500 credits<br><span class="text-sm text-green-600 font-semibold">+10% bonus</span></div>
-                    <ul class="space-y-3 mb-8 text-sm">
-                        <li>✓ All tools access</li>
-                        <li>✓ Learning courses</li>
-                        <li>✓ Basic support</li>
-                        <li>✓ Community access</li>
-                    </ul>
-                    <button onclick="showSignup()" class="w-full bg-gray-100 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-200 transition">Get Started</button>
-                </div>
-                
-                <div class="bg-white border-2 border-purple-500 rounded-xl p-8 relative shadow-xl transform scale-105">
-                    <div class="absolute top-0 right-0 bg-purple-500 text-white px-4 py-1 rounded-bl-lg rounded-tr-lg text-sm font-semibold">Popular</div>
-                    <h3 class="text-2xl font-bold mb-2">Learner</h3>
-                    <div class="text-4xl font-bold text-purple-600 mb-4">$99</div>
-                    <div class="text-gray-600 mb-6">1,200 credits<br><span class="text-sm text-green-600 font-semibold">+20% bonus</span></div>
-                    <ul class="space-y-3 mb-8 text-sm">
-                        <li>✓ Everything in Starter</li>
-                        <li>✓ Priority support</li>
-                        <li>✓ Advanced courses</li>
-                        <li>✓ Certification paths</li>
-                    </ul>
-                    <button onclick="showSignup()" class="w-full gradient-bg text-white py-3 rounded-lg font-semibold hover:opacity-90 transition">Get Started</button>
-                </div>
-                
-                <div class="bg-white border-2 border-gray-200 rounded-xl p-8 hover:border-purple-500 transition">
-                    <h3 class="text-2xl font-bold mb-2">Professional</h3>
-                    <div class="text-4xl font-bold text-purple-600 mb-4">$199</div>
-                    <div class="text-gray-600 mb-6">3,000 credits<br><span class="text-sm text-green-600 font-semibold">+50% bonus</span></div>
-                    <ul class="space-y-3 mb-8 text-sm">
-                        <li>✓ Everything in Learner</li>
-                        <li>✓ API access</li>
-                        <li>✓ White label option</li>
-                        <li>✓ Premium templates</li>
-                    </ul>
-                    <button onclick="showSignup()" class="w-full bg-gray-100 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-200 transition">Get Started</button>
-                </div>
-                
-                <div class="bg-white border-2 border-gray-200 rounded-xl p-8 hover:border-purple-500 transition">
-                    <h3 class="text-2xl font-bold mb-2">Enterprise</h3>
-                    <div class="text-4xl font-bold text-purple-600 mb-4">Custom</div>
-                    <div class="text-gray-600 mb-6">Volume pricing<br><span class="text-sm text-green-600 font-semibold">Best value</span></div>
-                    <ul class="space-y-3 mb-8 text-sm">
-                        <li>✓ Unlimited everything</li>
-                        <li>✓ Dedicated support</li>
-                        <li>✓ Custom integration</li>
-                        <li>✓ SLA guarantee</li>
-                    </ul>
-                    <button onclick="alert('Enterprise sales coming soon!')" class="w-full bg-gray-100 text-gray-800 py-3 rounded-lg font-semibold hover:bg-gray-200 transition">Contact Sales</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Learn Section -->
-    <section id="learn" class="py-20 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">Learn While You Create</h2>
-                <p class="text-xl text-gray-600">Use the same credits for tools and education. Get certified as you build.</p>
-            </div>
-            
-            <div class="grid md:grid-cols-3 gap-8">
-                <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-8 border-2 border-blue-200">
-                    <div class="text-5xl mb-4">🎓</div>
-                    <h3 class="text-2xl font-bold mb-3">AI Fundamentals</h3>
-                    <p class="text-gray-600 mb-4">Master the basics of AI, prompt engineering, and creative applications.</p>
-                    <div class="text-purple-600 font-bold mb-4">100 credits</div>
-                    <ul class="space-y-2 text-sm text-gray-600 mb-6">
-                        <li>• 6 comprehensive modules</li>
-                        <li>• Hands-on projects</li>
-                        <li>• Certificate included</li>
-                        <li>• 10-15 hours</li>
-                    </ul>
-                    <button onclick="alert('Courses launching soon!')" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition">Enroll Now</button>
-                </div>
-                
-                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-8 border-2 border-purple-200">
-                    <div class="text-5xl mb-4">🎵</div>
-                    <h3 class="text-2xl font-bold mb-3">Audio AI Mastery</h3>
-                    <p class="text-gray-600 mb-4">Deep dive into voice synthesis, music generation, and audio production.</p>
-                    <div class="text-purple-600 font-bold mb-4">500 credits</div>
-                    <ul class="space-y-2 text-sm text-gray-600 mb-6">
-                        <li>• Professional techniques</li>
-                        <li>• Real-world projects</li>
-                        <li>• Industry certification</li>
-                        <li>• 40-60 hours</li>
-                    </ul>
-                    <button onclick="alert('Courses launching soon!')" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition">Enroll Now</button>
-                </div>
-                
-                <div class="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-8 border-2 border-orange-200">
-                    <div class="text-5xl mb-4">🎬</div>
-                    <h3 class="text-2xl font-bold mb-3">Video AI Specialist</h3>
-                    <p class="text-gray-600 mb-4">Advanced video editing, generation, and content creation with AI.</p>
-                    <div class="text-purple-600 font-bold mb-4">750 credits</div>
-                    <ul class="space-y-2 text-sm text-gray-600 mb-6">
-                        <li>• Expert-level skills</li>
-                        <li>• Portfolio building</li>
-                        <li>• Professional cert</li>
-                        <li>• 60-80 hours</li>
-                    </ul>
-                    <button onclick="alert('Courses launching soon!')" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition">Enroll Now</button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA Section -->
-    <section class="gradient-bg text-white py-20">
-        <div class="max-w-4xl mx-auto px-4 text-center">
-            <h2 class="text-4xl font-bold mb-6">Ready to Start Creating?</h2>
-            <p class="text-xl mb-8 text-purple-100">Join CR AudioViz AI today. Free account includes 50 welcome credits.</p>
-            <button onclick="showSignup()" class="bg-white text-purple-600 px-10 py-4 rounded-lg text-lg font-bold hover:bg-gray-100 transition">Get Started Free</button>
-            <p class="mt-4 text-purple-100 text-sm">No credit card required • Cancel anytime • Credits never expire</p>
-        </div>
-    </section>
-
+        </section>
+        
+    </main>
+    
     <!-- Footer -->
     <footer class="bg-gray-900 text-gray-300 py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid md:grid-cols-5 gap-8 mb-8">
                 <div>
-                    <h4 class="text-white font-bold mb-4">About</h4>
+                    <h4 class="text-white font-bold mb-4">Company</h4>
                     <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-white">About Us</a></li>
-                        <li><a href="#" class="hover:text-white">Mission & Vision</a></li>
-                        <li><a href="#" class="hover:text-white">Team</a></li>
-                        <li><a href="#" class="hover:text-white">Careers</a></li>
-                        <li><a href="#" class="hover:text-white">Press Kit</a></li>
+                        <li><a href="#" onclick="showPage('about')" class="hover:text-white transition-all">About Us</a></li>
+                        <li><a href="#" onclick="showPage('careers')" class="hover:text-white transition-all">Careers</a></li>
+                        <li><a href="#" onclick="showPage('press')" class="hover:text-white transition-all">Press Kit</a></li>
+                        <li><a href="#" onclick="showPage('blog')" class="hover:text-white transition-all">Blog</a></li>
                     </ul>
                 </div>
                 
                 <div>
                     <h4 class="text-white font-bold mb-4">Products</h4>
                     <ul class="space-y-2 text-sm">
-                        <li><a href="#features" class="hover:text-white">Audio Tools</a></li>
-                        <li><a href="#features" class="hover:text-white">Video Tools</a></li>
-                        <li><a href="#features" class="hover:text-white">AI Services</a></li>
-                        <li><a href="#learn" class="hover:text-white">Certifications</a></li>
-                        <li><a href="#pricing" class="hover:text-white">Pricing</a></li>
+                        <li><a href="#apps" class="hover:text-white transition-all">Apps</a></li>
+                        <li><a href="#games" class="hover:text-white transition-all">Games</a></li>
+                        <li><a href="#javari" class="hover:text-white transition-all">Javari AI</a></li>
+                        <li><a href="#pricing" class="hover:text-white transition-all">Pricing</a></li>
                     </ul>
                 </div>
                 
                 <div>
                     <h4 class="text-white font-bold mb-4">Resources</h4>
                     <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-white">Documentation</a></li>
-                        <li><a href="#" class="hover:text-white">Tutorials</a></li>
-                        <li><a href="#" class="hover:text-white">Community</a></li>
-                        <li><a href="#" class="hover:text-white">API Docs</a></li>
-                        <li><a href="#" class="hover:text-white">Blog</a></li>
+                        <li><a href="#" onclick="showPage('docs')" class="hover:text-white transition-all">Documentation</a></li>
+                        <li><a href="#" onclick="showPage('tutorials')" class="hover:text-white transition-all">Tutorials</a></li>
+                        <li><a href="#" onclick="showPage('api')" class="hover:text-white transition-all">API Docs</a></li>
+                        <li><a href="#" onclick="showPage('status')" class="hover:text-white transition-all">Status Page</a></li>
                     </ul>
                 </div>
                 
                 <div>
                     <h4 class="text-white font-bold mb-4">Support</h4>
                     <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-white">Help Center</a></li>
-                        <li><a href="#" class="hover:text-white">Contact Us</a></li>
-                        <li><a href="#" class="hover:text-white">Submit Ticket</a></li>
-                        <li><a href="#" class="hover:text-white">Status Page</a></li>
-                        <li><a href="#" class="hover:text-white">Live Chat</a></li>
+                        <li><a href="#" onclick="showPage('help')" class="hover:text-white transition-all">Help Center</a></li>
+                        <li><a href="#contact" class="hover:text-white transition-all">Contact Us</a></li>
+                        <li><a href="#" onclick="showPage('ticket')" class="hover:text-white transition-all">Submit Ticket</a></li>
+                        <li><a href="#" onclick="openChat()" class="hover:text-white transition-all">Live Chat</a></li>
                     </ul>
                 </div>
                 
                 <div>
                     <h4 class="text-white font-bold mb-4">Legal</h4>
                     <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-white">Terms of Service</a></li>
-                        <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
-                        <li><a href="#" class="hover:text-white">Cookie Policy</a></li>
-                        <li><a href="#" class="hover:text-white">Refund Policy</a></li>
-                        <li><a href="#" class="hover:text-white">Acceptable Use</a></li>
+                        <li><a href="#" onclick="showPage('terms')" class="hover:text-white transition-all">Terms of Service</a></li>
+                        <li><a href="#" onclick="showPage('privacy')" class="hover:text-white transition-all">Privacy Policy</a></li>
+                        <li><a href="#" onclick="showPage('cookies')" class="hover:text-white transition-all">Cookie Policy</a></li>
+                        <li><a href="#" onclick="showPage('refunds')" class="hover:text-white transition-all">Refund Policy</a></li>
                     </ul>
                 </div>
             </div>
             
-            <div class="border-t border-gray-800 pt-8 text-center">
-                <div class="text-2xl font-bold gradient-text mb-4">CR AudioViz AI</div>
-                <p class="text-sm text-gray-400 mb-4">© 2025 CR AudioViz AI. All rights reserved.</p>
-                <div class="flex justify-center space-x-4 text-sm">
-                    <span>💳 Stripe</span>
-                    <span>💰 PayPal</span>
-                    <span>💳 Visa</span>
-                    <span>💳 Mastercard</span>
-                    <span>💳 Amex</span>
+            <div class="border-t border-gray-800 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="flex items-center space-x-2 mb-4 md:mb-0">
+                        <span class="logo-c text-2xl font-bold">C</span>
+                        <span class="logo-r text-2xl font-bold">R</span>
+                        <span class="logo-a text-2xl font-bold">A</span>
+                        <span class="logo-i text-2xl font-bold">I</span>
+                        <span class="text-white ml-2">CR AudioViz AI</span>
+                    </div>
+                    <p class="text-sm text-gray-400">© 2025 CR AudioViz AI, LLC. All rights reserved.</p>
+                </div>
+                <div class="flex justify-center space-x-4 mt-6 text-sm flex-wrap">
+                    <span class="flex items-center"><i class="fab fa-cc-stripe text-xl mr-1"></i> Stripe</span>
+                    <span class="flex items-center"><i class="fab fa-cc-paypal text-xl mr-1"></i> PayPal</span>
+                    <span class="flex items-center"><i class="fab fa-cc-visa text-xl mr-1"></i> Visa</span>
+                    <span class="flex items-center"><i class="fab fa-cc-mastercard text-xl mr-1"></i> Mastercard</span>
+                    <span class="flex items-center"><i class="fab fa-cc-amex text-xl mr-1"></i> Amex</span>
+                    <span class="flex items-center"><i class="fab fa-cc-discover text-xl mr-1"></i> Discover</span>
                 </div>
             </div>
         </div>
     </footer>
-
+    
+    <!-- Chat Widget (Pulse Bot) -->
+    <div class="chat-widget">
+        <div id="chatWindow" class="chat-window">
+            <!-- Chat Header -->
+            <div class="bg-gradient-blue text-white p-4 rounded-t-2xl flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-2xl">📊</div>
+                    <div>
+                        <div class="font-bold">Pulse</div>
+                        <div class="text-xs">AI Support Assistant</div>
+                    </div>
+                </div>
+                <button onclick="toggleChat()" class="text-white hover:text-gray-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Chat Messages -->
+            <div id="chatMessages" class="flex-1 p-4 overflow-y-auto bg-gray-50" style="height: 450px;">
+                <div class="bg-blue-100 rounded-lg p-3 mb-3 max-w-xs">
+                    <p class="text-sm">Hi! I'm Pulse, your AI support assistant. How can I help you today?</p>
+                </div>
+            </div>
+            
+            <!-- Chat Input -->
+            <div class="p-4 border-t bg-white rounded-b-2xl">
+                <div class="flex space-x-2">
+                    <input 
+                        id="chatInput" 
+                        type="text" 
+                        placeholder="Ask Pulse for assistance..." 
+                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        onkeypress="if(event.key==='Enter') sendMessage()"
+                    >
+                    <button onclick="sendMessage()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+                <div class="mt-2 text-xs text-gray-500 text-center">
+                    Powered by JavariAI • <span id="chatStatus">Online</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Button -->
+        <button id="chatButton" onclick="toggleChat()" class="w-16 h-16 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all flex items-center justify-center">
+            <i class="fas fa-comments text-2xl"></i>
+        </button>
+    </div>
+    
+    <!-- Back to Top Button -->
+    <div id="backToTop" class="back-to-top" onclick="scrollToTop()">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+    
+    <!-- Cookie Consent Banner -->
+    <div id="cookieBanner" class="cookie-banner">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between">
+            <div class="mb-4 md:mb-0">
+                <p class="text-sm">We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies. <a href="#" onclick="showPage('cookies')" class="underline">Learn more</a></p>
+            </div>
+            <div class="flex space-x-4">
+                <button onclick="acceptCookies()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-all">Accept</button>
+                <button onclick="declineCookies()" class="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-all">Decline</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <div class="flex items-center space-x-3">
+            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+            <span id="toastMessage"></span>
+        </div>
+    </div>
+    
     <!-- Login Modal -->
     <div id="loginModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-2xl font-bold">Welcome Back</h3>
-                <button onclick="closeModal('loginModal')" class="text-gray-400 hover:text-gray-600">✕</button>
+                <button onclick="closeModal('loginModal')" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <input type="email" placeholder="Email" class="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4">
-            <input type="password" placeholder="Password" class="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4">
-            <button class="w-full gradient-bg text-white py-3 rounded-lg font-semibold mb-4">Login</button>
-            <p class="text-center text-sm text-gray-600">Don't have an account? <a href="#" onclick="showSignup()" class="text-purple-600 font-semibold">Sign up</a></p>
+            <form onsubmit="handleLogin(event)">
+                <input type="email" placeholder="Email" required class="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="password" placeholder="Password" required class="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold mb-4 hover:bg-blue-700 transition-all">Login</button>
+            </form>
+            <p class="text-center text-sm text-gray-600">Don't have an account? <a href="#" onclick="showSignup()" class="text-blue-600 font-semibold">Sign up</a></p>
         </div>
     </div>
-
+    
     <!-- Signup Modal -->
     <div id="signupModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4">
             <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold">Join CR AudioViz AI</h3>
-                <button onclick="closeModal('signupModal')" class="text-gray-400 hover:text-gray-600">✕</button>
+                <h3 class="text-2xl font-bold">Create Account</h3>
+                <button onclick="closeModal('signupModal')" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <input type="text" placeholder="Full Name" class="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4">
-            <input type="email" placeholder="Email" class="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4">
-            <input type="password" placeholder="Password" class="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4">
-            <button class="w-full gradient-bg text-white py-3 rounded-lg font-semibold mb-4">Create Account</button>
-            <p class="text-center text-sm text-gray-600">Already have an account? <a href="#" onclick="showLogin()" class="text-purple-600 font-semibold">Login</a></p>
-            <p class="text-center text-xs text-gray-500 mt-4">By signing up, you agree to our Terms of Service and Privacy Policy</p>
+            <form onsubmit="handleSignup(event)">
+                <input type="text" placeholder="Full Name" required class="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="email" placeholder="Email" required class="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="password" placeholder="Password" required class="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold mb-4 hover:bg-blue-700 transition-all">Create Account</button>
+            </form>
+            <p class="text-center text-sm text-gray-600">Already have an account? <a href="#" onclick="showLogin()" class="text-blue-600 font-semibold">Login</a></p>
         </div>
     </div>
-
+    
     <script>
-        // Active nav link highlighting
-        function setActive(event, sectionId) {
-            event.preventDefault();
+        // State Management
+        let isLoggedIn = false;
+        let isAdmin = false;
+        let userName = '';
+        let userCredits = 1000;
+        let userPlan = 'Free';
+        let chatMessages = [];
+        let crRotationCount = 0;
+        
+        // CR Rotation Text Arrays
+        const crMeanings = [
+            "Creative Revolution",
+            "Customer Recognition",
+            "Content Reinvented",
+            "Code Refined",
+            "Creative Resources",
+            "Custom Reality",
+            "Collaborative Reach",
+            "Connected Results",
+            "Crafted Responses",
+            "Curated Research",
+            "Continuous Refinement",
+            "Cloud Resources",
+            "Configurable Runtime",
+            "Cutting-edge Research",
+            "Community Relations",
+            "Creative Redefined",
+            "Context Recognition",
+            "Conversational Reasoning",
+            "Collective Reality",
+            "Cultural Resonance",
+            "Creative Resonance",
+            "Cognitive Revolution",
+            "Computational Reasoning",
+            "Critical Reflection",
+            "Cindy & Roy" // Every 25th
+        ];
+        
+        // CR Rotation Function
+        function rotateCR() {
+            const crText = document.getElementById('crText');
+            crRotationCount++;
             
-            // Remove active class from all links
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.remove('active');
-            });
-            
-            // Add active class to clicked link
-            event.target.classList.add('active');
-            
-            // Scroll to section
-            scrollToSection(sectionId);
+            if (crRotationCount % 25 === 0) {
+                crText.textContent = 'CR = Cindy & Roy ❤️';
+            } else {
+                const randomIndex = Math.floor(Math.random() * (crMeanings.length - 1));
+                crText.textContent = 'CR = ' + crMeanings[randomIndex];
+            }
         }
         
-        // Set active on scroll
-        window.addEventListener('scroll', () => {
-            const sections = ['home', 'features', 'javari', 'craiverse', 'pricing', 'learn'];
-            const scrollPosition = window.scrollY + 100;
+        // Start CR rotation
+        setInterval(rotateCR, 7000);
+        
+        // Authentication Functions
+        function handleLogin(event) {
+            event.preventDefault();
+            // Simulate login
+            isLoggedIn = true;
+            userName = 'John Doe'; // Demo user
+            updateAuthUI();
+            closeModal('loginModal');
+            showToast('Welcome back, ' + userName + '!');
+        }
+        
+        function handleSignup(event) {
+            event.preventDefault();
+            // Simulate signup
+            isLoggedIn = true;
+            userName = event.target[0].value;
+            updateAuthUI();
+            closeModal('signupModal');
+            showToast('Account created successfully! Welcome ' + userName);
+        }
+        
+        function logout() {
+            isLoggedIn = false;
+            isAdmin = false;
+            userName = '';
+            updateAuthUI();
+            showToast('Logged out successfully');
+        }
+        
+        function updateAuthUI() {
+            const authSection = document.getElementById('authSection');
+            const creditsBar = document.getElementById('creditsBar');
             
-            sections.forEach(sectionId => {
-                const section = document.getElementById(sectionId);
-                if (section) {
-                    const sectionTop = section.offsetTop;
-                    const sectionHeight = section.offsetHeight;
-                    
-                    if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-                        document.querySelectorAll('.nav-link').forEach(link => {
-                            link.classList.remove('active');
-                            if (link.getAttribute('href') === `#${sectionId}`) {
-                                link.classList.add('active');
-                            }
-                        });
-                    }
-                }
-            });
-        });
+            if (isLoggedIn) {
+                authSection.innerHTML = `
+                    <span class="text-gray-700">Welcome, ${userName}</span>
+                    <button onclick="logout()" class="text-gray-700 hover:text-blue-600 font-medium">Logout</button>
+                `;
+                creditsBar.classList.remove('hidden');
+                
+                // Update credits display
+                document.getElementById('userPlan').textContent = isAdmin ? 'Admin - Unlimited' : userPlan;
+                document.getElementById('userCredits').textContent = isAdmin ? '∞' : userCredits;
+            } else {
+                authSection.innerHTML = `
+                    <button onclick="showLogin()" class="text-gray-700 hover:text-blue-600 font-medium">Login</button>
+                    <button onclick="showSignup()" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-all">Sign Up</button>
+                `;
+                creditsBar.classList.add('hidden');
+            }
+        }
         
-        // Set home as active on load
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelector('a[href="#home"]').classList.add('active');
-        });
-        
+        // Modal Functions
         function showLogin() {
             closeModal('signupModal');
             document.getElementById('loginModal').classList.remove('hidden');
@@ -624,9 +1094,251 @@
             document.getElementById(modalId).classList.add('hidden');
         }
         
-        function scrollToSection(sectionId) {
-            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+        // Navigation Functions
+        function setActive(event, sectionId) {
+            event.preventDefault();
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('text-blue-600', 'font-bold');
+                link.classList.add('text-gray-700');
+            });
+            event.target.classList.add('text-blue-600', 'font-bold');
+            scrollToSection(sectionId);
         }
+        
+        function scrollToSection(sectionId) {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+        
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        // Mobile Menu
+        function toggleMobileMenu() {
+            document.getElementById('mobileMenu').classList.toggle('active');
+        }
+        
+        // Search Functions
+        function toggleSearch() {
+            const overlay = document.getElementById('searchOverlay');
+            overlay.classList.toggle('hidden');
+        }
+        
+        function performSearch(query) {
+            const results = document.getElementById('searchResults');
+            if (query.length < 2) {
+                results.innerHTML = '<div class="text-gray-500 text-center py-8">Start typing to search...</div>';
+                return;
+            }
+            
+            // Simulate search results
+            results.innerHTML = `
+                <div class="space-y-3">
+                    <div class="p-3 hover:bg-gray-100 rounded-lg cursor-pointer">
+                        <div class="font-semibold">Audio AI Studio</div>
+                        <div class="text-sm text-gray-600">Professional voice cloning and audio enhancement</div>
+                    </div>
+                    <div class="p-3 hover:bg-gray-100 rounded-lg cursor-pointer">
+                        <div class="font-semibold">Video AI Suite</div>
+                        <div class="text-sm text-gray-600">Intelligent video editing and generation</div>
+                    </div>
+                    <div class="p-3 hover:bg-gray-100 rounded-lg cursor-pointer">
+                        <div class="font-semibold">Javari AI</div>
+                        <div class="text-sm text-gray-600">Your ecosystem builder and AI assistant</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Close search on outside click
+        document.getElementById('searchOverlay')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                toggleSearch();
+            }
+        });
+        
+        // Feature Functions
+        function toggleBookmark() {
+            showToast('Page bookmarked!');
+        }
+        
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            showToast('Dark mode ' + (document.body.classList.contains('dark-mode') ? 'enabled' : 'disabled'));
+        }
+        
+        // Chat Functions
+        function toggleChat() {
+            const chatWindow = document.getElementById('chatWindow');
+            const chatButton = document.getElementById('chatButton');
+            
+            chatWindow.classList.toggle('active');
+            chatButton.style.display = chatWindow.classList.contains('active') ? 'none' : 'flex';
+        }
+        
+        function openChat() {
+            const chatWindow = document.getElementById('chatWindow');
+            const chatButton = document.getElementById('chatButton');
+            chatWindow.classList.add('active');
+            chatButton.style.display = 'none';
+        }
+        
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message
+            addChatMessage(message, 'user');
+            input.value = '';
+            
+            // Simulate bot response
+            setTimeout(() => {
+                const response = getBotResponse(message);
+                addChatMessage(response, 'bot');
+            }, 1000);
+        }
+        
+        function addChatMessage(text, sender) {
+            const messagesDiv = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = sender === 'user' 
+                ? 'bg-blue-600 text-white rounded-lg p-3 mb-3 max-w-xs ml-auto text-right'
+                : 'bg-blue-100 rounded-lg p-3 mb-3 max-w-xs';
+            messageDiv.innerHTML = `<p class="text-sm">${text}</p>`;
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+        
+        function getBotResponse(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            if (lowerMessage.includes('price') || lowerMessage.includes('cost')) {
+                return 'Our plans start at $0 for the Free tier, $3/month for Starter, $25/month for Pro, and custom pricing for Enterprise. Would you like to know more about a specific plan?';
+            } else if (lowerMessage.includes('credit')) {
+                return 'Credits are our universal currency. You can use them across all apps, games, and tools. They never expire! Need help topping up?';
+            } else if (lowerMessage.includes('help') || lowerMessage.includes('support')) {
+                return 'I\'m here to help! I can assist with account questions, pricing, features, and technical issues. If I can\'t solve your problem, I\'ll create a support ticket for you. What do you need help with?';
+            } else if (lowerMessage.includes('javari')) {
+                return 'Javari is our ecosystem builder AI! It powers all our tools and learns from your workflow. You can chat directly with Javari for audio processing, app building, and technical support.';
+            } else if (lowerMessage.includes('ticket') || lowerMessage.includes('escalate')) {
+                return 'I\'ll create a support ticket for you. Please provide: 1) Your email, 2) Brief description of the issue, 3) Any error messages. This will be escalated to Javari or our human support team.';
+            } else {
+                return 'Thanks for your message! I\'m Pulse, your AI assistant. I can help with pricing, features, account questions, and technical support. What would you like to know?';
+            }
+        }
+        
+        function chatWithJavari() {
+            openChat();
+            setTimeout(() => {
+                addChatMessage('Hi! Javari here. I can help you build apps, process audio/video, or answer technical questions. What are you working on?', 'bot');
+            }, 500);
+        }
+        
+        // Toast Notifications
+        function showToast(message, duration = 3000) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, duration);
+        }
+        
+        // Cookie Banner
+        function showCookieBanner() {
+            const accepted = localStorage.getItem('cookiesAccepted');
+            if (!accepted) {
+                setTimeout(() => {
+                    document.getElementById('cookieBanner').classList.add('show');
+                }, 2000);
+            }
+        }
+        
+        function acceptCookies() {
+            localStorage.setItem('cookiesAccepted', 'true');
+            document.getElementById('cookieBanner').classList.remove('show');
+            showToast('Cookie preferences saved');
+        }
+        
+        function declineCookies() {
+            localStorage.setItem('cookiesAccepted', 'false');
+            document.getElementById('cookieBanner').classList.remove('show');
+            showToast('Cookie preferences saved');
+        }
+        
+        // Scroll Functions
+        window.addEventListener('scroll', () => {
+            const backToTop = document.getElementById('backToTop');
+            if (window.scrollY > 300) {
+                backToTop.classList.add('show');
+            } else {
+                backToTop.classList.remove('show');
+            }
+        });
+        
+        // Action Functions
+        function comingSoon(feature) {
+            showToast(`${feature} coming soon! We're working hard to bring this to you.`);
+        }
+        
+        function showAllApps() {
+            showToast('Full app catalog coming soon!');
+        }
+        
+        function choosePlan(plan) {
+            if (!isLoggedIn) {
+                showSignup();
+                return;
+            }
+            showToast(`Plan selection coming soon! You selected: ${plan}`);
+        }
+        
+        function buyCredits(amount, price) {
+            if (!isLoggedIn) {
+                showSignup();
+                return;
+            }
+            showToast(`Credit purchase coming soon! ${amount} credits for ${price}`);
+        }
+        
+        function contactSales() {
+            scrollToSection('contact');
+        }
+        
+        function subscribe() {
+            const email = event.target.previousElementSibling.value;
+            if (email) {
+                showToast('Thanks for subscribing! Check your email for confirmation.');
+                event.target.previousElementSibling.value = '';
+            }
+        }
+        
+        function socialClick(platform) {
+            showToast(`${platform} integration coming soon!`);
+        }
+        
+        function submitContact(event) {
+            event.preventDefault();
+            showToast('Message sent! We\'ll respond within 24 hours.');
+            event.target.reset();
+        }
+        
+        function showPage(page) {
+            showToast(`${page} page coming soon!`);
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            showCookieBanner();
+            updateAuthUI();
+        });
         
         // Close modals on outside click
         window.onclick = function(event) {
@@ -634,7 +1346,14 @@
                 closeModal('loginModal');
                 closeModal('signupModal');
             }
-        }
+        };
     </script>
+    
+    <!-- Google Analytics Placeholder -->
+    <script>
+        // Google Analytics will be added here
+        // gtag('config', 'GA_MEASUREMENT_ID');
+    </script>
+    
 </body>
 </html>
