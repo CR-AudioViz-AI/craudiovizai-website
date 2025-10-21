@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
-import Stripe from 'stripe'
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
-})
 
 export async function POST(request: Request) {
   try {
@@ -16,44 +11,64 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { priceId, type, credits, amount } = await request.json()
+    const { type, credits, amount } = await request.json()
 
-    // Create Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
-      customer_email: user.email,
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: type === 'subscription' 
-                ? `CR AudioViz AI ${credits === 200 ? 'Starter' : credits === 750 ? 'Pro' : 'Enterprise'} Plan`
-                : `${credits} Credits Package`,
-              description: type === 'subscription'
-                ? `${credits} credits per month`
-                : `One-time credit purchase`,
-            },
-            unit_amount: amount * 100, // Convert to cents
-            ...(type === 'subscription' && { recurring: { interval: 'month' } }),
-          },
-          quantity: 1,
-        },
-      ],
-      mode: type === 'subscription' ? 'subscription' : 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/pricing`,
-      metadata: {
-        userId: user.id,
-        type,
-        credits: credits.toString(),
+    // Create PayPal order
+    const paypalAuth = Buffer.from(
+      `${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_CLIENT_SECRET}`
+    ).toString('base64')
+
+    const paypalBaseURL = process.env.PAYPAL_MODE === 'live' 
+      ? 'https://api-m.paypal.com' 
+      : 'https://api-m.sandbox.paypal.com'
+
+    // Create order
+    const orderResponse = await fetch(`${paypalBaseURL}/v2/checkout/orders`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${paypalAuth}`,
       },
+      body: JSON.stringify({
+        intent: 'CAPTURE',
+        purchase_units: [
+          {
+            description: type === 'subscription' 
+              ? `CR AudioViz AI ${credits} credits/month subscription`
+              : `${credits} Credits Package`,
+            amount: {
+              currency_code: 'USD',
+              value: amount.toString(),
+            },
+            custom_id: JSON.stringify({
+              userId: user.id,
+              type,
+              credits,
+            }),
+          },
+        ],
+        application_context: {
+          return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?paypal=success`,
+          cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/pricing?paypal=cancelled`,
+        },
+      }),
     })
 
-    return NextResponse.json({ sessionUrl: session.url })
+    const orderData = await orderResponse.json()
+
+    if (!orderResponse.ok) {
+      console.error('PayPal Error:', orderData)
+      return NextResponse.json({ error: 'Failed to create PayPal order' }, { status: 500 })
+    }
+
+    // Find approval URL
+    const approvalUrl = orderData.links.find((link: any) => link.rel === 'approve')?.href
+
+    return NextResponse.json({ approvalUrl })
   } catch (error) {
-    console.error('Stripe Error:', error)
+    console.error('PayPal Checkout Error:', error)
     return NextResponse.json(
-      { error: 'Failed to create checkout session' },
+      { error: 'Failed to create PayPal checkout' },
       { status: 500 }
     )
   }
