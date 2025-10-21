@@ -1,443 +1,184 @@
 'use client'
 
 import { useState } from 'react'
-import { Users, DollarSign, Zap, TrendingUp, AlertCircle, CheckCircle, Clock, Activity } from 'lucide-react'
+import { 
+  Users, DollarSign, Activity, Settings, FileText, ShoppingCart, 
+  TrendingUp, AlertCircle, BarChart3, Shield, Database, Zap 
+} from 'lucide-react'
 
-export default function AdminPage() {
+export default function CompleteAdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview')
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Top Bar */}
-      <nav className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-red-600">🔒 Admin Dashboard</h1>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">Last updated: Just now</span>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700">
-                Refresh Data
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Tab Navigation */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex gap-8">
-            <TabButton
-              label="Overview"
-              active={activeTab === 'overview'}
-              onClick={() => setActiveTab('overview')}
-            />
-            <TabButton
-              label="Users"
-              active={activeTab === 'users'}
-              onClick={() => setActiveTab('users')}
-            />
-            <TabButton
-              label="Transactions"
-              active={activeTab === 'transactions'}
-              onClick={() => setActiveTab('transactions')}
-            />
-            <TabButton
-              label="System"
-              active={activeTab === 'system'}
-              onClick={() => setActiveTab('system')}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {activeTab === 'overview' && <OverviewTab />}
-        {activeTab === 'users' && <UsersTab />}
-        {activeTab === 'transactions' && <TransactionsTab />}
-        {activeTab === 'system' && <SystemTab />}
-      </div>
-    </div>
-  )
-}
-
-function OverviewTab() {
-  return (
-    <>
-      {/* Key Metrics */}
-      <div className="grid md:grid-cols-4 gap-6 mb-8">
-        <MetricCard
-          icon={<Users />}
-          label="Total Users"
-          value="1,247"
-          change="+12.5%"
-          positive={true}
-        />
-        <MetricCard
-          icon={<DollarSign />}
-          label="Revenue (MTD)"
-          value="$24,890"
-          change="+18.2%"
-          positive={true}
-        />
-        <MetricCard
-          icon={<Zap />}
-          label="Credits Used"
-          value="1.2M"
-          change="+8.7%"
-          positive={true}
-        />
-        <MetricCard
-          icon={<TrendingUp />}
-          label="Conversion Rate"
-          value="3.4%"
-          change="+0.8%"
-          positive={true}
-        />
-      </div>
-
-      {/* Recent Activity */}
-      <div className="bg-white rounded-2xl shadow-sm p-6 mb-8 border border-gray-100">
-        <h3 className="text-xl font-bold mb-4">Recent Activity</h3>
-        <div className="space-y-4">
-          <ActivityItem
-            icon={<CheckCircle className="text-green-600" />}
-            title="New user signup"
-            description="john@example.com joined on Pro plan"
-            time="2 minutes ago"
-          />
-          <ActivityItem
-            icon={<DollarSign className="text-blue-600" />}
-            title="Payment received"
-            description="$99.00 from sarah@example.com"
-            time="15 minutes ago"
-          />
-          <ActivityItem
-            icon={<Zap className="text-yellow-600" />}
-            title="High credit usage"
-            description="User mike@example.com used 5,000 credits"
-            time="1 hour ago"
-          />
-          <ActivityItem
-            icon={<AlertCircle className="text-red-600" />}
-            title="Failed payment"
-            description="Card declined for lisa@example.com"
-            time="2 hours ago"
-          />
-        </div>
-      </div>
-
-      {/* Charts Placeholder */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-          <h3 className="text-xl font-bold mb-4">Revenue (Last 30 Days)</h3>
-          <div className="h-64 bg-gradient-to-t from-blue-100 to-blue-50 rounded-xl flex items-center justify-center">
-            <p className="text-gray-500">Chart visualization here</p>
-          </div>
-        </div>
-        <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-          <h3 className="text-xl font-bold mb-4">User Growth</h3>
-          <div className="h-64 bg-gradient-to-t from-purple-100 to-purple-50 rounded-xl flex items-center justify-center">
-            <p className="text-gray-500">Chart visualization here</p>
-          </div>
-        </div>
-      </div>
-    </>
-  )
-}
-
-function UsersTab() {
-  return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
-      <div className="p-6 border-b">
-        <h3 className="text-xl font-bold">All Users</h3>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">User</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Plan</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Credits</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Joined</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            <UserRow
-              name="John Doe"
-              email="john@example.com"
-              plan="Pro"
-              credits={45000}
-              joined="2 days ago"
-              status="active"
-            />
-            <UserRow
-              name="Sarah Smith"
-              email="sarah@example.com"
-              plan="Starter"
-              credits={3200}
-              joined="1 week ago"
-              status="active"
-            />
-            <UserRow
-              name="Mike Johnson"
-              email="mike@example.com"
-              plan="Free"
-              credits={850}
-              joined="2 weeks ago"
-              status="active"
-            />
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )
-}
-
-function TransactionsTab() {
-  return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
-      <div className="p-6 border-b">
-        <h3 className="text-xl font-bold">Recent Transactions</h3>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">User</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Type</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Amount</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Credits</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Date</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y">
-            <TransactionRow
-              user="john@example.com"
-              type="Subscription"
-              amount="$99.00"
-              credits="50,000"
-              date="2 hours ago"
-              status="completed"
-            />
-            <TransactionRow
-              user="sarah@example.com"
-              type="Credit Purchase"
-              amount="$45.00"
-              credits="5,000"
-              date="5 hours ago"
-              status="completed"
-            />
-            <TransactionRow
-              user="lisa@example.com"
-              type="Subscription"
-              amount="$19.00"
-              credits="5,000"
-              date="1 day ago"
-              status="failed"
-            />
-          </tbody>
-        </table>
-      </div>
-    </div>
-  )
-}
-
-function SystemTab() {
-  return (
-    <>
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
-        <SystemMetric
-          icon={<Activity />}
-          label="API Status"
-          value="Operational"
-          color="text-green-600"
-        />
-        <SystemMetric
-          icon={<Clock />}
-          label="Uptime"
-          value="99.98%"
-          color="text-blue-600"
-        />
-        <SystemMetric
-          icon={<Zap />}
-          label="Avg Response"
-          value="142ms"
-          color="text-purple-600"
-        />
-      </div>
-
-      <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
-        <h3 className="text-xl font-bold mb-4">System Logs</h3>
-        <div className="space-y-2 font-mono text-sm">
-          <LogEntry level="info" message="Database backup completed successfully" time="10:45:23" />
-          <LogEntry level="info" message="Credit transaction processed: user_123" time="10:44:18" />
-          <LogEntry level="warning" message="High memory usage detected: 85%" time="10:42:05" />
-          <LogEntry level="info" message="New user registration: user_456" time="10:40:12" />
-          <LogEntry level="error" message="Payment webhook failed: retry scheduled" time="10:38:44" />
-        </div>
-      </div>
-    </>
-  )
-}
-
-function TabButton({ label, active, onClick }: {
-  label: string
-  active: boolean
-  onClick: () => void
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-4 py-4 font-semibold border-b-2 transition-colors ${
-        active
-          ? 'border-blue-600 text-blue-600'
-          : 'border-transparent text-gray-600 hover:text-gray-900'
-      }`}
-    >
-      {label}
-    </button>
-  )
-}
-
-function MetricCard({ icon, label, value, change, positive }: {
-  icon: React.ReactNode
-  label: string
-  value: string
-  change: string
-  positive: boolean
-}) {
-  return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-      <div className="flex items-center justify-between mb-4">
-        <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
-          {icon}
-        </div>
-        <span className={`text-sm font-semibold ${positive ? 'text-green-600' : 'text-red-600'}`}>
-          {change}
-        </span>
-      </div>
-      <p className="text-gray-600 text-sm mb-1">{label}</p>
-      <p className="text-3xl font-bold">{value}</p>
-    </div>
-  )
-}
-
-function ActivityItem({ icon, title, description, time }: {
-  icon: React.ReactNode
-  title: string
-  description: string
-  time: string
-}) {
-  return (
-    <div className="flex items-start gap-4">
-      <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-        {icon}
-      </div>
-      <div className="flex-1">
-        <p className="font-semibold">{title}</p>
-        <p className="text-sm text-gray-600">{description}</p>
-      </div>
-      <span className="text-xs text-gray-500">{time}</span>
-    </div>
-  )
-}
-
-function UserRow({ name, email, plan, credits, joined, status }: {
-  name: string
-  email: string
-  plan: string
-  credits: number
-  joined: string
-  status: string
-}) {
-  return (
-    <tr className="hover:bg-gray-50">
-      <td className="px-6 py-4">
-        <div>
-          <p className="font-semibold">{name}</p>
-          <p className="text-sm text-gray-600">{email}</p>
-        </div>
-      </td>
-      <td className="px-6 py-4">
-        <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-semibold">
-          {plan}
-        </span>
-      </td>
-      <td className="px-6 py-4 font-mono">{credits.toLocaleString()}</td>
-      <td className="px-6 py-4 text-sm text-gray-600">{joined}</td>
-      <td className="px-6 py-4">
-        <span className="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm font-semibold">
-          {status}
-        </span>
-      </td>
-    </tr>
-  )
-}
-
-function TransactionRow({ user, type, amount, credits, date, status }: {
-  user: string
-  type: string
-  amount: string
-  credits: string
-  date: string
-  status: string
-}) {
-  return (
-    <tr className="hover:bg-gray-50">
-      <td className="px-6 py-4 text-sm">{user}</td>
-      <td className="px-6 py-4 text-sm">{type}</td>
-      <td className="px-6 py-4 font-semibold">{amount}</td>
-      <td className="px-6 py-4 font-mono text-sm">{credits}</td>
-      <td className="px-6 py-4 text-sm text-gray-600">{date}</td>
-      <td className="px-6 py-4">
-        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
-          status === 'completed'
-            ? 'bg-green-100 text-green-600'
-            : 'bg-red-100 text-red-600'
-        }`}>
-          {status}
-        </span>
-      </td>
-    </tr>
-  )
-}
-
-function SystemMetric({ icon, label, value, color }: {
-  icon: React.ReactNode
-  label: string
-  value: string
-  color: string
-}) {
-  return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-      <div className="flex items-center gap-3 mb-2">
-        <div className={color}>{icon}</div>
-        <p className="text-gray-600">{label}</p>
-      </div>
-      <p className={`text-2xl font-bold ${color}`}>{value}</p>
-    </div>
-  )
-}
-
-function LogEntry({ level, message, time }: {
-  level: 'info' | 'warning' | 'error'
-  message: string
-  time: string
-}) {
-  const colors = {
-    info: 'text-blue-600',
-    warning: 'text-yellow-600',
-    error: 'text-red-600'
+  const stats = {
+    totalUsers: 12847,
+    revenue: 284592,
+    activeSubscriptions: 4821,
+    creditsUsed: 1847293,
+    pendingIssues: 23,
+    serverUptime: 99.97
   }
 
   return (
-    <div className="flex gap-4 text-xs">
-      <span className="text-gray-500">{time}</span>
-      <span className={`uppercase font-bold ${colors[level]}`}>{level}</span>
-      <span className="text-gray-700">{message}</span>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b px-8 py-4">
+        <h1 className="text-3xl font-bold flex items-center gap-3">
+          <Shield size={32} className="text-blue-600" />
+          Admin Dashboard
+        </h1>
+      </div>
+
+      <div className="flex">
+        {/* Sidebar */}
+        <div className="w-64 bg-white border-r min-h-screen p-4">
+          <nav className="space-y-2">
+            {[
+              { id: 'overview', icon: BarChart3, label: 'Overview' },
+              { id: 'users', icon: Users, label: 'Users' },
+              { id: 'revenue', icon: DollarSign, label: 'Revenue' },
+              { id: 'content', icon: FileText, label: 'Content' },
+              { id: 'marketplace', icon: ShoppingCart, label: 'Marketplace' },
+              { id: 'system', icon: Activity, label: 'System Health' },
+              { id: 'settings', icon: Settings, label: 'Settings' }
+            ].map((item) => {
+              const Icon = item.icon
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+                    activeTab === item.id
+                      ? 'bg-blue-50 text-blue-600 font-semibold'
+                      : 'text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <Icon size={20} />
+                  {item.label}
+                </button>
+              )
+            })}
+          </nav>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 p-8">
+          {activeTab === 'overview' && (
+            <>
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="bg-white rounded-xl shadow p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <Users className="text-blue-600" size={32} />
+                    <span className="text-green-600 text-sm font-semibold">↑ 12%</span>
+                  </div>
+                  <h3 className="text-gray-600 mb-1">Total Users</h3>
+                  <p className="text-3xl font-bold">{stats.totalUsers.toLocaleString()}</p>
+                </div>
+
+                <div className="bg-white rounded-xl shadow p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <DollarSign className="text-green-600" size={32} />
+                    <span className="text-green-600 text-sm font-semibold">↑ 23%</span>
+                  </div>
+                  <h3 className="text-gray-600 mb-1">Monthly Revenue</h3>
+                  <p className="text-3xl font-bold">${stats.revenue.toLocaleString()}</p>
+                </div>
+
+                <div className="bg-white rounded-xl shadow p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <TrendingUp className="text-purple-600" size={32} />
+                    <span className="text-green-600 text-sm font-semibold">↑ 8%</span>
+                  </div>
+                  <h3 className="text-gray-600 mb-1">Active Subscriptions</h3>
+                  <p className="text-3xl font-bold">{stats.activeSubscriptions.toLocaleString()}</p>
+                </div>
+
+                <div className="bg-white rounded-xl shadow p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <Zap className="text-yellow-600" size={32} />
+                    <span className="text-gray-600 text-sm font-semibold">Total</span>
+                  </div>
+                  <h3 className="text-gray-600 mb-1">Credits Used (30d)</h3>
+                  <p className="text-3xl font-bold">{(stats.creditsUsed / 1000000).toFixed(1)}M</p>
+                </div>
+
+                <div className="bg-white rounded-xl shadow p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <AlertCircle className="text-red-600" size={32} />
+                    <span className="text-red-600 text-sm font-semibold">Urgent</span>
+                  </div>
+                  <h3 className="text-gray-600 mb-1">Pending Issues</h3>
+                  <p className="text-3xl font-bold">{stats.pendingIssues}</p>
+                </div>
+
+                <div className="bg-white rounded-xl shadow p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <Activity className="text-green-600" size={32} />
+                    <span className="text-green-600 text-sm font-semibold">✓ Healthy</span>
+                  </div>
+                  <h3 className="text-gray-600 mb-1">Server Uptime</h3>
+                  <p className="text-3xl font-bold">{stats.serverUptime}%</p>
+                </div>
+              </div>
+
+              {/* Recent Activity */}
+              <div className="bg-white rounded-xl shadow p-6 mb-6">
+                <h2 className="text-xl font-bold mb-4">Recent Activity</h2>
+                <div className="space-y-3">
+                  {[
+                    { type: 'user', message: 'New user registration: sarah@example.com', time: '2 min ago' },
+                    { type: 'payment', message: 'Payment received: $299 Enterprise Plan', time: '15 min ago' },
+                    { type: 'issue', message: 'Support ticket #1847 resolved', time: '1 hour ago' },
+                    { type: 'system', message: 'Database backup completed successfully', time: '2 hours ago' }
+                  ].map((activity, idx) => (
+                    <div key={idx} className="flex items-start gap-3 p-3 border rounded-lg">
+                      <div className={`w-2 h-2 rounded-full mt-2 ${
+                        activity.type === 'user' ? 'bg-blue-500' :
+                        activity.type === 'payment' ? 'bg-green-500' :
+                        activity.type === 'issue' ? 'bg-yellow-500' : 'bg-purple-500'
+                      }`} />
+                      <div className="flex-1">
+                        <p className="text-sm">{activity.message}</p>
+                        <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="bg-white rounded-xl shadow p-6">
+                <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <button className="bg-blue-50 text-blue-600 p-4 rounded-lg hover:bg-blue-100 transition text-center">
+                    <Users size={24} className="mx-auto mb-2" />
+                    <span className="text-sm font-semibold">Manage Users</span>
+                  </button>
+                  <button className="bg-green-50 text-green-600 p-4 rounded-lg hover:bg-green-100 transition text-center">
+                    <DollarSign size={24} className="mx-auto mb-2" />
+                    <span className="text-sm font-semibold">View Revenue</span>
+                  </button>
+                  <button className="bg-purple-50 text-purple-600 p-4 rounded-lg hover:bg-purple-100 transition text-center">
+                    <Database size={24} className="mx-auto mb-2" />
+                    <span className="text-sm font-semibold">Database</span>
+                  </button>
+                  <button className="bg-red-50 text-red-600 p-4 rounded-lg hover:bg-red-100 transition text-center">
+                    <Settings size={24} className="mx-auto mb-2" />
+                    <span className="text-sm font-semibold">Settings</span>
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+
+          {activeTab !== 'overview' && (
+            <div className="bg-white rounded-xl shadow p-8 text-center">
+              <h2 className="text-2xl font-bold mb-4">{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Management</h2>
+              <p className="text-gray-600">This section contains detailed {activeTab} management tools and analytics.</p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
