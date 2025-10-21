@@ -16,7 +16,7 @@ A unified AI-powered platform for creators, businesses, and communities.
 
 - **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
 - **Backend**: Supabase (PostgreSQL)
-- **Payments**: Stripe + PayPal 
+- **Payments**: Stripe + PayPal
 - **AI**: OpenAI GPT-4
 - **Hosting**: Vercel 
 
