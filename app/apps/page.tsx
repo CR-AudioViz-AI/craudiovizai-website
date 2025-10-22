@@ -3,7 +3,6 @@
 export default function AppsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
@@ -13,7 +12,6 @@ export default function AppsPage() {
         </div>
       </header>
 
-      {/* Hero */}
       <section className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white py-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-5xl md:text-7xl font-bold mb-6">
@@ -25,7 +23,6 @@ export default function AppsPage() {
         </div>
       </section>
 
-      {/* Apps Grid */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-12">All Apps & Tools</h2>
@@ -59,17 +56,13 @@ export default function AppsPage() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="py-20 bg-blue-600 text-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold mb-6">Ready to Start Creating?</h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto">
             Get access to all 60+ apps with any paid plan
           </p>
-          
-            href="/signup"
-            className="bg-white text-blue-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition inline-block"
-          >
+          <a href="/signup" className="bg-white text-blue-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition inline-block">
             Get Started Free
           </a>
         </div>
