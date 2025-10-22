@@ -1,179 +1,208 @@
-'use client'
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import Link from 'next/link';
+import { Sparkles, Code2, Download, Share2 } from 'lucide-react';
 
 export default function AppsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <a href="/" className="text-2xl font-bold text-blue-600">CR AudioViz AI</a>
-            <nav className="hidden md:flex gap-6">
-              <a href="/apps" className="text-gray-600 hover:text-blue-600 font-semibold">Apps</a>
-              <a href="/games" className="text-gray-600 hover:text-blue-600">Games</a>
-              <a href="/craiverse" className="text-gray-600 hover:text-blue-600">CRAIverse</a>
-              <a href="/pricing" className="text-gray-600 hover:text-blue-600">Pricing</a>
-            </nav>
-            <div className="flex gap-3">
-              <a href="/login" className="text-gray-600 hover:text-blue-600">Login</a>
-              <a href="/signup" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Sign Up</a>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Hero */}
-      <section className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white py-20">
-        <div className="container mx-auto px-4 text-center">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6">
-            60+ Creative Apps
-          </h1>
-          <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
-            Everything you need to build your digital empire. All powered by AI.
-          </p>
-        </div>
-      </section>
-
-      {/* Apps Grid */}
-      <section className="py-20">
+      {/* Hero Section */}
+      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-navy-800 text-white py-16">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-12">All Apps & Tools</h2>
-          
-          <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
-            <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
-              <div className="text-5xl mb-4">🌐</div>
-              <h3 className="font-bold text-lg mb-2">Website Builder</h3>
-              <p className="text-gray-600 text-sm">Create stunning websites</p>
-            </div>
-            <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
-              <div className="text-5xl mb-4">🎨</div>
-              <h3 className="font-bold text-lg mb-2">Logo Maker</h3>
-              <p className="text-gray-600 text-sm">Design your brand identity</p>
-            </div>
-            <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
-              <div className="text-5xl mb-4">📝</div>
-              <h3 className="font-bold text-lg mb-2">Content Writer</h3>
-              <p className="text-gray-600 text-sm">AI-powered content creation</p>
-            </div>
-            <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
-              <div className="text-5xl mb-4">🎬</div>
-              <h3 className="font-bold text-lg mb-2">Video Editor</h3>
-              <p className="text-gray-600 text-sm">Professional video editing</p>
-            </div>
-            <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
-              <div className="text-5xl mb-4">🖼️</div>
-              <h3 className="font-bold text-lg mb-2">Image Generator</h3>
-              <p className="text-gray-600 text-sm">AI art and images</p>
-            </div>
-            <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
-              <div className="text-5xl mb-4">📊</div>
-              <h3 className="font-bold text-lg mb-2">Analytics</h3>
-              <p className="text-gray-600 text-sm">Track your success</p>
-            </div>
-            <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
-              <div className="text-5xl mb-4">💼</div>
-              <h3 className="font-bold text-lg mb-2">Business Tools</h3>
-              <p className="text-gray-600 text-sm">Complete business suite</p>
-            </div>
-            <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
-              <div className="text-5xl mb-4">🎵</div>
-              <h3 className="font-bold text-lg mb-2">Music Maker</h3>
-              <p className="text-gray-600 text-sm">Create original music</p>
-            </div>
-            <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
-              <div className="text-5xl mb-4">📱</div>
-              <h3 className="font-bold text-lg mb-2">App Builder</h3>
-              <p className="text-gray-600 text-sm">Build mobile apps</p>
-            </div>
-            <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
-              <div className="text-5xl mb-4">🎮</div>
-              <h3 className="font-bold text-lg mb-2">Game Creator</h3>
-              <p className="text-gray-600 text-sm">Make your own games</p>
-            </div>
-            <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
-              <div className="text-5xl mb-4">📧</div>
-              <h3 className="font-bold text-lg mb-2">Email Marketing</h3>
-              <p className="text-gray-600 text-sm">Campaign management</p>
-            </div>
-            <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
-              <div className="text-5xl mb-4">🛒</div>
-              <h3 className="font-bold text-lg mb-2">E-commerce</h3>
-              <p className="text-gray-600 text-sm">Online store builder</p>
-            </div>
-            <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
-              <div className="text-5xl mb-4">📸</div>
-              <h3 className="font-bold text-lg mb-2">Photo Editor</h3>
-              <p className="text-gray-600 text-sm">Professional editing</p>
-            </div>
-            <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
-              <div className="text-5xl mb-4">🎤</div>
-              <h3 className="font-bold text-lg mb-2">Podcast Studio</h3>
-              <p className="text-gray-600 text-sm">Create podcasts</p>
-            </div>
-            <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
-              <div className="text-5xl mb-4">📚</div>
-              <h3 className="font-bold text-lg mb-2">Course Creator</h3>
-              <p className="text-gray-600 text-sm">Build online courses</p>
-            </div>
-            <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
-              <div className="text-5xl mb-4">💬</div>
-              <h3 className="font-bold text-lg mb-2">Chatbot Builder</h3>
-              <p className="text-gray-600 text-sm">AI chatbots</p>
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+              60+ Creative Apps & Tools
+            </h1>
+            <p className="text-xl md:text-2xl text-blue-100 mb-8">
+              Everything you need to create, design, and build - all powered by AI
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-6 text-lg">
+                <Sparkles className="w-5 h-5 mr-2" />
+                Build Custom App
+              </Button>
+              <Link href="/pricing">
+                <Button 
+                  size="lg" 
+                  variant="outline" 
+                  className="border-2 border-white text-white hover:bg-white/10 px-8 py-6 text-lg"
+                >
+                  View Pricing
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 bg-blue-600 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-6">Ready to Start Creating?</h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Get access to all 60+ apps with any paid plan
-          </p>
-          <a href="/signup" className="bg-white text-blue-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition inline-block">
-            Get Started Free
-          </a>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
+      {/* App Builder Section */}
+      <section className="py-12 bg-white">
         <div className="container mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="text-xl font-bold mb-4">CR AudioViz AI</h3>
-              <p className="text-gray-400">Your story. Our design. Build the future with AI.</p>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Product</h4>
-              <ul className="space-y-2">
-                <li><a href="/apps" className="text-gray-400 hover:text-white">Apps</a></li>
-                <li><a href="/games" className="text-gray-400 hover:text-white">Games</a></li>
-                <li><a href="/craiverse" className="text-gray-400 hover:text-white">CRAIverse</a></li>
-                <li><a href="/pricing" className="text-gray-400 hover:text-white">Pricing</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Company</h4>
-              <ul className="space-y-2">
-                <li><a href="/about" className="text-gray-400 hover:text-white">About</a></li>
-                <li><a href="/contact" className="text-gray-400 hover:text-white">Contact</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-bold mb-4">Legal</h4>
-              <ul className="space-y-2">
-                <li><a href="/privacy" className="text-gray-400 hover:text-white">Privacy</a></li>
-                <li><a href="/terms" className="text-gray-400 hover:text-white">Terms</a></li>
-              </ul>
-            </div>
+          <Card className="max-w-5xl mx-auto border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                    <Code2 className="inline-block w-8 h-8 mr-2 text-blue-600" />
+                    App Builder
+                  </CardTitle>
+                  <CardDescription className="text-lg">
+                    Create custom apps with AI assistance - no coding required
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">AI-Powered</p>
+                    <p className="text-sm text-gray-600">Let Javari build your app</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Share2 className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Host or Export</p>
+                    <p className="text-sm text-gray-600">Keep code or earn 70%</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Download className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Full Control</p>
+                    <p className="text-sm text-gray-600">Download source code</p>
+                  </div>
+                </div>
+              </div>
+              <Button className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg">
+                Start Building Your App
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Embedded Apps Dashboard Section */}
+      <section className="py-12 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              All Apps & Tools
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Browse by category or search to find exactly what you need
+            </p>
           </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2025 CR AudioViz AI. All rights reserved.</p>
+
+          {/* This is where the Bolt-built dashboard will be embedded */}
+          <div className="bg-white rounded-xl shadow-lg p-8 min-h-[600px]">
+            <div className="border-4 border-dashed border-gray-300 rounded-lg p-12 text-center">
+              <Code2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-2xl font-bold text-gray-700 mb-2">
+                Apps Dashboard Integration Point
+              </h3>
+              <p className="text-gray-500 mb-4">
+                This is where we'll embed your Bolt-built apps dashboard
+              </p>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-2xl mx-auto">
+                <p className="text-sm text-blue-900 font-semibold mb-2">
+                  📋 TODO: Embed Bolt Dashboard
+                </p>
+                <ul className="text-sm text-blue-800 text-left space-y-1">
+                  <li>• All 60+ apps will be categorized and displayed here</li>
+                  <li>• Search and filter functionality</li>
+                  <li>• Each app card shows: icon, name, description, credit cost</li>
+                  <li>• Click to launch app or learn more</li>
+                  <li>• Apps pull from Supabase database</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
-      </footer>
+      </section>
+
+      {/* Categories Preview */}
+      <section className="py-12 bg-white">
+        <div className="container mx-auto px-4">
+          <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+            App Categories
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-6xl mx-auto">
+            {[
+              { name: 'Website & Development', icon: '🌐', count: 5 },
+              { name: 'Design & Branding', icon: '🎨', count: 5 },
+              { name: 'Content Creation', icon: '✍️', count: 5 },
+              { name: 'Video & Audio', icon: '🎬', count: 5 },
+              { name: 'Marketing', icon: '📢', count: 5 },
+              { name: 'Business Tools', icon: '💼', count: 5 },
+              { name: 'Print-on-Demand', icon: '👕', count: 5 },
+              { name: 'AI Tools', icon: '🤖', count: 5 },
+              { name: 'Utilities', icon: '🔧', count: 5 },
+              { name: 'Mobile', icon: '📱', count: 5 },
+              { name: 'Social Media', icon: '📱', count: 5 },
+              { name: 'Education', icon: '📚', count: 5 },
+            ].map((category) => (
+              <Card key={category.name} className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="p-4 text-center">
+                  <div className="text-3xl mb-2">{category.icon}</div>
+                  <p className="text-sm font-semibold text-gray-900">{category.name}</p>
+                  <p className="text-xs text-gray-500 mt-1">{category.count} apps</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Creator Info Section */}
+      <section className="py-12 bg-gradient-to-br from-blue-600 to-purple-600 text-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Build Apps, Earn Revenue
+            </h2>
+            <p className="text-xl text-blue-100 mb-8">
+              Create custom apps and choose your path
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="bg-white/10 backdrop-blur border-white/20">
+                <CardHeader>
+                  <CardTitle className="text-white text-xl">Host on Our Platform</CardTitle>
+                </CardHeader>
+                <CardContent className="text-blue-100">
+                  <ul className="space-y-2">
+                    <li>✓ Earn 70% commission on every use</li>
+                    <li>✓ Automated payments</li>
+                    <li>✓ Analytics dashboard</li>
+                    <li>✓ No hosting costs</li>
+                  </ul>
+                </CardContent>
+              </Card>
+              <Card className="bg-white/10 backdrop-blur border-white/20">
+                <CardHeader>
+                  <CardTitle className="text-white text-xl">Take Your Code</CardTitle>
+                </CardHeader>
+                <CardContent className="text-blue-100">
+                  <ul className="space-y-2">
+                    <li>✓ Download complete source code</li>
+                    <li>✓ Full ownership and control</li>
+                    <li>✓ Host anywhere you want</li>
+                    <li>✓ No ongoing fees</li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
-  )
+  );
 }
