@@ -3,7 +3,6 @@
 export default function Home() {
   return (
     <div className="min-h-screen">
-      {/* Hero Section */}
       <section className="bg-gradient-to-br from-blue-600 to-purple-700 text-white py-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-5xl md:text-7xl font-bold mb-6">
@@ -13,23 +12,16 @@ export default function Home() {
             Build websites, apps, and games with AI-powered tools. No coding required.
           </p>
           <div className="flex gap-4 justify-center">
-            
-              href="/signup"
-              className="bg-white text-blue-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition"
-            >
+            <a href="/signup" className="bg-white text-blue-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition">
               Get Started Free
             </a>
-            
-              href="/pricing"
-              className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white hover:text-blue-600 transition"
-            >
+            <a href="/pricing" className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white hover:text-blue-600 transition">
               View Pricing
             </a>
           </div>
         </div>
       </section>
 
-      {/* Features */}
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-12">Everything You Need to Create</h2>
@@ -53,7 +45,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CRAIverse Section */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
@@ -61,17 +52,13 @@ export default function Home() {
             <p className="text-xl text-gray-600 mb-8">
               A virtual world built for connection and social impact. Free avatar, virtual home, and car included.
             </p>
-            
-              href="/craiverse"
-              className="bg-purple-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-purple-700 transition inline-block"
-            >
+            <a href="/craiverse" className="bg-purple-600 text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-purple-700 transition inline-block">
               Explore CRAIverse
             </a>
           </div>
         </div>
       </section>
 
-      {/* Pricing Preview */}
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-12">Simple, Transparent Pricing</h2>
@@ -148,17 +135,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="py-20 bg-blue-600 text-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold mb-6">Ready to Start Creating?</h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto">
             Join thousands of creators building their dreams with CR AudioViz AI
           </p>
-          
-            href="/signup"
-            className="bg-white text-blue-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition inline-block"
-          >
+          <a href="/signup" className="bg-white text-blue-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition inline-block">
             Get Started Free
           </a>
         </div>
