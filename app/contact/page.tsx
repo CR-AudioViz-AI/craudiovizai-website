@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Mail, MessageSquare, Phone, MapPin, Clock, Send } from 'lucide-react';
+import { Mail, MessageSquare, MapPin, Clock, Send, Bot, Sparkles, User } from 'lucide-react';
 
 export default function ContactPage() {
   return (
@@ -110,7 +110,7 @@ export default function ContactPage() {
 
             {/* Contact Info - Takes 1 column */}
             <div className="space-y-6">
-              {/* Email */}
+              {/* Support Email */}
               <Card className="hover:shadow-lg transition-shadow">
                 <CardContent className="pt-6">
                   <div className="flex items-start space-x-4">
@@ -118,9 +118,9 @@ export default function ContactPage() {
                       <Mail className="w-6 h-6 text-blue-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 mb-1">Email Us</h3>
+                      <h3 className="font-semibold text-gray-900 mb-1">Support</h3>
                       <p className="text-sm text-gray-600 mb-2">
-                        For general inquiries
+                        Technical & general inquiries
                       </p>
                       <a 
                         href="mailto:support@craudiovizai.com" 
@@ -133,7 +133,7 @@ export default function ContactPage() {
                 </CardContent>
               </Card>
 
-              {/* Sales */}
+              {/* Info Email */}
               <Card className="hover:shadow-lg transition-shadow">
                 <CardContent className="pt-6">
                   <div className="flex items-start space-x-4">
@@ -141,38 +141,15 @@ export default function ContactPage() {
                       <MessageSquare className="w-6 h-6 text-green-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900 mb-1">Sales Team</h3>
+                      <h3 className="font-semibold text-gray-900 mb-1">General Info</h3>
                       <p className="text-sm text-gray-600 mb-2">
-                        Enterprise & custom quotes
+                        Business & partnership inquiries
                       </p>
                       <a 
-                        href="mailto:sales@craudiovizai.com" 
+                        href="mailto:info@craudiovizai.com" 
                         className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                       >
-                        sales@craudiovizai.com
-                      </a>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Support */}
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardContent className="pt-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Phone className="w-6 h-6 text-purple-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-1">Support</h3>
-                      <p className="text-sm text-gray-600 mb-2">
-                        Technical assistance
-                      </p>
-                      <a 
-                        href="mailto:help@craudiovizai.com" 
-                        className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                      >
-                        help@craudiovizai.com
+                        info@craudiovizai.com
                       </a>
                     </div>
                   </div>
@@ -189,7 +166,7 @@ export default function ContactPage() {
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-1">Office</h3>
                       <p className="text-sm text-gray-600">
-                        Bonita Springs, FL<br />
+                        Fort Myers, FL<br />
                         United States
                       </p>
                     </div>
@@ -220,8 +197,77 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* FAQ Quick Links */}
+      {/* How We Handle Your Messages */}
       <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                How We Handle Your Messages
+              </h2>
+              <p className="text-lg text-gray-600">
+                Our intelligent support system ensures you get the fastest, most accurate response
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Step 1 - Bot */}
+              <Card className="border-2 border-blue-200">
+                <CardHeader className="text-center">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Bot className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <CardTitle className="text-xl">1. AI Bot</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <p className="text-gray-600 text-sm">
+                    Our AI bot instantly analyzes your message and provides immediate answers to common questions
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Step 2 - Javari */}
+              <Card className="border-2 border-purple-200">
+                <CardHeader className="text-center">
+                  <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <Sparkles className="w-8 h-8 text-purple-600" />
+                  </div>
+                  <CardTitle className="text-xl">2. Javari</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <p className="text-gray-600 text-sm">
+                    For complex questions, Javari (our master AI) provides detailed, personalized assistance
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Step 3 - Roy */}
+              <Card className="border-2 border-green-200">
+                <CardHeader className="text-center">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <User className="w-8 h-8 text-green-600" />
+                  </div>
+                  <CardTitle className="text-xl">3. Roy (If Needed)</CardTitle>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <p className="text-gray-600 text-sm">
+                    For specialized cases requiring human expertise, your message reaches Roy directly
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="mt-8 text-center">
+              <p className="text-sm text-gray-600">
+                This three-tier system ensures you get the fastest possible response while maintaining the highest quality support.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Quick Links */}
+      <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
@@ -288,8 +334,8 @@ export default function ContactPage() {
               We're Here to Help
             </h3>
             <p className="text-lg text-blue-100">
-              Our support team typically responds within 24 hours during business days. 
-              Pro and Professional members receive priority support.
+              Our AI support responds instantly, with human escalation available 24/7. 
+              Pro and Professional members receive priority routing to Roy when needed.
             </p>
           </div>
         </div>
