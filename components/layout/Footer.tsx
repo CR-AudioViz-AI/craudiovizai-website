@@ -14,7 +14,7 @@ export default function Footer() {
           <div className="lg:col-span-1">
             <h3 className="text-white font-bold text-lg mb-4">CR AudioViz AI</h3>
             <p className="text-sm text-gray-400 mb-4">
-              Empowering creators with AI-powered tools for apps, games, websites, and more.
+              Your Story. Our Design. Empowering creators with AI-powered tools.
             </p>
             <div className="flex space-x-4">
               <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" 
@@ -40,15 +40,16 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Product */}
+          {/* Navigation - Same as Header */}
           <div>
-            <h4 className="text-white font-semibold mb-4">Product</h4>
+            <h4 className="text-white font-semibold mb-4">Navigation</h4>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/features" className="hover:text-white transition-colors">Features</Link></li>
+              <li><Link href="/" className="hover:text-white transition-colors">Home</Link></li>
+              <li><Link href="/apps" className="hover:text-white transition-colors">Apps</Link></li>
+              <li><Link href="/games" className="hover:text-white transition-colors">Games</Link></li>
+              <li><Link href="/javari" className="hover:text-white transition-colors">Javari AI</Link></li>
+              <li><Link href="/craiverse" className="hover:text-white transition-colors">CRAIVerse</Link></li>
               <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-              <li><Link href="/marketplace" className="hover:text-white transition-colors">Marketplace</Link></li>
-              <li><Link href="/api-docs" className="hover:text-white transition-colors">API</Link></li>
-              <li><Link href="/status" className="hover:text-white transition-colors">System Status</Link></li>
             </ul>
           </div>
 
@@ -60,7 +61,9 @@ export default function Footer() {
               <li><Link href="/tutorials" className="hover:text-white transition-colors">Tutorials</Link></li>
               <li><Link href="/help" className="hover:text-white transition-colors">Help Center</Link></li>
               <li><Link href="/faq" className="hover:text-white transition-colors">FAQ</Link></li>
+              <li><Link href="/api-docs" className="hover:text-white transition-colors">API Documentation</Link></li>
               <li><Link href="/community" className="hover:text-white transition-colors">Community</Link></li>
+              <li><Link href="/status" className="hover:text-white transition-colors">System Status</Link></li>
             </ul>
           </div>
 
@@ -72,7 +75,8 @@ export default function Footer() {
               <li><Link href="/careers" className="hover:text-white transition-colors">Careers</Link></li>
               <li><Link href="/press" className="hover:text-white transition-colors">Press Kit</Link></li>
               <li><Link href="/partners" className="hover:text-white transition-colors">Partners</Link></li>
-              <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
+              <li><Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
+              <li><Link href="/marketplace" className="hover:text-white transition-colors">Marketplace</Link></li>
             </ul>
           </div>
 
@@ -83,8 +87,9 @@ export default function Footer() {
               <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
               <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
               <li><Link href="/cookies" className="hover:text-white transition-colors">Cookie Policy</Link></li>
-              <li><Link href="/dmca" className="hover:text-white transition-colors">DMCA</Link></li>
+              <li><Link href="/dmca" className="hover:text-white transition-colors">DMCA Policy</Link></li>
               <li><Link href="/licenses" className="hover:text-white transition-colors">Licenses</Link></li>
+              <li><Link href="/acceptable-use" className="hover:text-white transition-colors">Acceptable Use</Link></li>
             </ul>
           </div>
 
