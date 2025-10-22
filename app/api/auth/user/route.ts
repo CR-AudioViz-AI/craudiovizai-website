@@ -1,22 +1,26 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
 export async function GET() {
-  const supabase = createRouteHandlerClient({ cookies })
-  
-  const { data: { user }, error } = await supabase.auth.getUser()
+  const supabase = createClient()
 
-  if (error || !user) {
-    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-  }
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-  // Get user profile
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
-
-  return NextResponse.json({ user, profile })
+  return NextResponse.json({ user })
 }
+```
+
+---
+
+## 🔧 **VERCEL ENVIRONMENT VARIABLES**
+
+You need to add these to your Vercel project settings:
+
+1. Go to Vercel Dashboard → Your Project → Settings → Environment Variables
+2. Add these variables:
+```
+NEXT_PUBLIC_SUPABASE_URL = https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY = your-anon-key-here
+SUPABASE_SERVICE_ROLE_KEY = your-service-role-key-here
