@@ -26,21 +26,21 @@ export default function Header() {
   const router = useRouter();
   const supabase = createClient();
 
-  useEffect(() => {
-    // Fetch navigation links from database
-    const fetchNavLinks = async () => {
-      const { data } = await supabase
-        .from('navigation_links')
-        .select('id, label, href, is_visible, display_order')
-        .eq('category', 'header')
-        .eq('is_visible', true)
-        .order('display_order');
-      
-      if (data) {
-        setNavLinks(data);
-      }
-    };
+  // Fetch navigation links
+  const fetchNavLinks = async () => {
+    const { data } = await supabase
+      .from('navigation_links')
+      .select('id, label, href, is_visible, display_order')
+      .eq('category', 'header')
+      .eq('is_visible', true)
+      .order('display_order');
+    
+    if (data) {
+      setNavLinks(data);
+    }
+  };
 
+  useEffect(() => {
     fetchNavLinks();
 
     // Check current user and admin status
@@ -67,7 +67,7 @@ export default function Header() {
     checkUser();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
@@ -83,7 +83,28 @@ export default function Header() {
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Listen for navigation changes in real-time
+    const navChannel = supabase
+      .channel('navigation-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'navigation_links',
+          filter: 'category=eq.header'
+        },
+        () => {
+          // Refetch navigation links when changes occur
+          fetchNavLinks();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      authSubscription.unsubscribe();
+      navChannel.unsubscribe();
+    };
   }, []);
 
   const handleLogout = async () => {
@@ -91,11 +112,9 @@ export default function Header() {
       await supabase.auth.signOut();
       setUser(null);
       setIsAdmin(false);
-      // Force a hard reload to clear all state
       window.location.href = '/';
     } catch (error) {
       console.error('Logout error:', error);
-      // Still redirect even if there's an error
       window.location.href = '/';
     }
   };
@@ -149,7 +168,6 @@ export default function Header() {
             {!loading && (
               <>
                 {user ? (
-                  // Logged In State
                   <>
                     {isAdmin && (
                       <Link href="/admin">
@@ -171,7 +189,6 @@ export default function Header() {
                     </Button>
                   </>
                 ) : (
-                  // Logged Out State
                   <>
                     <Link href="/login">
                       <Button variant="ghost">Log In</Button>
@@ -222,7 +239,6 @@ export default function Header() {
                 {!loading && (
                   <>
                     {user ? (
-                      // Logged In Mobile State
                       <>
                         <div className="px-4 py-2 text-sm text-gray-600">
                           {user.email}
@@ -244,7 +260,6 @@ export default function Header() {
                         </Button>
                       </>
                     ) : (
-                      // Logged Out Mobile State
                       <>
                         <Link href="/login" className="block">
                           <Button variant="outline" className="w-full">Log In</Button>
