@@ -180,3 +180,105 @@ export default function AboutPage() {
               <Card className="border-2">
                 <CardHeader>
                   <Rocket className="w-12 h-12 text-blue-600 mb-3" />
+                  <CardTitle>AI-First Approach</CardTitle>
+                </CardHeader>
+                <CardContent className="text-gray-600">
+                  <p>
+                    We don't just add AI as a feature—our entire platform is built around intelligent 
+                    automation. Javari, our master AI builder, can create anything you imagine without 
+                    requiring you to write a single line of code.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2">
+                <CardHeader>
+                  <Globe className="w-12 h-12 text-green-600 mb-3" />
+                  <CardTitle>Social Impact Focus</CardTitle>
+                </CardHeader>
+                <CardContent className="text-gray-600">
+                  <p>
+                    CRAIverse isn't just a product—it's our commitment to using technology for good. 
+                    From supporting first responders to helping small businesses thrive, social impact 
+                    is woven into everything we do.
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-2">
+                <CardHeader>
+                  <Heart className="w-12 h-12 text-purple-600 mb-3" />
+                  <CardTitle>Community-First</CardTitle>
+                </CardHeader>
+                <CardContent className="text-gray-600">
+                  <p>
+                    We believe in fair revenue sharing (70/30 split for creators), supporting user-generated 
+                    content, and building a platform where everyone can succeed together. Your success is our success.
+                  </p>
+                </CardContent>
+              </Card>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* By The Numbers */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-12">
+              By The Numbers
+            </h2>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              <div className="text-center">
+                <div className="text-5xl font-bold text-blue-600 mb-2">60+</div>
+                <div className="text-gray-600">Creative Tools</div>
+              </div>
+              <div className="text-center">
+                <div className="text-5xl font-bold text-green-600 mb-2">1,200+</div>
+                <div className="text-gray-600">Games</div>
+              </div>
+              <div className="text-center">
+                <div className="text-5xl font-bold text-purple-600 mb-2">20+</div>
+                <div className="text-gray-600">Social Impact Modules</div>
+              </div>
+              <div className="text-center">
+                <div className="text-5xl font-bold text-orange-600 mb-2">70%</div>
+                <div className="text-gray-600">Creator Revenue Share</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 bg-gradient-to-br from-blue-600 to-purple-600 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Join Us on Our Mission
+          </h2>
+          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+            Whether you're a creator, business owner, or part of a community organization, 
+            we'd love to have you on this journey with us.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-6 text-lg">
+              Get Started Free
+            </Button>
+            <Link href="/contact">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-2 border-white text-white hover:bg-white/10 px-8 py-6 text-lg"
+              >
+                Contact Us
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}
