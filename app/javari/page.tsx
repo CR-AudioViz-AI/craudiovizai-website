@@ -3,7 +3,6 @@
 export default function JavariPage() {
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
@@ -13,7 +12,6 @@ export default function JavariPage() {
         </div>
       </header>
 
-      {/* Hero */}
       <section className="bg-gradient-to-br from-green-600 to-teal-700 text-white py-20">
         <div className="container mx-auto px-4 text-center">
           <div className="text-6xl mb-6">🤖</div>
@@ -23,16 +21,12 @@ export default function JavariPage() {
           <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto">
             Your AI master builder. Just tell Javari what you want to create, and watch it come to life.
           </p>
-          
-            href="/signup"
-            className="bg-white text-green-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition inline-block"
-          >
+          <a href="/signup" className="bg-white text-green-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition inline-block">
             Start Building with Javari
           </a>
         </div>
       </section>
 
-      {/* What Javari Does */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-12">What Can Javari Build?</h2>
@@ -72,7 +66,6 @@ export default function JavariPage() {
         </div>
       </section>
 
-      {/* How It Works */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-12">How Javari Works</h2>
@@ -109,7 +102,6 @@ export default function JavariPage() {
         </div>
       </section>
 
-      {/* Features */}
       <section className="py-20 bg-green-50">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-12">Why Javari is Different</h2>
@@ -146,17 +138,13 @@ export default function JavariPage() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="py-20 bg-green-600 text-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold mb-6">Ready to Build with Javari?</h2>
           <p className="text-xl mb-8 max-w-2xl mx-auto">
             Start creating professional websites, apps, and games today. No coding skills required.
           </p>
-          
-            href="/signup"
-            className="bg-white text-green-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition inline-block"
-          >
+          <a href="/signup" className="bg-white text-green-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition inline-block">
             Start Building Free
           </a>
         </div>
