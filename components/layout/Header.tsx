@@ -1,15 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const pathname = usePathname();
+  const router = useRouter();
+  const supabase = createClient();
 
   const navLinks = [
     { href: '/', label: 'Home' },
@@ -19,6 +24,30 @@ export default function Header() {
     { href: '/craiverse', label: 'CRAIVerse' },
     { href: '/pricing', label: 'Pricing' },
   ];
+
+  useEffect(() => {
+    // Check current user
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      setLoading(false);
+    };
+
+    checkUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+    router.refresh();
+  };
 
   const isActive = (href: string) => {
     if (href === '/') {
@@ -66,14 +95,37 @@ export default function Header() {
 
           {/* CTA Buttons */}
           <div className="hidden lg:flex items-center space-x-4">
-            <Link href="/login">
-              <Button variant="ghost">Log In</Button>
-            </Link>
-            <Link href="/signup">
-              <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
-                Get Started Free
-              </Button>
-            </Link>
+            {!loading && (
+              <>
+                {user ? (
+                  // Logged In State
+                  <>
+                    <Button variant="ghost" className="flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      <span>{user.email}</span>
+                    </Button>
+                    <Button 
+                      onClick={handleLogout}
+                      variant="outline"
+                    >
+                      Log Out
+                    </Button>
+                  </>
+                ) : (
+                  // Logged Out State
+                  <>
+                    <Link href="/login">
+                      <Button variant="ghost">Log In</Button>
+                    </Link>
+                    <Link href="/signup">
+                      <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                        Get Started Free
+                      </Button>
+                    </Link>
+                  </>
+                )}
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -108,14 +160,37 @@ export default function Header() {
                 </Link>
               ))}
               <div className="pt-4 border-t border-gray-200 space-y-2">
-                <Link href="/login" className="block">
-                  <Button variant="outline" className="w-full">Log In</Button>
-                </Link>
-                <Link href="/signup" className="block">
-                  <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600">
-                    Get Started Free
-                  </Button>
-                </Link>
+                {!loading && (
+                  <>
+                    {user ? (
+                      // Logged In Mobile State
+                      <>
+                        <div className="px-4 py-2 text-sm text-gray-600">
+                          {user.email}
+                        </div>
+                        <Button 
+                          onClick={handleLogout}
+                          variant="outline"
+                          className="w-full"
+                        >
+                          Log Out
+                        </Button>
+                      </>
+                    ) : (
+                      // Logged Out Mobile State
+                      <>
+                        <Link href="/login" className="block">
+                          <Button variant="outline" className="w-full">Log In</Button>
+                        </Link>
+                        <Link href="/signup" className="block">
+                          <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600">
+                            Get Started Free
+                          </Button>
+                        </Link>
+                      </>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           </div>
