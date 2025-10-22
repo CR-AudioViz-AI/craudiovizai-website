@@ -5,12 +5,13 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Menu, X, User } from 'lucide-react';
+import { Menu, X, User, Shield } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const pathname = usePathname();
   const router = useRouter();
@@ -26,18 +27,44 @@ export default function Header() {
   ];
 
   useEffect(() => {
-    // Check current user
+    // Check current user and admin status
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
+
+      if (user) {
+        // Check if user is admin
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', user.id)
+          .single();
+        
+        setIsAdmin(profile?.is_admin || false);
+      } else {
+        setIsAdmin(false);
+      }
+
       setLoading(false);
     };
 
     checkUser();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', session.user.id)
+          .single();
+        
+        setIsAdmin(profile?.is_admin || false);
+      } else {
+        setIsAdmin(false);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -45,6 +72,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    setIsAdmin(false);
     router.push('/');
     router.refresh();
   };
@@ -100,6 +128,14 @@ export default function Header() {
                 {user ? (
                   // Logged In State
                   <>
+                    {isAdmin && (
+                      <Link href="/admin">
+                        <Button variant="outline" className="flex items-center gap-2">
+                          <Shield className="w-4 h-4" />
+                          Admin Dashboard
+                        </Button>
+                      </Link>
+                    )}
                     <Button variant="ghost" className="flex items-center gap-2">
                       <User className="w-4 h-4" />
                       <span>{user.email}</span>
@@ -168,6 +204,14 @@ export default function Header() {
                         <div className="px-4 py-2 text-sm text-gray-600">
                           {user.email}
                         </div>
+                        {isAdmin && (
+                          <Link href="/admin" className="block">
+                            <Button variant="outline" className="w-full flex items-center justify-center gap-2">
+                              <Shield className="w-4 h-4" />
+                              Admin Dashboard
+                            </Button>
+                          </Link>
+                        )}
                         <Button 
                           onClick={handleLogout}
                           variant="outline"
