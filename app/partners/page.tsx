@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Handshake, Star, TrendingUp, Users, Zap, CheckCircle } from 'lucide-react';
+import { Star, TrendingUp, Users, Zap, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function PartnersPage() {
@@ -10,7 +10,7 @@ export default function PartnersPage() {
       <section className="bg-gradient-to-br from-teal-600 via-cyan-600 to-blue-600 text-white py-20">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <Handshake className="w-16 h-16 mx-auto mb-6" />
+            <Users className="w-16 h-16 mx-auto mb-6" />
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
               Partner Program
             </h1>
