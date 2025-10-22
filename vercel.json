@@ -1,3 +1,7 @@
 {
-  "redirects": []
+  "git": {
+    "deploymentEnabled": {
+      "main": false
+    }
+  }
 }
