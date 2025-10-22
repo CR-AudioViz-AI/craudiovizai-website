@@ -99,9 +99,9 @@ CREATE TABLE IF NOT EXISTS marketplace_items (
 -- ==========================================
 CREATE TABLE IF NOT EXISTS marketplace_purchases (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  buyer_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  seller_id UUID REFERENCES users(id) ON DELETE SET NULL,
-  item_id UUID REFERENCES marketplace_items(id) ON DELETE CASCADE,
+  buyer_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  seller_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  item_id UUID NOT NULL REFERENCES marketplace_items(id) ON DELETE CASCADE,
   amount DECIMAL(10, 2) NOT NULL,
   commission DECIMAL(10, 2) NOT NULL,
   seller_earnings DECIMAL(10, 2) NOT NULL,
@@ -167,49 +167,49 @@ ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
 -- Users can read their own data
-CREATE POLICY users_select_own ON users FOR SELECT USING (auth.uid() = id);
-CREATE POLICY users_update_own ON users FOR UPDATE USING (auth.uid() = id);
+CREATE POLICY IF NOT EXISTS users_select_own ON users FOR SELECT USING (auth.uid() = id);
+CREATE POLICY IF NOT EXISTS users_update_own ON users FOR UPDATE USING (auth.uid() = id);
 
 -- Subscriptions policies
-CREATE POLICY subscriptions_select_own ON subscriptions FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY subscriptions_insert_own ON subscriptions FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY subscriptions_update_own ON subscriptions FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS subscriptions_select_own ON subscriptions FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS subscriptions_insert_own ON subscriptions FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS subscriptions_update_own ON subscriptions FOR UPDATE USING (auth.uid() = user_id);
 
 -- Credits policies
-CREATE POLICY credits_select_own ON credits FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY credits_insert_own ON credits FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY credits_update_own ON credits FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS credits_select_own ON credits FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS credits_insert_own ON credits FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS credits_update_own ON credits FOR UPDATE USING (auth.uid() = user_id);
 
 -- Projects policies
-CREATE POLICY projects_select_own ON projects FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY projects_insert_own ON projects FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY projects_update_own ON projects FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY projects_delete_own ON projects FOR DELETE USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS projects_select_own ON projects FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS projects_insert_own ON projects FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS projects_update_own ON projects FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS projects_delete_own ON projects FOR DELETE USING (auth.uid() = user_id);
 
 -- Transactions policies
-CREATE POLICY transactions_select_own ON transactions FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS transactions_select_own ON transactions FOR SELECT USING (auth.uid() = user_id);
 
 -- Marketplace items policies
-CREATE POLICY marketplace_items_select_all ON marketplace_items FOR SELECT USING (status = 'approved');
-CREATE POLICY marketplace_items_select_own ON marketplace_items FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY marketplace_items_insert_own ON marketplace_items FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY marketplace_items_update_own ON marketplace_items FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY marketplace_items_delete_own ON marketplace_items FOR DELETE USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS marketplace_items_select_all ON marketplace_items FOR SELECT USING (status = 'approved');
+CREATE POLICY IF NOT EXISTS marketplace_items_select_own ON marketplace_items FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS marketplace_items_insert_own ON marketplace_items FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS marketplace_items_update_own ON marketplace_items FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS marketplace_items_delete_own ON marketplace_items FOR DELETE USING (auth.uid() = user_id);
 
 -- Marketplace purchases policies
-CREATE POLICY marketplace_purchases_select_own ON marketplace_purchases FOR SELECT USING (auth.uid() = buyer_id OR auth.uid() = seller_id);
-CREATE POLICY marketplace_purchases_insert_own ON marketplace_purchases FOR INSERT WITH CHECK (auth.uid() = buyer_id);
+CREATE POLICY IF NOT EXISTS marketplace_purchases_select_own ON marketplace_purchases FOR SELECT USING (auth.uid() = buyer_id OR auth.uid() = seller_id);
+CREATE POLICY IF NOT EXISTS marketplace_purchases_insert_own ON marketplace_purchases FOR INSERT WITH CHECK (auth.uid() = buyer_id);
 
 -- Reviews policies
-CREATE POLICY reviews_select_all ON reviews FOR SELECT USING (true);
-CREATE POLICY reviews_insert_own ON reviews FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY reviews_update_own ON reviews FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY reviews_delete_own ON reviews FOR DELETE USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS reviews_select_all ON reviews FOR SELECT USING (true);
+CREATE POLICY IF NOT EXISTS reviews_insert_own ON reviews FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS reviews_update_own ON reviews FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS reviews_delete_own ON reviews FOR DELETE USING (auth.uid() = user_id);
 
 -- Notifications policies
-CREATE POLICY notifications_select_own ON notifications FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY notifications_update_own ON notifications FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY notifications_delete_own ON notifications FOR DELETE USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS notifications_select_own ON notifications FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS notifications_update_own ON notifications FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY IF NOT EXISTS notifications_delete_own ON notifications FOR DELETE USING (auth.uid() = user_id);
 
 -- ==========================================
 -- FUNCTIONS
@@ -225,9 +225,20 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Apply updated_at triggers
+DROP TRIGGER IF EXISTS update_users_updated_at ON users;
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_subscriptions_updated_at ON subscriptions;
 CREATE TRIGGER update_subscriptions_updated_at BEFORE UPDATE ON subscriptions FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_credits_updated_at ON credits;
 CREATE TRIGGER update_credits_updated_at BEFORE UPDATE ON credits FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_projects_updated_at ON projects;
 CREATE TRIGGER update_projects_updated_at BEFORE UPDATE ON projects FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_marketplace_items_updated_at ON marketplace_items;
 CREATE TRIGGER update_marketplace_items_updated_at BEFORE UPDATE ON marketplace_items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_reviews_updated_at ON reviews;
 CREATE TRIGGER update_reviews_updated_at BEFORE UPDATE ON reviews FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
