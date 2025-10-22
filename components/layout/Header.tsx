@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -29,90 +29,29 @@ export default function Header() {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
             
-            {/* Products Dropdown */}
-            <div className="relative group">
-              <button className="flex items-center text-gray-700 hover:text-gray-900 transition-colors">
-                Products
-                <ChevronDown className="w-4 h-4 ml-1" />
-              </button>
-              <div className="absolute left-0 mt-2 w-64 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                <div className="py-2">
-                  <Link href="/features" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    All Features
-                  </Link>
-                  <Link href="/tools" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    60+ Creative Tools
-                  </Link>
-                  <Link href="/javari" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    Javari AI Assistant
-                  </Link>
-                  <Link href="/marketplace" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    Marketplace
-                  </Link>
-                  <Link href="/games" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    1200+ Games
-                  </Link>
-                </div>
-              </div>
-            </div>
+            <Link href="/" className="text-gray-700 hover:text-gray-900 transition-colors">
+              Home
+            </Link>
+
+            <Link href="/apps" className="text-gray-700 hover:text-gray-900 transition-colors">
+              Apps
+            </Link>
+
+            <Link href="/games" className="text-gray-700 hover:text-gray-900 transition-colors">
+              Games
+            </Link>
+
+            <Link href="/javari" className="text-gray-700 hover:text-gray-900 transition-colors">
+              Javari AI
+            </Link>
+
+            <Link href="/craiverse" className="text-gray-700 hover:text-gray-900 transition-colors">
+              CRAIVerse
+            </Link>
 
             <Link href="/pricing" className="text-gray-700 hover:text-gray-900 transition-colors">
               Pricing
             </Link>
-
-            {/* Resources Dropdown */}
-            <div className="relative group">
-              <button className="flex items-center text-gray-700 hover:text-gray-900 transition-colors">
-                Resources
-                <ChevronDown className="w-4 h-4 ml-1" />
-              </button>
-              <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                <div className="py-2">
-                  <Link href="/blog" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    Blog
-                  </Link>
-                  <Link href="/tutorials" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    Tutorials
-                  </Link>
-                  <Link href="/help" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    Help Center
-                  </Link>
-                  <Link href="/faq" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    FAQ
-                  </Link>
-                  <Link href="/api-docs" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    API Docs
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            {/* Company Dropdown */}
-            <div className="relative group">
-              <button className="flex items-center text-gray-700 hover:text-gray-900 transition-colors">
-                Company
-                <ChevronDown className="w-4 h-4 ml-1" />
-              </button>
-              <div className="absolute left-0 mt-2 w-48 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                <div className="py-2">
-                  <Link href="/about" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    About Us
-                  </Link>
-                  <Link href="/careers" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    Careers
-                  </Link>
-                  <Link href="/press" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    Press Kit
-                  </Link>
-                  <Link href="/partners" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    Partners
-                  </Link>
-                  <Link href="/contact" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                    Contact
-                  </Link>
-                </div>
-              </div>
-            </div>
 
           </div>
 
@@ -146,26 +85,23 @@ export default function Header() {
         {mobileMenuOpen && (
           <div className="lg:hidden py-4 border-t border-gray-200">
             <div className="space-y-4">
-              <Link href="/features" className="block text-gray-700 hover:text-gray-900">
-                Features
+              <Link href="/" className="block text-gray-700 hover:text-gray-900">
+                Home
+              </Link>
+              <Link href="/apps" className="block text-gray-700 hover:text-gray-900">
+                Apps
+              </Link>
+              <Link href="/games" className="block text-gray-700 hover:text-gray-900">
+                Games
+              </Link>
+              <Link href="/javari" className="block text-gray-700 hover:text-gray-900">
+                Javari AI
+              </Link>
+              <Link href="/craiverse" className="block text-gray-700 hover:text-gray-900">
+                CRAIVerse
               </Link>
               <Link href="/pricing" className="block text-gray-700 hover:text-gray-900">
                 Pricing
-              </Link>
-              <Link href="/marketplace" className="block text-gray-700 hover:text-gray-900">
-                Marketplace
-              </Link>
-              <Link href="/blog" className="block text-gray-700 hover:text-gray-900">
-                Blog
-              </Link>
-              <Link href="/help" className="block text-gray-700 hover:text-gray-900">
-                Help Center
-              </Link>
-              <Link href="/about" className="block text-gray-700 hover:text-gray-900">
-                About
-              </Link>
-              <Link href="/contact" className="block text-gray-700 hover:text-gray-900">
-                Contact
               </Link>
               <div className="pt-4 border-t border-gray-200 space-y-2">
                 <Link href="/login" className="block">
