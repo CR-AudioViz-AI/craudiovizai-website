@@ -1,25 +1,35 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-export async function POST(request: Request) {
-  const { email, password, fullName } = await request.json()
-  const supabase = createRouteHandlerClient({ cookies })
+export async function POST(request: NextRequest) {
+  const requestUrl = new URL(request.url)
+  const formData = await request.formData()
+  const email = String(formData.get('email'))
+  const password = String(formData.get('password'))
+  const supabase = createClient()
 
-  const { data, error } = await supabase.auth.signUp({
+  const { error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: {
-        full_name: fullName,
-      },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+      emailRedirectTo: `${requestUrl.origin}/api/auth/callback`,
     },
   })
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 })
+    return NextResponse.redirect(
+      `${requestUrl.origin}/signup?error=Could not create user`,
+      {
+        status: 301,
+      }
+    )
   }
 
-  return NextResponse.json({ user: data.user }, { status: 201 })
+  return NextResponse.redirect(
+    `${requestUrl.origin}/signup?message=Check email to continue sign in process`,
+    {
+      status: 301,
+    }
+  )
 }
