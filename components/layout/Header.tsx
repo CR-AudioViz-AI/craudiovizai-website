@@ -12,17 +12,17 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
       <nav className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <Image 
               src="/logo.png" 
               alt="CR AudioViz AI - Your Story. Our Design." 
-              width={180}
-              height={60}
+              width={360}
+              height={120}
               priority
-              className="h-12 w-auto"
+              className="h-16 w-auto"
             />
           </Link>
 
@@ -107,7 +107,7 @@ export default function Header() {
                   <Link href="/partners" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     Partners
                   </Link>
-                  <Link href="/contact" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gary-100">
+                  <Link href="/contact" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                     Contact
                   </Link>
                 </div>
