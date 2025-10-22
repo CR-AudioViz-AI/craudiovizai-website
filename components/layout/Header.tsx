@@ -8,25 +8,41 @@ import { Button } from '@/components/ui/button';
 import { Menu, X, User, Shield } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
+interface NavigationLink {
+  id: string
+  label: string
+  href: string
+  is_visible: boolean
+  display_order: number
+}
+
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [navLinks, setNavLinks] = useState<NavigationLink[]>([]);
   const pathname = usePathname();
   const router = useRouter();
   const supabase = createClient();
 
-  const navLinks = [
-    { href: '/', label: 'Home' },
-    { href: '/apps', label: 'Apps' },
-    { href: '/games', label: 'Games' },
-    { href: '/javari', label: 'Javari AI' },
-    { href: '/craiverse', label: 'CRAIVerse' },
-    { href: '/pricing', label: 'Pricing' },
-  ];
-
   useEffect(() => {
+    // Fetch navigation links from database
+    const fetchNavLinks = async () => {
+      const { data } = await supabase
+        .from('navigation_links')
+        .select('id, label, href, is_visible, display_order')
+        .eq('category', 'header')
+        .eq('is_visible', true)
+        .order('display_order');
+      
+      if (data) {
+        setNavLinks(data);
+      }
+    };
+
+    fetchNavLinks();
+
     // Check current user and admin status
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -112,7 +128,7 @@ export default function Header() {
           <div className="hidden lg:flex items-center space-x-8">
             {navLinks.map((link) => (
               <Link
-                key={link.href}
+                key={link.id}
                 href={link.href}
                 className={`transition-colors relative ${
                   isActive(link.href)
@@ -191,7 +207,7 @@ export default function Header() {
             <div className="space-y-4">
               {navLinks.map((link) => (
                 <Link
-                  key={link.href}
+                  key={link.id}
                   href={link.href}
                   className={`block transition-colors ${
                     isActive(link.href)
