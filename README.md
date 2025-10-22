@@ -18,7 +18,7 @@ A unified AI-powered platform for creators, businesses, and communities.
 - **Backend**: Supabase (PostgreSQL)
 - **Payments**: Stripe + PayPal
 - **AI**: OpenAI GPT-4
-- **Hosting**: Vercel 
+- **Hosting**: Vercel
 
 ## Getting Started
 
