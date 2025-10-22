@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { 
   Heart, Shield, Users, Church, PawPrint, TreePine, 
-  Store, Building2, GraduationCap, UserHeart, MapPin, 
+  Store, Building2, GraduationCap, MapPin, 
   DollarSign, Server, TrendingUp, Sparkles, FileText
 } from 'lucide-react';
 
@@ -167,21 +167,16 @@ export default function CRAIversePage() {
               <CardHeader>
                 <PawPrint className="w-12 h-12 text-green-600 mb-3" />
                 <CardTitle className="text-xl">Animal Rescue Network</CardTitle>
-                <CardDescription>
-                  <span className="inline-block bg-green-100 text-green-700 text-xs font-semibold px-2 py-1 rounded">
-                    $50M+ Grants Available
-                  </span>
-                </CardDescription>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 mb-4">
-                  Shelter management, foster coordination, adoption matching, and fundraising tools for animal welfare.
+                  Connect shelters, rescues, and adopters. Manage adoptions, volunteers, and donations in one place.
                 </p>
                 <ul className="space-y-2 text-sm text-gray-600">
-                  <li>✓ Shelter inventory system</li>
-                  <li>✓ Foster network matching</li>
-                  <li>✓ Adoption applications</li>
-                  <li>✓ Fundraising campaigns</li>
+                  <li>✓ Adoption management</li>
+                  <li>✓ Volunteer coordination</li>
+                  <li>✓ Donation tracking</li>
+                  <li>✓ Pet profiles & matching</li>
                 </ul>
               </CardContent>
             </Card>
@@ -254,7 +249,7 @@ export default function CRAIversePage() {
               { name: 'Memorial Walls', icon: <TreePine className="w-6 h-6" />, color: 'indigo' },
               { name: 'Small Business', icon: <Store className="w-6 h-6" />, color: 'orange' },
               { name: 'Collector Communities', icon: <Users className="w-6 h-6" />, color: 'pink' },
-              { name: 'Teen Safe Social', icon: <UserHeart className="w-6 h-6" />, color: 'cyan' },
+              { name: 'Teen Safe Social', icon: <Heart className="w-6 h-6" />, color: 'cyan' },
               { name: 'Senior Connection', icon: <Heart className="w-6 h-6" />, color: 'rose' },
               { name: 'OnlyAvatars', icon: <Sparkles className="w-6 h-6" />, color: 'violet' },
               { name: 'Geographic Targeting', icon: <MapPin className="w-6 h-6" />, color: 'red' },
