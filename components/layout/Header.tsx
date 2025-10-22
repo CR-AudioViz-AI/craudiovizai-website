@@ -71,10 +71,17 @@ export default function Header() {
   }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    setIsAdmin(false);
-    router.push('/');
-    router.refresh();
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setIsAdmin(false);
+      // Force a hard reload to clear all state
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still redirect even if there's an error
+      window.location.href = '/';
+    }
   };
 
   const isActive = (href: string) => {
