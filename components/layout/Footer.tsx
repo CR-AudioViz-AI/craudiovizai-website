@@ -1,8 +1,47 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Facebook, Twitter, Instagram, Linkedin, Youtube, Mail } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
+
+interface NavigationLink {
+  id: string
+  label: string
+  href: string
+  category: string
+  is_visible: boolean
+  display_order: number
+}
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const [navigationLinks, setNavigationLinks] = useState<NavigationLink[]>([]);
+  const [resourceLinks, setResourceLinks] = useState<NavigationLink[]>([]);
+  const [companyLinks, setCompanyLinks] = useState<NavigationLink[]>([]);
+  const [legalLinks, setLegalLinks] = useState<NavigationLink[]>([]);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const fetchLinks = async () => {
+      // Fetch all footer links
+      const { data } = await supabase
+        .from('navigation_links')
+        .select('*')
+        .in('category', ['footer-navigation', 'footer-resources', 'footer-company', 'footer-legal'])
+        .eq('is_visible', true)
+        .order('display_order');
+
+      if (data) {
+        setNavigationLinks(data.filter(link => link.category === 'footer-navigation'));
+        setResourceLinks(data.filter(link => link.category === 'footer-resources'));
+        setCompanyLinks(data.filter(link => link.category === 'footer-company'));
+        setLegalLinks(data.filter(link => link.category === 'footer-legal'));
+      }
+    };
+
+    fetchLinks();
+  }, []);
 
   return (
     <footer className="bg-gray-900 text-gray-300">
@@ -41,57 +80,68 @@ export default function Footer() {
           </div>
 
           {/* Navigation - Same as Header */}
-          <div>
-            <h4 className="text-white font-semibold mb-4">Navigation</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/" className="hover:text-white transition-colors">Home</Link></li>
-              <li><Link href="/apps" className="hover:text-white transition-colors">Apps</Link></li>
-              <li><Link href="/games" className="hover:text-white transition-colors">Games</Link></li>
-              <li><Link href="/javari" className="hover:text-white transition-colors">Javari AI</Link></li>
-              <li><Link href="/craiverse" className="hover:text-white transition-colors">CRAIVerse</Link></li>
-              <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-            </ul>
-          </div>
+          {navigationLinks.length > 0 && (
+            <div>
+              <h4 className="text-white font-semibold mb-4">Navigation</h4>
+              <ul className="space-y-2 text-sm">
+                {navigationLinks.map((link) => (
+                  <li key={link.id}>
+                    <Link href={link.href} className="hover:text-white transition-colors">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Resources */}
-          <div>
-            <h4 className="text-white font-semibold mb-4">Resources</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
-              <li><Link href="/tutorials" className="hover:text-white transition-colors">Tutorials</Link></li>
-              <li><Link href="/help" className="hover:text-white transition-colors">Help Center</Link></li>
-              <li><Link href="/faq" className="hover:text-white transition-colors">FAQ</Link></li>
-              <li><Link href="/api-docs" className="hover:text-white transition-colors">API Documentation</Link></li>
-              <li><Link href="/community" className="hover:text-white transition-colors">Community</Link></li>
-              <li><Link href="/status" className="hover:text-white transition-colors">System Status</Link></li>
-            </ul>
-          </div>
+          {resourceLinks.length > 0 && (
+            <div>
+              <h4 className="text-white font-semibold mb-4">Resources</h4>
+              <ul className="space-y-2 text-sm">
+                {resourceLinks.map((link) => (
+                  <li key={link.id}>
+                    <Link href={link.href} className="hover:text-white transition-colors">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Company */}
-          <div>
-            <h4 className="text-white font-semibold mb-4">Company</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/about" className="hover:text-white transition-colors">About Us</Link></li>
-              <li><Link href="/careers" className="hover:text-white transition-colors">Careers</Link></li>
-              <li><Link href="/press" className="hover:text-white transition-colors">Press Kit</Link></li>
-              <li><Link href="/partners" className="hover:text-white transition-colors">Partners</Link></li>
-              <li><Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
-              <li><Link href="/marketplace" className="hover:text-white transition-colors">Marketplace</Link></li>
-            </ul>
-          </div>
+          {companyLinks.length > 0 && (
+            <div>
+              <h4 className="text-white font-semibold mb-4">Company</h4>
+              <ul className="space-y-2 text-sm">
+                {companyLinks.map((link) => (
+                  <li key={link.id}>
+                    <Link href={link.href} className="hover:text-white transition-colors">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Legal */}
-          <div>
-            <h4 className="text-white font-semibold mb-4">Legal</h4>
-            <ul className="space-y-2 text-sm">
-              <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
-              <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
-              <li><Link href="/cookies" className="hover:text-white transition-colors">Cookie Policy</Link></li>
-              <li><Link href="/dmca" className="hover:text-white transition-colors">DMCA Policy</Link></li>
-              <li><Link href="/licenses" className="hover:text-white transition-colors">Licenses</Link></li>
-              <li><Link href="/acceptable-use" className="hover:text-white transition-colors">Acceptable Use</Link></li>
-            </ul>
-          </div>
+          {legalLinks.length > 0 && (
+            <div>
+              <h4 className="text-white font-semibold mb-4">Legal</h4>
+              <ul className="space-y-2 text-sm">
+                {legalLinks.map((link) => (
+                  <li key={link.id}>
+                    <Link href={link.href} className="hover:text-white transition-colors">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
         </div>
       </div>
