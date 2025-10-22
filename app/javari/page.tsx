@@ -3,15 +3,26 @@
 export default function JavariPage() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b">
+      {/* Header */}
+      <header className="bg-white border-b sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex justify-between items-center">
             <a href="/" className="text-2xl font-bold text-blue-600">CR AudioViz AI</a>
-            <a href="/" className="text-gray-600 hover:text-blue-600">← Back to Home</a>
+            <nav className="hidden md:flex gap-6">
+              <a href="/apps" className="text-gray-600 hover:text-blue-600">Apps</a>
+              <a href="/games" className="text-gray-600 hover:text-blue-600">Games</a>
+              <a href="/craiverse" className="text-gray-600 hover:text-blue-600">CRAIverse</a>
+              <a href="/pricing" className="text-gray-600 hover:text-blue-600">Pricing</a>
+            </nav>
+            <div className="flex gap-3">
+              <a href="/login" className="text-gray-600 hover:text-blue-600">Login</a>
+              <a href="/signup" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">Sign Up</a>
+            </div>
           </div>
         </div>
       </header>
 
+      {/* Hero */}
       <section className="bg-gradient-to-br from-green-600 to-teal-700 text-white py-20">
         <div className="container mx-auto px-4 text-center">
           <div className="text-6xl mb-6">🤖</div>
@@ -27,6 +38,7 @@ export default function JavariPage() {
         </div>
       </section>
 
+      {/* What Javari Does */}
       <section className="py-20">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-12">What Can Javari Build?</h2>
@@ -66,6 +78,7 @@ export default function JavariPage() {
         </div>
       </section>
 
+      {/* How It Works */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-12">How Javari Works</h2>
@@ -102,6 +115,7 @@ export default function JavariPage() {
         </div>
       </section>
 
+      {/* Features */}
       <section className="py-20 bg-green-50">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-bold text-center mb-12">Why Javari is Different</h2>
@@ -138,6 +152,7 @@ export default function JavariPage() {
         </div>
       </section>
 
+      {/* CTA */}
       <section className="py-20 bg-green-600 text-white">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold mb-6">Ready to Build with Javari?</h2>
@@ -149,6 +164,44 @@ export default function JavariPage() {
           </a>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-8">
+            <div>
+              <h3 className="text-xl font-bold mb-4">CR AudioViz AI</h3>
+              <p className="text-gray-400">Your story. Our design. Build the future with AI.</p>
+            </div>
+            <div>
+              <h4 className="font-bold mb-4">Product</h4>
+              <ul className="space-y-2">
+                <li><a href="/apps" className="text-gray-400 hover:text-white">Apps</a></li>
+                <li><a href="/games" className="text-gray-400 hover:text-white">Games</a></li>
+                <li><a href="/craiverse" className="text-gray-400 hover:text-white">CRAIverse</a></li>
+                <li><a href="/pricing" className="text-gray-400 hover:text-white">Pricing</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold mb-4">Company</h4>
+              <ul className="space-y-2">
+                <li><a href="/about" className="text-gray-400 hover:text-white">About</a></li>
+                <li><a href="/contact" className="text-gray-400 hover:text-white">Contact</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold mb-4">Legal</h4>
+              <ul className="space-y-2">
+                <li><a href="/privacy" className="text-gray-400 hover:text-white">Privacy</a></li>
+                <li><a href="/terms" className="text-gray-400 hover:text-white">Terms</a></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+            <p>&copy; 2025 CR AudioViz AI. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
