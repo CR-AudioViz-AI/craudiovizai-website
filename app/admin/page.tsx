@@ -7,9 +7,19 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
+interface NavigationLink {
+  id: string
+  link_key: string
+  label: string
+  href: string
+  category: string
+  is_visible: boolean
+  display_order: number
+}
+
 export default function CompleteAdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview')
-  const [navigationLinks, setNavigationLinks] = useState<any[]>([])
+  const [navigationLinks, setNavigationLinks] = useState<NavigationLink[]>([])
   const [loading, setLoading] = useState(false)
   const supabase = createClient()
 
@@ -38,7 +48,7 @@ export default function CompleteAdminDashboard() {
       .order('display_order')
     
     if (data) {
-      setNavigationLinks(data)
+      setNavigationLinks(data as NavigationLink[])
     }
     setLoading(false)
   }
@@ -63,7 +73,7 @@ export default function CompleteAdminDashboard() {
     }
     acc[link.category].push(link)
     return acc
-  }, {} as Record<string, any[]>)
+  }, {} as Record<string, NavigationLink[]>)
 
   const categoryLabels: Record<string, string> = {
     'header': 'Header Navigation',
