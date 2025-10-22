@@ -24,21 +24,17 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  // Handle the event
   switch (event.type) {
     case 'checkout.session.completed':
       const session = event.data.object as Stripe.Checkout.Session
-      // Handle successful payment
       console.log('Payment successful:', session.id)
       break
     case 'customer.subscription.updated':
       const subscription = event.data.object as Stripe.Subscription
-      // Handle subscription update
       console.log('Subscription updated:', subscription.id)
       break
     case 'customer.subscription.deleted':
       const deletedSubscription = event.data.object as Stripe.Subscription
-      // Handle subscription cancellation
       console.log('Subscription cancelled:', deletedSubscription.id)
       break
     default:
@@ -47,15 +43,3 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ received: true })
 }
-```
-
----
-
-## 🔧 **ADD THESE TO VERCEL ENVIRONMENT VARIABLES:**
-
-Go to Vercel Dashboard → Settings → Environment Variables and add:
-```
-OPENAI_API_KEY = your-openai-key-here
-STRIPE_SECRET_KEY = your-stripe-secret-key-here
-STRIPE_WEBHOOK_SECRET = your-stripe-webhook-secret-here
-NEXT_PUBLIC_URL = https://craudiovizai.com
