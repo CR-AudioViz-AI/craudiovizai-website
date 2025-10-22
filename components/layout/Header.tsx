@@ -3,11 +3,29 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Menu, X } from 'lucide-react';
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  const navLinks = [
+    { href: '/', label: 'Home' },
+    { href: '/apps', label: 'Apps' },
+    { href: '/games', label: 'Games' },
+    { href: '/javari', label: 'Javari AI' },
+    { href: '/craiverse', label: 'CRAIVerse' },
+    { href: '/pricing', label: 'Pricing' },
+  ];
+
+  const isActive = (href: string) => {
+    if (href === '/') {
+      return pathname === '/';
+    }
+    return pathname.startsWith(href);
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
@@ -28,31 +46,22 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
-            
-            <Link href="/" className="text-gray-700 hover:text-gray-900 transition-colors">
-              Home
-            </Link>
-
-            <Link href="/apps" className="text-gray-700 hover:text-gray-900 transition-colors">
-              Apps
-            </Link>
-
-            <Link href="/games" className="text-gray-700 hover:text-gray-900 transition-colors">
-              Games
-            </Link>
-
-            <Link href="/javari" className="text-gray-700 hover:text-gray-900 transition-colors">
-              Javari AI
-            </Link>
-
-            <Link href="/craiverse" className="text-gray-700 hover:text-gray-900 transition-colors">
-              CRAIVerse
-            </Link>
-
-            <Link href="/pricing" className="text-gray-700 hover:text-gray-900 transition-colors">
-              Pricing
-            </Link>
-
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`transition-colors relative ${
+                  isActive(link.href)
+                    ? 'text-purple-600 font-semibold'
+                    : 'text-gray-700 hover:text-gray-900'
+                }`}
+              >
+                {link.label}
+                {isActive(link.href) && (
+                  <span className="absolute -bottom-6 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 to-pink-600" />
+                )}
+              </Link>
+            ))}
           </div>
 
           {/* CTA Buttons */}
@@ -85,24 +94,19 @@ export default function Header() {
         {mobileMenuOpen && (
           <div className="lg:hidden py-4 border-t border-gray-200">
             <div className="space-y-4">
-              <Link href="/" className="block text-gray-700 hover:text-gray-900">
-                Home
-              </Link>
-              <Link href="/apps" className="block text-gray-700 hover:text-gray-900">
-                Apps
-              </Link>
-              <Link href="/games" className="block text-gray-700 hover:text-gray-900">
-                Games
-              </Link>
-              <Link href="/javari" className="block text-gray-700 hover:text-gray-900">
-                Javari AI
-              </Link>
-              <Link href="/craiverse" className="block text-gray-700 hover:text-gray-900">
-                CRAIVerse
-              </Link>
-              <Link href="/pricing" className="block text-gray-700 hover:text-gray-900">
-                Pricing
-              </Link>
+              {navLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`block transition-colors ${
+                    isActive(link.href)
+                      ? 'text-purple-600 font-semibold'
+                      : 'text-gray-700 hover:text-gray-900'
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
               <div className="pt-4 border-t border-gray-200 space-y-2">
                 <Link href="/login" className="block">
                   <Button variant="outline" className="w-full">Log In</Button>
