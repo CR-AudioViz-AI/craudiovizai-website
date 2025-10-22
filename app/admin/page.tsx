@@ -1,13 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   Users, DollarSign, Activity, Settings, FileText, ShoppingCart, 
-  TrendingUp, AlertCircle, BarChart3, Shield, Database, Zap 
+  TrendingUp, AlertCircle, BarChart3, Shield, Database, Zap, Menu as MenuIcon
 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 export default function CompleteAdminDashboard() {
   const [activeTab, setActiveTab] = useState('overview')
+  const [navigationLinks, setNavigationLinks] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  const supabase = createClient()
 
   const stats = {
     totalUsers: 12847,
@@ -16,6 +20,57 @@ export default function CompleteAdminDashboard() {
     creditsUsed: 1847293,
     pendingIssues: 23,
     serverUptime: 99.97
+  }
+
+  // Fetch navigation links when navigation tab is active
+  useEffect(() => {
+    if (activeTab === 'navigation') {
+      fetchNavigationLinks()
+    }
+  }, [activeTab])
+
+  const fetchNavigationLinks = async () => {
+    setLoading(true)
+    const { data, error } = await supabase
+      .from('navigation_links')
+      .select('*')
+      .order('category')
+      .order('display_order')
+    
+    if (data) {
+      setNavigationLinks(data)
+    }
+    setLoading(false)
+  }
+
+  const toggleLinkVisibility = async (linkId: string, currentVisibility: boolean) => {
+    const { error } = await supabase
+      .from('navigation_links')
+      .update({ is_visible: !currentVisibility })
+      .eq('id', linkId)
+    
+    if (!error) {
+      // Update local state
+      setNavigationLinks(navigationLinks.map(link => 
+        link.id === linkId ? { ...link, is_visible: !currentVisibility } : link
+      ))
+    }
+  }
+
+  const groupedLinks = navigationLinks.reduce((acc, link) => {
+    if (!acc[link.category]) {
+      acc[link.category] = []
+    }
+    acc[link.category].push(link)
+    return acc
+  }, {} as Record<string, any[]>)
+
+  const categoryLabels: Record<string, string> = {
+    'header': 'Header Navigation',
+    'footer-navigation': 'Footer - Navigation',
+    'footer-resources': 'Footer - Resources',
+    'footer-company': 'Footer - Company',
+    'footer-legal': 'Footer - Legal'
   }
 
   return (
@@ -38,6 +93,7 @@ export default function CompleteAdminDashboard() {
               { id: 'revenue', icon: DollarSign, label: 'Revenue' },
               { id: 'content', icon: FileText, label: 'Content' },
               { id: 'marketplace', icon: ShoppingCart, label: 'Marketplace' },
+              { id: 'navigation', icon: MenuIcon, label: 'Navigation' },
               { id: 'system', icon: Activity, label: 'System Health' },
               { id: 'settings', icon: Settings, label: 'Settings' }
             ].map((item) => {
@@ -150,19 +206,31 @@ export default function CompleteAdminDashboard() {
               <div className="bg-white rounded-xl shadow p-6">
                 <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <button className="bg-blue-50 text-blue-600 p-4 rounded-lg hover:bg-blue-100 transition text-center">
+                  <button 
+                    onClick={() => setActiveTab('users')}
+                    className="bg-blue-50 text-blue-600 p-4 rounded-lg hover:bg-blue-100 transition text-center"
+                  >
                     <Users size={24} className="mx-auto mb-2" />
                     <span className="text-sm font-semibold">Manage Users</span>
                   </button>
-                  <button className="bg-green-50 text-green-600 p-4 rounded-lg hover:bg-green-100 transition text-center">
+                  <button 
+                    onClick={() => setActiveTab('revenue')}
+                    className="bg-green-50 text-green-600 p-4 rounded-lg hover:bg-green-100 transition text-center"
+                  >
                     <DollarSign size={24} className="mx-auto mb-2" />
                     <span className="text-sm font-semibold">View Revenue</span>
                   </button>
-                  <button className="bg-purple-50 text-purple-600 p-4 rounded-lg hover:bg-purple-100 transition text-center">
-                    <Database size={24} className="mx-auto mb-2" />
-                    <span className="text-sm font-semibold">Database</span>
+                  <button 
+                    onClick={() => setActiveTab('navigation')}
+                    className="bg-purple-50 text-purple-600 p-4 rounded-lg hover:bg-purple-100 transition text-center"
+                  >
+                    <MenuIcon size={24} className="mx-auto mb-2" />
+                    <span className="text-sm font-semibold">Navigation</span>
                   </button>
-                  <button className="bg-red-50 text-red-600 p-4 rounded-lg hover:bg-red-100 transition text-center">
+                  <button 
+                    onClick={() => setActiveTab('settings')}
+                    className="bg-red-50 text-red-600 p-4 rounded-lg hover:bg-red-100 transition text-center"
+                  >
                     <Settings size={24} className="mx-auto mb-2" />
                     <span className="text-sm font-semibold">Settings</span>
                   </button>
@@ -171,7 +239,61 @@ export default function CompleteAdminDashboard() {
             </>
           )}
 
-          {activeTab !== 'overview' && (
+          {activeTab === 'navigation' && (
+            <div className="space-y-6">
+              <div className="bg-white rounded-xl shadow p-6">
+                <h2 className="text-2xl font-bold mb-2">Navigation Management</h2>
+                <p className="text-gray-600 mb-6">
+                  Control which links appear in your header and footer navigation. Toggle visibility to show or hide links site-wide.
+                </p>
+
+                {loading ? (
+                  <div className="text-center py-12">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <p className="text-gray-600 mt-4">Loading navigation links...</p>
+                  </div>
+                ) : (
+                  <div className="space-y-8">
+                    {Object.entries(groupedLinks).map(([category, links]) => (
+                      <div key={category} className="border rounded-lg p-6">
+                        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                          <MenuIcon size={20} className="text-blue-600" />
+                          {categoryLabels[category] || category}
+                        </h3>
+                        <div className="space-y-3">
+                          {links.map((link) => (
+                            <div
+                              key={link.id}
+                              className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+                            >
+                              <div className="flex-1">
+                                <p className="font-semibold text-gray-900">{link.label}</p>
+                                <p className="text-sm text-gray-600">{link.href}</p>
+                              </div>
+                              <button
+                                onClick={() => toggleLinkVisibility(link.id, link.is_visible)}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                  link.is_visible ? 'bg-blue-600' : 'bg-gray-300'
+                                }`}
+                              >
+                                <span
+                                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                    link.is_visible ? 'translate-x-6' : 'translate-x-1'
+                                  }`}
+                                />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab !== 'overview' && activeTab !== 'navigation' && (
             <div className="bg-white rounded-xl shadow p-8 text-center">
               <h2 className="text-2xl font-bold mb-4">{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Management</h2>
               <p className="text-gray-600">This section contains detailed {activeTab} management tools and analytics.</p>
