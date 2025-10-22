@@ -19,6 +19,8 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "lucide-react": "^0.294.0",
+    "openai": "^4.20.1",
+    "stripe": "^14.9.0",
     "tailwind-merge": "^2.1.0"
   },
   "devDependencies": {
