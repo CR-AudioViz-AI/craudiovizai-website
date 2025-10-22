@@ -32,7 +32,7 @@ A unified AI-powered platform for creators, businesses, and communities.
 
 See `.env.example` for required environment variables.
 
-## Deployment
+## Deployment 
 
 Deploy to Vercel:
 ```bash
