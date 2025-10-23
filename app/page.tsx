@@ -57,12 +57,13 @@ export default async function HomePage() {
 
             {/* Right Side - Javari Avatar (Dark Hair) */}
             <div className="flex justify-center lg:justify-end">
-              <div className="relative w-64 h-64 rounded-full overflow-hidden shadow-2xl border-4 border-white">
+              <div className="relative w-64 h-64">
                 <Image
                   src="/avatars/JavariAvatar.png"
                   alt="Javari AI - Your AI Assistant"
-                  fill
-                  className="object-cover"
+                  width={256}
+                  height={256}
+                  className="rounded-full shadow-2xl"
                   priority
                 />
               </div>
@@ -78,12 +79,13 @@ export default async function HomePage() {
             
             {/* Left Side - CRAI Avatar (Blonde Hair) */}
             <div className="flex justify-center lg:justify-start order-2 lg:order-1">
-              <div className="relative w-64 h-64 rounded-full overflow-hidden shadow-2xl border-4 border-white">
+              <div className="relative w-64 h-64">
                 <Image
                   src="/avatars/CRAIAvatar.png"
                   alt="CRAI - Your CRAIverse Guide"
-                  fill
-                  className="object-cover"
+                  width={256}
+                  height={256}
+                  className="rounded-full shadow-2xl"
                   priority
                 />
               </div>
