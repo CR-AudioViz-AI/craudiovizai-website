@@ -1,12 +1,24 @@
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import Image from 'next/image';
+import { createClient } from '@/lib/supabase/server';
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createClient();
+  
+  // Fetch projects marked to show on homepage
+  const { data: comingSoonProjects } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('show_on_homepage', true)
+    .eq('is_public', true)
+    .order('display_order');
+
   return (
     <div className="min-h-screen">
       {/* Hero Section - Javari Introduction */}
-      <section className="relative bg-gradient-to-br from-purple-50 to-pink-50 py-16 lg:py-24">
+      <section className="relative bg-gradient-to-br from-blue-50 to-green-50 py-16 lg:py-24">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
             
@@ -17,7 +29,7 @@ export default function HomePage() {
               </h1>
               
               <p className="text-lg text-gray-700 mb-4">
-                CR AudioViz AI LLC is a modular SaaS company that builds intelligent tools, custom apps, and branded websites using <span className="font-semibold text-purple-600">Javari AI</span>—our adaptive engine for scalable, high-performance development. Our mission is to help businesses and individuals succeed by delivering systems that connect, automate, and evolve.
+                CR AudioViz AI LLC is a modular SaaS company that builds intelligent tools, custom apps, and branded websites using <span className="font-semibold text-blue-600">Javari AI</span>—our adaptive engine for scalable, high-performance development. Our mission is to help businesses and individuals succeed by delivering systems that connect, automate, and evolve.
               </p>
               
               <p className="text-base text-gray-600 mb-8">
@@ -27,7 +39,7 @@ export default function HomePage() {
               {/* Two CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/javari">
-                  <Button size="lg" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-6 text-lg font-semibold">
+                  <Button size="lg" className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white px-8 py-6 text-lg font-semibold">
                     Start Building
                   </Button>
                 </Link>
@@ -47,7 +59,7 @@ export default function HomePage() {
             <div className="flex justify-center lg:justify-end">
               <div className="relative w-64 h-64 rounded-full overflow-hidden shadow-2xl border-4 border-white">
                 <Image
-                  src="/avatars/javari-avatar.png"
+                  src="/avatars/JavariAvatar.png"
                   alt="Javari AI - Your AI Assistant"
                   fill
                   className="object-cover"
@@ -68,7 +80,7 @@ export default function HomePage() {
             <div className="flex justify-center lg:justify-start order-2 lg:order-1">
               <div className="relative w-64 h-64 rounded-full overflow-hidden shadow-2xl border-4 border-white">
                 <Image
-                  src="/avatars/crai-avatar.png"
+                  src="/avatars/CRAIAvatar.png"
                   alt="CRAI - Your CRAIverse Guide"
                   fill
                   className="object-cover"
@@ -119,7 +131,7 @@ export default function HomePage() {
               </ul>
 
               <Link href="/craiverse">
-                <Button size="lg" className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-6 text-lg font-semibold">
+                <Button size="lg" className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white px-8 py-6 text-lg font-semibold">
                   Explore CRAIverse
                 </Button>
               </Link>
@@ -127,6 +139,48 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Coming Soon Projects Section */}
+      {comingSoonProjects && comingSoonProjects.length > 0 && (
+        <section className="py-16 bg-gradient-to-br from-red-50 to-blue-50">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <div className="inline-block bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full mb-4">
+                Coming Soon
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                New Projects on the Horizon
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Exciting new tools and features coming soon to help you build faster
+              </p>
+            </div>
+
+            {/* 3 Column Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+              {comingSoonProjects.map((project) => (
+                <Card key={project.id} className="hover:shadow-lg transition-shadow bg-white">
+                  <CardHeader>
+                    <div className="text-4xl mb-2">{project.icon}</div>
+                    <CardTitle className="text-xl">{project.title}</CardTitle>
+                    <CardDescription className="text-sm text-gray-500">
+                      {project.category}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600">{project.description}</p>
+                    <div className="mt-4">
+                      <span className="inline-block bg-yellow-100 text-yellow-700 text-xs font-semibold px-3 py-1 rounded-full">
+                        Coming Soon
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Bottom Banner - Javari AI Focus */}
       <section className="py-16 bg-gradient-to-br from-gray-900 to-gray-800 text-white">
