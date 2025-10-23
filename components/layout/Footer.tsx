@@ -66,14 +66,11 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           
           {/* Company Info with Subscribe */}
-          <div className="lg:col-span-1">
-            <h3 className="text-white font-bold text-lg mb-4">CR AudioViz AI</h3>
-            <p className="text-sm text-gray-400 mb-6">
-              Your Story. Our Design. Empowering creators with AI-powered tools.
-            </p>
+          <div className="lg:col-span-1 flex flex-col items-center text-center">
+            <h3 className="text-white font-bold text-base mb-4">CR AudioViz AI, LLC.</h3>
             
             {/* Subscribe Section */}
-            <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+            <div className="bg-gray-800 rounded-lg p-3 border border-gray-700 w-full max-w-xs">
               <h4 className="text-white font-semibold text-sm mb-2">Stay Connected</h4>
               <p className="text-xs text-gray-400 mb-3">
                 Get updates on new releases and features
@@ -86,12 +83,12 @@ export default function Footer() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
                   required
-                  className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                  className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
                 />
                 <Button 
                   type="submit" 
                   disabled={subscribeStatus === 'loading'}
-                  className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white text-sm"
+                  className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white text-xs py-2"
                 >
                   {subscribeStatus === 'loading' ? 'Subscribing...' : 
                    subscribeStatus === 'success' ? '✓ Subscribed!' : 'Subscribe'}
