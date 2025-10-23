@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Facebook, Twitter, Instagram, Linkedin, Youtube, Mail } from 'lucide-react';
+import { Mail } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { createClient } from '@/lib/supabase/client';
 
 interface NavigationLink {
@@ -20,6 +21,8 @@ export default function Footer() {
   const [resourceLinks, setResourceLinks] = useState<NavigationLink[]>([]);
   const [companyLinks, setCompanyLinks] = useState<NavigationLink[]>([]);
   const [legalLinks, setLegalLinks] = useState<NavigationLink[]>([]);
+  const [email, setEmail] = useState('');
+  const [subscribeStatus, setSubscribeStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const supabase = createClient();
 
   useEffect(() => {
@@ -43,39 +46,57 @@ export default function Footer() {
     fetchLinks();
   }, []);
 
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubscribeStatus('loading');
+    
+    // TODO: Implement newsletter subscription
+    // For now, just show success message
+    setTimeout(() => {
+      setSubscribeStatus('success');
+      setEmail('');
+      setTimeout(() => setSubscribeStatus('idle'), 3000);
+    }, 1000);
+  };
+
   return (
     <footer className="bg-gray-900 text-gray-300">
       {/* Main Footer */}
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
           
-          {/* Company Info */}
+          {/* Company Info with Subscribe */}
           <div className="lg:col-span-1">
             <h3 className="text-white font-bold text-lg mb-4">CR AudioViz AI</h3>
-            <p className="text-sm text-gray-400 mb-4">
+            <p className="text-sm text-gray-400 mb-6">
               Your Story. Our Design. Empowering creators with AI-powered tools.
             </p>
-            <div className="flex space-x-4">
-              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" 
-                 className="hover:text-white transition-colors">
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer"
-                 className="hover:text-white transition-colors">
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
-                 className="hover:text-white transition-colors">
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer"
-                 className="hover:text-white transition-colors">
-                <Linkedin className="w-5 h-5" />
-              </a>
-              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer"
-                 className="hover:text-white transition-colors">
-                <Youtube className="w-5 h-5" />
-              </a>
+            
+            {/* Subscribe Section */}
+            <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+              <h4 className="text-white font-semibold text-sm mb-2">Stay Connected</h4>
+              <p className="text-xs text-gray-400 mb-3">
+                Get updates on new releases and features
+              </p>
+              
+              <form onSubmit={handleSubscribe} className="space-y-2">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  required
+                  className="w-full px-3 py-2 bg-gray-900 border border-gray-700 rounded text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+                />
+                <Button 
+                  type="submit" 
+                  disabled={subscribeStatus === 'loading'}
+                  className="w-full bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white text-sm"
+                >
+                  {subscribeStatus === 'loading' ? 'Subscribing...' : 
+                   subscribeStatus === 'success' ? '✓ Subscribed!' : 'Subscribe'}
+                </Button>
+              </form>
             </div>
           </div>
 
