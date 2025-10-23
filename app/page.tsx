@@ -22,21 +22,21 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section - Javari Introduction */}
-      <section className="relative bg-gradient-to-br from-blue-50 to-green-50 py-12 lg:py-16">
+      <section className="relative bg-gradient-to-br from-blue-50 to-green-50 py-10 lg:py-14">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center max-w-6xl mx-auto">
             
             {/* Left Side - Content */}
             <div>
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 leading-tight">
+              <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-4 leading-tight">
                 Launch AI-Powered Websites, Agents, Avatars, Tools, and Apps—All from One Modular Ecosystem.
               </h1>
               
-              <p className="text-base text-gray-700 mb-3">
+              <p className="text-sm text-gray-700 mb-3">
                 CR AudioViz AI LLC is a modular SaaS company that builds intelligent tools, custom apps, and branded websites using <span className="font-semibold text-blue-600">Javari AI</span>—our adaptive engine for scalable, high-performance development. Our mission is to help businesses and individuals succeed by delivering systems that connect, automate, and evolve.
               </p>
               
-              <p className="text-sm text-gray-600 mb-6">
+              <p className="text-xs text-gray-600 mb-6">
                 Your Story. Our Design.
               </p>
 
@@ -77,7 +77,7 @@ export default async function HomePage() {
       </section>
 
       {/* CRAIverse Section */}
-      <section className="py-12 lg:py-16 bg-white">
+      <section className="py-10 lg:py-14 bg-white">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center max-w-6xl mx-auto">
             
@@ -101,11 +101,11 @@ export default async function HomePage() {
                 Coming Soon
               </div>
               
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-4">
                 Welcome to the CRAIVerse
               </h2>
               
-              <p className="text-base text-gray-700 mb-5">
+              <p className="text-sm text-gray-700 mb-5">
                 At the heart of our ecosystem is CRAIVerse—a unified avatar world designed to replace the fragmented internet with a truly connected experience. CRAIVerse bridges people, brands, and organizations through intelligent interfaces, modular logic, and seamless integration.
               </p>
 
@@ -194,7 +194,26 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Social Media Links Section - Just Above Footer */}
+      {/* Bottom Banner - Javari AI Focus */}
+      <section className="py-12 bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <div className="max-w-4xl mx-auto">
+            <div className="inline-block bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full mb-4">
+              Coming Soon
+            </div>
+            
+            <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-3">
+              Delivering intelligent tools, custom-built apps, and branded digital experiences via JavariAI.
+            </h2>
+            
+            <p className="text-base text-gray-300">
+              Explore our strategic portfolio of groundbreaking AI initiatives and enterprise solutions
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Social Media Links Section - Below Bottom Banner */}
       <section className="py-10 bg-gray-100">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto text-center">
@@ -415,25 +434,6 @@ export default async function HomePage() {
                 Lemonde
               </a>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Bottom Banner - Javari AI Focus */}
-      <section className="py-12 bg-gradient-to-br from-gray-900 to-gray-800 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <div className="max-w-4xl mx-auto">
-            <div className="inline-block bg-yellow-100 text-yellow-800 text-xs font-semibold px-3 py-1 rounded-full mb-4">
-              Coming Soon
-            </div>
-            
-            <h2 className="text-xl md:text-2xl lg:text-3xl font-bold mb-3">
-              Delivering intelligent tools, custom-built apps, and branded digital experiences via JavariAI.
-            </h2>
-            
-            <p className="text-base text-gray-300">
-              Explore our strategic portfolio of groundbreaking AI initiatives and enterprise solutions
-            </p>
           </div>
         </div>
       </section>
