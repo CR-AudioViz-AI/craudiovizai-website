@@ -122,7 +122,13 @@ export default async function HomePage() {
                   <svg className="w-6 h-6 text-green-500 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  <span className="text-gray-700">Access $600M+ in Grant Funding</span>
+                  <span className="text-gray-700">Help Small & Large Businesses Expand Their Reach & Connect with More Customers</span>
+                </li>
+                <li className="flex items-start">
+                  <svg className="w-6 h-6 text-green-500 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-gray-700">Empower Artists, Musicians & Singers to Reach New Audiences Worldwide</span>
                 </li>
                 <li className="flex items-start">
                   <svg className="w-6 h-6 text-green-500 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -183,6 +189,47 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+
+      {/* Social Media Links Section */}
+      <section className="py-12 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto text-center">
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Connect With Us</h3>
+            <p className="text-gray-600 mb-8">Follow us across all platforms</p>
+            
+            <div className="flex flex-wrap justify-center gap-3">
+              <a href="#" className="px-4 py-2 bg-gray-900 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">AngelList</a>
+              <a href="#" className="px-4 py-2 bg-blue-600 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">Behance</a>
+              <a href="#" className="px-4 py-2 bg-yellow-600 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">Clubhouse</a>
+              <a href="#" className="px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">Discord</a>
+              <a href="#" className="px-4 py-2 bg-blue-600 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">Facebook</a>
+              <a href="#" className="px-4 py-2 bg-gray-900 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">GitHub</a>
+              <a href="#" className="px-4 py-2 bg-green-600 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">Glassdoor</a>
+              <a href="#" className="px-4 py-2 bg-blue-500 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">Google Business</a>
+              <a href="#" className="px-4 py-2 bg-blue-700 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">Indeed</a>
+              <a href="#" className="px-4 py-2 bg-pink-600 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">Instagram</a>
+              <a href="#" className="px-4 py-2 bg-yellow-400 text-gray-900 rounded-full text-sm font-semibold hover:opacity-80 transition">Lemonde</a>
+              <a href="#" className="px-4 py-2 bg-blue-700 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">LinkedIn</a>
+              <a href="#" className="px-4 py-2 bg-gray-900 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">Medium</a>
+              <a href="#" className="px-4 py-2 bg-gray-700 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">Newsletter</a>
+              <a href="#" className="px-4 py-2 bg-red-600 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">Pinterest</a>
+              <a href="#" className="px-4 py-2 bg-orange-600 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">Product Hunt</a>
+              <a href="#" className="px-4 py-2 bg-red-700 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">Quora</a>
+              <a href="#" className="px-4 py-2 bg-orange-600 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">Reddit</a>
+              <a href="#" className="px-4 py-2 bg-purple-700 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">Slack</a>
+              <a href="#" className="px-4 py-2 bg-yellow-300 text-gray-900 rounded-full text-sm font-semibold hover:opacity-80 transition">Snapchat</a>
+              <a href="#" className="px-4 py-2 bg-orange-500 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">Substack</a>
+              <a href="#" className="px-4 py-2 bg-blue-500 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">Telegram</a>
+              <a href="#" className="px-4 py-2 bg-gray-900 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">Threads</a>
+              <a href="#" className="px-4 py-2 bg-gray-900 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">TikTok</a>
+              <a href="#" className="px-4 py-2 bg-blue-900 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">Tumblr</a>
+              <a href="#" className="px-4 py-2 bg-purple-600 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">Twitch</a>
+              <a href="#" className="px-4 py-2 bg-green-500 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">WhatsApp</a>
+              <a href="#" className="px-4 py-2 bg-red-600 text-white rounded-full text-sm font-semibold hover:opacity-80 transition">YouTube</a>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Bottom Banner - Javari AI Focus */}
       <section className="py-16 bg-gradient-to-br from-gray-900 to-gray-800 text-white">
