@@ -64,7 +64,7 @@ export async function GET(request: Request) {
       .select('asset_type')
       .eq('customer_id', customer.id)
 
-    const assetTypes = [...new Set(allAssets?.map(a => a.asset_type) || [])]
+    const assetTypes = Array.from(new Set(allAssets?.map(a => a.asset_type) || []))
 
     return NextResponse.json({
       assets: assets || [],
