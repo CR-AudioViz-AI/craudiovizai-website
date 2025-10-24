@@ -1,7 +1,7 @@
 /**
  * CR AudioViz AI - Analytics API
  * Comprehensive business intelligence and metrics
- * @timestamp October 24, 2025 - 11:23 PM EST - Fixed TypeScript type errors
+ * @timestamp October 24, 2025 - 11:32 PM EST - Fixed TypeScript type errors in calculateGrowth
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -331,8 +331,30 @@ function calculateGrowth(
   amountField?: string
 ): Array<{ date: string; count: number }> | Array<{ date: string; amount: number }> {
   const now = new Date();
-  const result: any[] = [];
 
+  // Return amount-based results
+  if (amountField) {
+    const result: Array<{ date: string; amount: number }> = [];
+    
+    for (let i = days; i >= 0; i--) {
+      const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+      const dateStr = date.toISOString().split('T')[0];
+
+      const dayData = data.filter(item => {
+        const itemDate = new Date(item[dateField]).toISOString().split('T')[0];
+        return itemDate === dateStr;
+      });
+
+      const amount = dayData.reduce((sum, item) => sum + (item[amountField] || 0), 0) / 100;
+      result.push({ date: dateStr, amount: Math.round(amount * 100) / 100 });
+    }
+    
+    return result;
+  }
+
+  // Return count-based results
+  const result: Array<{ date: string; count: number }> = [];
+  
   for (let i = days; i >= 0; i--) {
     const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
     const dateStr = date.toISOString().split('T')[0];
@@ -342,13 +364,8 @@ function calculateGrowth(
       return itemDate === dateStr;
     });
 
-    if (amountField) {
-      const amount = dayData.reduce((sum, item) => sum + (item[amountField] || 0), 0) / 100;
-      result.push({ date: dateStr, amount: Math.round(amount * 100) / 100 });
-    } else {
-      result.push({ date: dateStr, count: dayData.length });
-    }
+    result.push({ date: dateStr, count: dayData.length });
   }
-
+  
   return result;
 }
