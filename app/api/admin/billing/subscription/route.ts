@@ -54,7 +54,7 @@ export async function GET() {
         id: item.id,
         priceId: item.price.id,
         productId: typeof item.price.product === 'string' ? item.price.product : item.price.product.id,
-        productName: typeof item.price.product === 'object' ? item.price.product.name : '',
+        productName: typeof item.price.product === 'object' && 'name' in item.price.product ? item.price.product.name : 'Deleted Product',
         amount: item.price.unit_amount,
         currency: item.price.currency,
         interval: item.price.recurring?.interval,
