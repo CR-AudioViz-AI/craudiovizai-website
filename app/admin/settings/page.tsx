@@ -249,7 +249,7 @@ export default function SettingsPage() {
                   id="confirmPassword"
                   type="password"
                   value={passwordForm.confirmPassword}
-                  onChange={(e) => setPasswordForm({ ...profileForm, confirmPassword: e.target.value })}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
                   required
                   minLength={8}
                 />
