@@ -10,7 +10,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Loader2, Sparkles, Trash2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ScrollArea } from '@/components/ui/scroll-area';
+
 import { Textarea } from '@/components/ui/textarea';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -239,7 +239,7 @@ export default function JavariChat() {
           </Button>
         </div>
 
-        <ScrollArea className="flex-1">
+        <div className="flex-1 overflow-auto">
           <div className="space-y-2">
             {conversations.map(conv => (
               <div
@@ -268,7 +268,7 @@ export default function JavariChat() {
               </div>
             ))}
           </div>
-        </ScrollArea>
+        </div>
       </Card>
 
       {/* Main Chat Area */}
@@ -287,7 +287,7 @@ export default function JavariChat() {
         </div>
 
         {/* Messages */}
-        <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+        <div className="flex-1 p-4" ref={scrollRef}>
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <Sparkles className="h-16 w-16 text-primary mb-4" />
@@ -345,7 +345,7 @@ export default function JavariChat() {
               ))}
             </div>
           )}
-        </ScrollArea>
+        </div>
 
         {/* Input */}
         <div className="p-4 border-t">
