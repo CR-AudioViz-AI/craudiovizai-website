@@ -158,12 +158,18 @@ Credits remaining: ${credits.balance}`
                 }
               ]);
 
-            // Update conversation
+            // Update conversation - fetch current count first
+            const { data: currentConv } = await supabase
+              .from('conversations')
+              .select('message_count')
+              .eq('id', convId)
+              .single();
+
             await supabase
               .from('conversations')
               .update({ 
                 updated_at: new Date().toISOString(),
-                message_count: supabase.raw('message_count + 2')
+                message_count: (currentConv?.message_count || 0) + 2
               })
               .eq('id', convId);
           }
