@@ -8,7 +8,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function GET(request: Request) {
   try {
-    const supabase = await createClient()
+    const supabase = createClient()
     
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
