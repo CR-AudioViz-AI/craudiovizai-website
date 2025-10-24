@@ -94,7 +94,7 @@ export async function GET(request: Request) {
     }
 
     // Get unique categories
-    const categories = [...new Set(AVAILABLE_APPS.map(app => app.category))]
+    const categories = Array.from(new Set(AVAILABLE_APPS.map(app => app.category)))
 
     return NextResponse.json({
       apps,
