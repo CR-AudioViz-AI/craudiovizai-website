@@ -1,7 +1,7 @@
 /**
  * CR AudioViz AI - Analytics API
  * Comprehensive business intelligence and metrics
- * @timestamp October 24, 2025 - 6:10 PM EST
+ * @timestamp October 24, 2025 - 11:23 PM EST - Fixed TypeScript type errors
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -52,8 +52,6 @@ interface AnalyticsData {
     lifetime_value: number;
   };
 }
-
-// GET - Comprehensive analytics data
 export async function GET(request: NextRequest) {
   try {
     const supabase = createClient();
@@ -309,16 +307,31 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Helper function to calculate growth data
+// Helper function to calculate growth data - with proper type overloading
+function calculateGrowth(
+  data: any[],
+  dateField: string,
+  days: number,
+  granularity: string
+): Array<{ date: string; count: number }>;
+
+function calculateGrowth(
+  data: any[],
+  dateField: string,
+  days: number,
+  granularity: string,
+  amountField: string
+): Array<{ date: string; amount: number }>;
+
 function calculateGrowth(
   data: any[],
   dateField: string,
   days: number,
   granularity: string,
   amountField?: string
-): Array<{ date: string; count?: number; amount?: number }> {
+): Array<{ date: string; count: number }> | Array<{ date: string; amount: number }> {
   const now = new Date();
-  const result: Array<{ date: string; count?: number; amount?: number }> = [];
+  const result: any[] = [];
 
   for (let i = days; i >= 0; i--) {
     const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
