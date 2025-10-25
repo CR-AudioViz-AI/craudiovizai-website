@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { CreditCard, Package, TrendingUp, Users } from 'lucide-react'
+import ExpenseTrackerCard from '@/components/admin/ExpenseTrackerCard'
 
 interface DashboardStats {
   credits: number
@@ -102,7 +103,7 @@ export default function AdminDashboard() {
         <p className="text-muted-foreground">Welcome back! Here's your overview.</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Available Credits</CardTitle>
@@ -150,6 +151,35 @@ export default function AdminDashboard() {
             </p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Management Tools Section */}
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold mb-4">Management Tools</h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <ExpenseTrackerCard />
+          
+          {/* Placeholder for future management tools */}
+          <Card className="cursor-not-allowed opacity-50">
+            <CardHeader>
+              <CardTitle>Asset Manager</CardTitle>
+              <CardDescription>Coming soon</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">Manage your generated assets</p>
+            </CardContent>
+          </Card>
+
+          <Card className="cursor-not-allowed opacity-50">
+            <CardHeader>
+              <CardTitle>Analytics</CardTitle>
+              <CardDescription>Coming soon</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">Detailed usage analytics</p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       <div className="mt-8 grid gap-4 md:grid-cols-2">
