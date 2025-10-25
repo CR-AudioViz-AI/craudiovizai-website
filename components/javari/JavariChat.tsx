@@ -316,9 +316,9 @@ export default function JavariChat() {
                     {message.role === 'assistant' ? (
                       <ReactMarkdown
                         components={{
-                          code({ node, inline, className, children, ...props }) {
+                          code({ node, className, children, ...props }: any) {
                             const match = /language-(\w+)/.exec(className || '');
-                            return !inline && match ? (
+                            const inline = node?.tagName !== 'pre'; return !inline && match ? (
                               <SyntaxHighlighter
                                 style={vscDarkPlus}
                                 language={match[1]}
