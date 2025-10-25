@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import { CREDIT_COSTS } from '../credits/route';
+import { CREDIT_COSTS } from '@/lib/constants/credits';
 
 export const runtime = 'edge';
 
