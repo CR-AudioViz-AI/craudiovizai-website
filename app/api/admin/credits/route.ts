@@ -1,360 +1,306 @@
-import { createServerClient } from '@supabase/ssr';
+// CR AUDIOVIZ AI - Admin Credits API Route
+// Session: 2025-10-25 - Phase 3 API Routes
+// Purpose: Manage user credits, purchases, and credit history
+
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-11-20.acacia',
+});
 
 export const dynamic = 'force-dynamic';
 
-/**
- * Admin Credits Management API
- * 
- * GET: Get credit balance and transaction history
- * POST: Purchase credits or apply promo codes
- * 
- * Session: 2025-10-25 19:00 EST
- */
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
-});
-
-async function getSupabaseClient() {
-  const cookieStore = cookies();
-  
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-      },
-    }
-  );
-}
-
-async function verifyAuth() {
-  const supabase = await getSupabaseClient();
-  
-  const { data: { user }, error } = await supabase.auth.getUser();
-  
-  if (error || !user) {
-    return null;
-  }
-  
-  return user;
-}
-
-/**
- * GET /api/admin/credits
- * Returns credit balance and transaction history
- */
-export async function GET(request: NextRequest) {
+// GET: Fetch credit balance and transaction history
+export async function GET(request: Request) {
   try {
-    // Verify authentication
-    const user = await verifyAuth();
-    if (!user) {
+    const supabase = createRouteHandlerClient({ cookies });
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    
+    if (authError || !session) {
       return NextResponse.json(
-        { error: 'Unauthorized - Please sign in' },
+        { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const supabase = await getSupabaseClient();
+    const userId = session.user.id;
+    const { searchParams } = new URL(request.url);
+    const includeHistory = searchParams.get('history') === 'true';
 
     // Get user profile with credit balance
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('credits, subscription_tier, credits_expire_at')
-      .eq('id', user.id)
+      .select('credits_balance, subscription_tier, subscription_status')
+      .eq('id', userId)
       .single();
 
-    if (profileError) {
-      console.error('Error fetching profile:', profileError);
+    if (profileError || !profile) {
       return NextResponse.json(
-        { error: 'Failed to fetch credit balance' },
+        { error: 'Failed to fetch profile', details: profileError?.message },
         { status: 500 }
       );
     }
 
-    // Get credit transaction history
-    const { data: transactions, error: transError } = await supabase
-      .from('credit_transactions')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(50);
-
-    if (transError) {
-      console.error('Error fetching transactions:', transError);
-    }
-
-    // Calculate credit usage statistics
-    const usageStats = {
-      total_earned: 0,
-      total_spent: 0,
-      total_bonus: 0,
+    const response: any = {
+      success: true,
+      creditsBalance: profile.credits_balance || 0,
+      subscriptionTier: profile.subscription_tier || 'free',
+      subscriptionStatus: profile.subscription_status || 'inactive'
     };
 
-    if (transactions) {
-      transactions.forEach(trans => {
-        if (trans.amount > 0) {
-          usageStats.total_earned += trans.amount;
-        } else {
-          usageStats.total_spent += Math.abs(trans.amount);
-        }
+    // Include transaction history if requested
+    if (includeHistory) {
+      const { data: transactions, error: transError } = await supabase
+        .from('credit_transactions')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (transError) {
+        console.error('Failed to fetch transactions:', transError);
+      } else {
+        response.transactions = transactions || [];
+        response.totalTransactions = transactions?.length || 0;
         
-        if (trans.transaction_type === 'bonus' || trans.transaction_type === 'promo') {
-          usageStats.total_bonus += trans.amount;
-        }
-      });
+        // Calculate statistics
+        const purchases = transactions?.filter(t => t.transaction_type === 'purchase') || [];
+        const usage = transactions?.filter(t => t.transaction_type === 'usage') || [];
+        
+        response.statistics = {
+          totalPurchased: purchases.reduce((sum, t) => sum + (t.credits || 0), 0),
+          totalUsed: Math.abs(usage.reduce((sum, t) => sum + (t.credits || 0), 0)),
+          totalSpent: purchases.reduce((sum, t) => sum + (t.amount || 0), 0) / 100 // Convert cents to dollars
+        };
+      }
     }
 
-    // Get available credit packages
-    const creditPackages = [
-      {
-        id: 'starter',
-        name: 'Starter Pack',
-        credits: 100,
-        price: 9.99,
-        price_id: 'price_starter_credits',
-        bonus: 0,
-        popular: false,
-      },
-      {
-        id: 'popular',
-        name: 'Popular Pack',
-        credits: 500,
-        price: 39.99,
-        price_id: 'price_popular_credits',
-        bonus: 50,
-        popular: true,
-      },
-      {
-        id: 'pro',
-        name: 'Pro Pack',
-        credits: 1000,
-        price: 69.99,
-        price_id: 'price_pro_credits',
-        bonus: 150,
-        popular: false,
-      },
-      {
-        id: 'enterprise',
-        name: 'Enterprise Pack',
-        credits: 5000,
-        price: 299.99,
-        price_id: 'price_enterprise_credits',
-        bonus: 1000,
-        popular: false,
-      },
-    ];
+    return NextResponse.json(response);
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        balance: {
-          current: profile?.credits || 0,
-          expires_at: profile?.credits_expire_at || null,
-          subscription_tier: profile?.subscription_tier || 'free',
-        },
-        usage_stats: usageStats,
-        transactions: transactions || [],
-        packages: creditPackages,
-        user_id: user.id,
-      },
-    });
-
-  } catch (error) {
-    console.error('Error in /api/admin/credits:', error);
+  } catch (error: any) {
+    console.error('Admin Credits API GET Error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error.message },
       { status: 500 }
     );
   }
 }
 
-/**
- * POST /api/admin/credits
- * Purchase credits or apply promo code
- */
-export async function POST(request: NextRequest) {
+// POST: Purchase credits or add credits
+export async function POST(request: Request) {
   try {
-    // Verify authentication
-    const user = await verifyAuth();
-    if (!user) {
+    const supabase = createRouteHandlerClient({ cookies });
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    
+    if (authError || !session) {
       return NextResponse.json(
-        { error: 'Unauthorized - Please sign in' },
+        { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
+    const userId = session.user.id;
     const body = await request.json();
-    const { action, package_id, promo_code, amount } = body;
+    const { action, amount, credits, paymentMethodId } = body;
 
-    if (!action) {
-      return NextResponse.json(
-        { error: 'Missing required field: action' },
-        { status: 400 }
-      );
+    if (action === 'create_checkout') {
+      // Create Stripe checkout session for credit purchase
+      if (!credits || !amount) {
+        return NextResponse.json(
+          { error: 'Missing required fields: credits, amount' },
+          { status: 400 }
+        );
+      }
+
+      // Get user email
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('id', userId)
+        .single();
+
+      const session = await stripe.checkout.sessions.create({
+        customer_email: profile?.email || session.user.email,
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: `${credits} CR AudioViz AI Credits`,
+                description: `Purchase ${credits} credits for use across all creative tools`
+              },
+              unit_amount: amount // Amount in cents
+            },
+            quantity: 1
+          }
+        ],
+        mode: 'payment',
+        success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/admin/credits?success=true&credits=${credits}`,
+        cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/admin/credits?canceled=true`,
+        metadata: {
+          userId,
+          credits: credits.toString(),
+          type: 'credit_purchase'
+        }
+      });
+
+      return NextResponse.json({
+        success: true,
+        checkoutUrl: session.url,
+        sessionId: session.id
+      });
     }
 
-    const supabase = await getSupabaseClient();
+    if (action === 'direct_charge') {
+      // Direct charge with payment method (for saved cards)
+      if (!credits || !amount || !paymentMethodId) {
+        return NextResponse.json(
+          { error: 'Missing required fields: credits, amount, paymentMethodId' },
+          { status: 400 }
+        );
+      }
 
-    // Handle different actions
-    switch (action) {
-      case 'purchase':
-        if (!package_id) {
-          return NextResponse.json(
-            { error: 'Missing package_id for purchase' },
-            { status: 400 }
-          );
+      // Get user's Stripe customer ID
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('stripe_customer_id')
+        .eq('id', userId)
+        .single();
+
+      if (!profile?.stripe_customer_id) {
+        return NextResponse.json(
+          { error: 'No Stripe customer found' },
+          { status: 400 }
+        );
+      }
+
+      // Create payment intent
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount,
+        currency: 'usd',
+        customer: profile.stripe_customer_id,
+        payment_method: paymentMethodId,
+        confirm: true,
+        description: `${credits} CR AudioViz AI Credits`,
+        metadata: {
+          userId,
+          credits: credits.toString(),
+          type: 'credit_purchase'
         }
+      });
 
-        // Get user's email for Stripe
-        const { data: profile } = await supabase
+      if (paymentIntent.status === 'succeeded') {
+        // Add credits
+        const { data: updatedProfile, error: updateError } = await supabase
           .from('profiles')
-          .select('email, stripe_customer_id')
-          .eq('id', user.id)
+          .update({ 
+            credits_balance: supabase.raw(`credits_balance + ${credits}`),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', userId)
+          .select('credits_balance')
           .single();
-
-        // Create or retrieve Stripe customer
-        let customerId = profile?.stripe_customer_id;
-        
-        if (!customerId) {
-          const customer = await stripe.customers.create({
-            email: profile?.email || user.email,
-            metadata: {
-              supabase_user_id: user.id,
-            },
-          });
-          
-          customerId = customer.id;
-          
-          // Save customer ID to profile
-          await supabase
-            .from('profiles')
-            .update({ stripe_customer_id: customerId })
-            .eq('id', user.id);
-        }
-
-        // Create Stripe checkout session
-        const session = await stripe.checkout.sessions.create({
-          customer: customerId,
-          mode: 'payment',
-          payment_method_types: ['card'],
-          line_items: [
-            {
-              price: package_id, // This should be the Stripe price ID
-              quantity: 1,
-            },
-          ],
-          success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/admin/credits?success=true`,
-          cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/admin/credits?canceled=true`,
-          metadata: {
-            user_id: user.id,
-            type: 'credit_purchase',
-          },
-        });
-
-        return NextResponse.json({
-          success: true,
-          checkout_url: session.url,
-          session_id: session.id,
-        });
-
-      case 'apply_promo':
-        if (!promo_code) {
-          return NextResponse.json(
-            { error: 'Missing promo_code' },
-            { status: 400 }
-          );
-        }
-
-        // Validate promo code
-        const { data: promo, error: promoError } = await supabase
-          .from('promo_codes')
-          .select('*')
-          .eq('code', promo_code.toUpperCase())
-          .eq('is_active', true)
-          .single();
-
-        if (promoError || !promo) {
-          return NextResponse.json(
-            { error: 'Invalid or expired promo code' },
-            { status: 400 }
-          );
-        }
-
-        // Check if user already used this code
-        const { data: existingUse } = await supabase
-          .from('promo_code_usage')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('promo_code_id', promo.id)
-          .single();
-
-        if (existingUse) {
-          return NextResponse.json(
-            { error: 'Promo code already used' },
-            { status: 400 }
-          );
-        }
-
-        // Apply promo code - add credits
-        const { error: updateError } = await supabase.rpc('add_credits', {
-          p_user_id: user.id,
-          p_amount: promo.credit_amount,
-        });
 
         if (updateError) {
-          console.error('Error applying promo:', updateError);
+          console.error('Failed to update credits:', updateError);
           return NextResponse.json(
-            { error: 'Failed to apply promo code' },
+            { error: 'Payment succeeded but failed to add credits' },
             { status: 500 }
           );
         }
 
-        // Record promo usage
-        await supabase.from('promo_code_usage').insert({
-          user_id: user.id,
-          promo_code_id: promo.id,
-          credits_awarded: promo.credit_amount,
-        });
-
         // Record transaction
-        await supabase.from('credit_transactions').insert({
-          user_id: user.id,
-          amount: promo.credit_amount,
-          transaction_type: 'promo',
-          description: `Promo code: ${promo_code}`,
-        });
+        await supabase
+          .from('credit_transactions')
+          .insert({
+            user_id: userId,
+            transaction_type: 'purchase',
+            credits,
+            amount,
+            payment_method: 'stripe',
+            stripe_payment_intent_id: paymentIntent.id,
+            status: 'completed',
+            created_at: new Date().toISOString()
+          });
 
         return NextResponse.json({
           success: true,
-          message: `${promo.credit_amount} credits added to your account!`,
-          credits_added: promo.credit_amount,
+          credits: updatedProfile?.credits_balance || 0,
+          paymentIntentId: paymentIntent.id
         });
+      }
 
-      case 'transfer':
-        // Future: Allow credit transfers between users
-        return NextResponse.json(
-          { error: 'Credit transfers not yet supported' },
-          { status: 400 }
-        );
-
-      default:
-        return NextResponse.json(
-          { error: `Unknown action: ${action}` },
-          { status: 400 }
-        );
+      return NextResponse.json({
+        success: false,
+        status: paymentIntent.status,
+        message: 'Payment requires additional action'
+      });
     }
 
-  } catch (error) {
-    console.error('Error in POST /api/admin/credits:', error);
+    if (action === 'add_bonus') {
+      // Admin function to add bonus credits (would need admin role check)
+      const { bonusCredits, reason } = body;
+
+      if (!bonusCredits) {
+        return NextResponse.json(
+          { error: 'Missing bonusCredits' },
+          { status: 400 }
+        );
+      }
+
+      // TODO: Add admin role verification here
+      
+      const { data: updatedProfile, error: updateError } = await supabase
+        .from('profiles')
+        .update({ 
+          credits_balance: supabase.raw(`credits_balance + ${bonusCredits}`),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId)
+        .select('credits_balance')
+        .single();
+
+      if (updateError) {
+        return NextResponse.json(
+          { error: 'Failed to add bonus credits', details: updateError.message },
+          { status: 500 }
+        );
+      }
+
+      // Record bonus transaction
+      await supabase
+        .from('credit_transactions')
+        .insert({
+          user_id: userId,
+          transaction_type: 'bonus',
+          credits: bonusCredits,
+          amount: 0,
+          description: reason || 'Bonus credits',
+          status: 'completed',
+          created_at: new Date().toISOString()
+        });
+
+      return NextResponse.json({
+        success: true,
+        newBalance: updatedProfile?.credits_balance || 0
+      });
+    }
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Invalid action' },
+      { status: 400 }
+    );
+
+  } catch (error: any) {
+    console.error('Admin Credits API POST Error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error', details: error.message },
       { status: 500 }
     );
   }
