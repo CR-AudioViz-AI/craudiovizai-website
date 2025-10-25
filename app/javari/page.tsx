@@ -124,7 +124,7 @@ export default function JavariPage() {
 
             {/* Chat Component */}
             <div className="flex-1 overflow-hidden">
-              <JavariChat userId={user.id} />
+              <JavariChat />
             </div>
           </div>
         </div>
