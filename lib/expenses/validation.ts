@@ -98,6 +98,12 @@ export const ImportExpenseSchema = z.object({
   payment_method: z.string().optional()
 })
 
+// Lowercase aliases for backward compatibility with API routes
+export const vendorSchema = VendorSchema
+export const categorySchema = CategorySchema
+export const subscriptionSchema = SubscriptionSchema
+export const expenseSchema = ExpenseSchema
+
 // Type exports
 export type Vendor = z.infer<typeof VendorSchema>
 export type CreateVendor = z.infer<typeof CreateVendorSchema>
