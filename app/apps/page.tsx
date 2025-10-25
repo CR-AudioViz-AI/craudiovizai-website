@@ -1,13 +1,103 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
-import { Sparkles, Code2, Download, Share2 } from 'lucide-react';
+import { Sparkles, Code2, Music, Mail, Zap, Download, Share2, CheckCircle } from 'lucide-react';
+
+const embeddedApps = [
+  {
+    id: 'builder',
+    icon: '🏗️',
+    iconComponent: Code2,
+    name: 'App Builder',
+    description: 'Build production-ready applications with AI assistance. No coding required.',
+    features: [
+      'AI-powered code generation',
+      'Export full source code',
+      'Host or sell your apps',
+      'Custom branding options'
+    ],
+    status: 'live',
+    href: '/apps/builder',
+    color: 'blue',
+  },
+  {
+    id: 'music-builder',
+    icon: '🎵',
+    iconComponent: Music,
+    name: 'Music Builder',
+    description: 'Create original music with AI-powered composition and production tools.',
+    features: [
+      'AI music composition',
+      'Multiple genres & styles',
+      'Professional audio quality',
+      'Export & share tracks'
+    ],
+    status: 'live',
+    href: '/apps/music-builder',
+    color: 'purple',
+  },
+  {
+    id: 'newsletter',
+    icon: '📧',
+    iconComponent: Mail,
+    name: 'Newsletter Pro',
+    description: 'Enterprise email marketing platform for campaigns, audiences, and analytics.',
+    features: [
+      'Campaign management',
+      'Audience segmentation',
+      'Performance analytics',
+      'Template designer'
+    ],
+    status: 'live',
+    href: '/apps/newsletter',
+    color: 'green',
+  },
+];
+
+const comingSoonApps = [
+  {
+    icon: '🔐',
+    name: 'Javari AI',
+    description: 'Autonomous AI assistant with secure credential management and automation.',
+    status: 'coming-soon',
+  },
+  {
+    icon: '🎨',
+    name: 'Design Studio',
+    description: 'Professional design tools for graphics, logos, and branding materials.',
+    status: 'coming-soon',
+  },
+  {
+    icon: '📊',
+    name: 'Analytics Pro',
+    description: 'Advanced data analytics and visualization platform.',
+    status: 'coming-soon',
+  },
+  {
+    icon: '🎮',
+    name: 'Game Creator',
+    description: 'Build and publish browser-based games with no coding.',
+    status: 'coming-soon',
+  },
+  {
+    icon: '📝',
+    name: 'Content Writer',
+    description: 'AI-powered content creation for blogs, articles, and marketing copy.',
+    status: 'coming-soon',
+  },
+  {
+    icon: '🎬',
+    name: 'Video Editor',
+    description: 'Professional video editing suite with AI enhancements.',
+    status: 'coming-soon',
+  },
+];
 
 export default function AppsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-navy-800 text-white py-16">
+      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
@@ -35,126 +125,99 @@ export default function AppsPage() {
         </div>
       </section>
 
-      {/* App Builder Section */}
-      <section className="py-12 bg-white">
+      {/* Live Apps Section */}
+      <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <Card className="max-w-5xl mx-auto border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-                    <Code2 className="inline-block w-8 h-8 mr-2 text-blue-600" />
-                    App Builder
-                  </CardTitle>
-                  <CardDescription className="text-lg">
-                    Create custom apps with AI assistance - no coding required
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Sparkles className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">AI-Powered</p>
-                    <p className="text-sm text-gray-600">Let Javari build your app</p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Share2 className="w-5 h-5 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">Host or Export</p>
-                    <p className="text-sm text-gray-600">Keep code or earn 70%</p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Download className="w-5 h-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">Full Control</p>
-                    <p className="text-sm text-gray-600">Download source code</p>
-                  </div>
-                </div>
-              </div>
-              <Button className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg">
-                Start Building Your App
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* Embedded Apps Dashboard Section */}
-      <section className="py-12 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-8">
+          <div className="text-center mb-12">
+            <div className="inline-block bg-green-100 text-green-800 text-sm font-semibold px-4 py-2 rounded-full mb-4">
+              <CheckCircle className="inline-block w-4 h-4 mr-1" />
+              Live Now
+            </div>
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              All Apps & Tools
+              Available Apps
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Browse by category or search to find exactly what you need
+              Launch these production-ready apps instantly. Each app runs in your browser with full functionality.
             </p>
           </div>
 
-          {/* This is where the Bolt-built dashboard will be embedded */}
-          <div className="bg-white rounded-xl shadow-lg p-8 min-h-[600px]">
-            <div className="border-4 border-dashed border-gray-300 rounded-lg p-12 text-center">
-              <Code2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold text-gray-700 mb-2">
-                Apps Dashboard Integration Point
-              </h3>
-              <p className="text-gray-500 mb-4">
-                This is where we'll embed your Bolt-built apps dashboard
-              </p>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-2xl mx-auto">
-                <p className="text-sm text-blue-900 font-semibold mb-2">
-                  📋 TODO: Embed Bolt Dashboard
-                </p>
-                <ul className="text-sm text-blue-800 text-left space-y-1">
-                  <li>• All 60+ apps will be categorized and displayed here</li>
-                  <li>• Search and filter functionality</li>
-                  <li>• Each app card shows: icon, name, description, credit cost</li>
-                  <li>• Click to launch app or learn more</li>
-                  <li>• Apps pull from Supabase database</li>
-                </ul>
-              </div>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+            {embeddedApps.map((app) => {
+              const IconComponent = app.iconComponent;
+              const colorClasses = {
+                blue: 'from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700',
+                purple: 'from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700',
+                green: 'from-green-500 to-green-600 hover:from-green-600 hover:to-green-700',
+              };
+
+              return (
+                <Card key={app.id} className="border-2 hover:shadow-xl transition-all duration-300 flex flex-col">
+                  <CardHeader>
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-3xl shadow-sm">
+                        {app.icon}
+                      </div>
+                      <div className="flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold">
+                        <Zap className="w-3 h-3" />
+                        Live
+                      </div>
+                    </div>
+                    <CardTitle className="text-2xl font-bold text-gray-900">
+                      {app.name}
+                    </CardTitle>
+                    <CardDescription className="text-base text-gray-600">
+                      {app.description}
+                    </CardDescription>
+                  </CardHeader>
+
+                  <CardContent className="flex-1 flex flex-col">
+                    <ul className="space-y-2 mb-6">
+                      {app.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-start text-sm text-gray-700">
+                          <CheckCircle className="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <Link href={app.href} className="mt-auto">
+                      <Button 
+                        className={`w-full bg-gradient-to-r ${colorClasses[app.color as keyof typeof colorClasses]} text-white py-6 text-base font-semibold shadow-md`}
+                      >
+                        <IconComponent className="w-5 h-5 mr-2" />
+                        Launch {app.name}
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Categories Preview */}
-      <section className="py-12 bg-white">
+      {/* Coming Soon Section */}
+      <section className="py-16 bg-gray-50">
         <div className="container mx-auto px-4">
-          <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-            App Categories
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-6xl mx-auto">
-            {[
-              { name: 'Website & Development', icon: '🌐', count: 5 },
-              { name: 'Design & Branding', icon: '🎨', count: 5 },
-              { name: 'Content Creation', icon: '✍️', count: 5 },
-              { name: 'Video & Audio', icon: '🎬', count: 5 },
-              { name: 'Marketing', icon: '📢', count: 5 },
-              { name: 'Business Tools', icon: '💼', count: 5 },
-              { name: 'Print-on-Demand', icon: '👕', count: 5 },
-              { name: 'AI Tools', icon: '🤖', count: 5 },
-              { name: 'Utilities', icon: '🔧', count: 5 },
-              { name: 'Mobile', icon: '📱', count: 5 },
-              { name: 'Social Media', icon: '📱', count: 5 },
-              { name: 'Education', icon: '📚', count: 5 },
-            ].map((category) => (
-              <Card key={category.name} className="hover:shadow-lg transition-shadow cursor-pointer">
+          <div className="text-center mb-12">
+            <div className="inline-block bg-yellow-100 text-yellow-800 text-sm font-semibold px-4 py-2 rounded-full mb-4">
+              Coming Soon
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              More Apps in Development
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              We're constantly building new tools to expand your creative capabilities. Here's what's coming next.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 max-w-7xl mx-auto">
+            {comingSoonApps.map((app, idx) => (
+              <Card key={idx} className="border-2 hover:shadow-lg transition-shadow bg-white">
                 <CardContent className="p-4 text-center">
-                  <div className="text-3xl mb-2">{category.icon}</div>
-                  <p className="text-sm font-semibold text-gray-900">{category.name}</p>
-                  <p className="text-xs text-gray-500 mt-1">{category.count} apps</p>
+                  <div className="text-4xl mb-3">{app.icon}</div>
+                  <h3 className="font-semibold text-gray-900 text-sm mb-2">{app.name}</h3>
+                  <p className="text-xs text-gray-600 leading-tight">{app.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -162,44 +225,88 @@ export default function AppsPage() {
         </div>
       </section>
 
-      {/* Creator Info Section */}
-      <section className="py-12 bg-gradient-to-br from-blue-600 to-purple-600 text-white">
+      {/* Custom App Builder CTA */}
+      <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Build Apps, Earn Revenue
-            </h2>
-            <p className="text-xl text-blue-100 mb-8">
-              Create custom apps and choose your path
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="bg-white/10 backdrop-blur border-white/20">
-                <CardHeader>
-                  <CardTitle className="text-white text-xl">Host on Our Platform</CardTitle>
-                </CardHeader>
-                <CardContent className="text-blue-100">
-                  <ul className="space-y-2">
-                    <li>✓ Earn 70% commission on every use</li>
-                    <li>✓ Automated payments</li>
-                    <li>✓ Analytics dashboard</li>
-                    <li>✓ No hosting costs</li>
-                  </ul>
-                </CardContent>
-              </Card>
-              <Card className="bg-white/10 backdrop-blur border-white/20">
-                <CardHeader>
-                  <CardTitle className="text-white text-xl">Take Your Code</CardTitle>
-                </CardHeader>
-                <CardContent className="text-blue-100">
-                  <ul className="space-y-2">
-                    <li>✓ Download complete source code</li>
-                    <li>✓ Full ownership and control</li>
-                    <li>✓ Host anywhere you want</li>
-                    <li>✓ No ongoing fees</li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </div>
+          <Card className="max-w-5xl mx-auto border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+            <CardHeader>
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div>
+                  <CardTitle className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                    <Code2 className="inline-block w-8 h-8 mr-2 text-blue-600" />
+                    Need a Custom App?
+                  </CardTitle>
+                  <CardDescription className="text-lg">
+                    Let Javari AI build exactly what you need - no coding required
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="flex items-start space-x-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">AI-Powered</p>
+                    <p className="text-sm text-gray-600">Describe your app, Javari builds it</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Download className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Full Ownership</p>
+                    <p className="text-sm text-gray-600">Download complete source code</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Share2 className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">Earn Revenue</p>
+                    <p className="text-sm text-gray-600">Sell on marketplace (70% revenue)</p>
+                  </div>
+                </div>
+              </div>
+              <Link href="/apps/builder">
+                <Button className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-6 text-lg shadow-md">
+                  <Code2 className="w-5 h-5 mr-2" />
+                  Start Building Custom App
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Footer CTA */}
+      <section className="py-12 bg-gradient-to-br from-blue-600 to-indigo-700 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">
+            Ready to Build Something Amazing?
+          </h2>
+          <p className="text-blue-100 text-lg mb-6 max-w-2xl mx-auto">
+            Join thousands of creators using our platform to bring their ideas to life
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/signup">
+              <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-6 text-lg">
+                Get Started Free
+              </Button>
+            </Link>
+            <Link href="/contact">
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-2 border-white text-white hover:bg-white/10 px-8 py-6 text-lg"
+              >
+                Contact Sales
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
