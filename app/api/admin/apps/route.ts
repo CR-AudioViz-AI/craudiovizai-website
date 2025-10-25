@@ -1,260 +1,264 @@
-import { createServerClient } from '@supabase/ssr';
+// CR AUDIOVIZ AI - Admin Apps API Route
+// Session: 2025-10-25 - Phase 3 API Routes
+// Purpose: Manage app access, usage statistics, and app-specific operations
+
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-/**
- * Admin Apps Management API
- * 
- * GET: List all apps with usage statistics
- * POST: Update app settings or status
- * 
- * Session: 2025-10-25 19:00 EST
- */
-
-interface AppUsageStats {
-  app_id: string;
-  app_name: string;
-  total_generations: number;
-  total_credits_used: number;
-  last_used: string | null;
-  is_active: boolean;
-}
-
-async function getSupabaseClient() {
-  const cookieStore = cookies();
-  
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-      },
-    }
-  );
-}
-
-async function verifyAuth() {
-  const supabase = await getSupabaseClient();
-  
-  const { data: { user }, error } = await supabase.auth.getUser();
-  
-  if (error || !user) {
-    return null;
-  }
-  
-  return user;
-}
-
-/**
- * GET /api/admin/apps
- * Returns all apps with usage statistics for the authenticated user
- */
-export async function GET(request: NextRequest) {
+// GET: Fetch user's apps with usage statistics
+export async function GET(request: Request) {
   try {
+    const supabase = createRouteHandlerClient({ cookies });
+    
     // Verify authentication
-    const user = await verifyAuth();
-    if (!user) {
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    
+    if (authError || !session) {
       return NextResponse.json(
-        { error: 'Unauthorized - Please sign in' },
+        { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const supabase = await getSupabaseClient();
+    const userId = session.user.id;
+    const { searchParams } = new URL(request.url);
+    const appId = searchParams.get('appId');
 
-    // Get user's app usage statistics
-    const { data: usageData, error: usageError } = await supabase
-      .from('app_usage')
-      .select('app_id, app_name, credits_used, created_at')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
+    // If specific app requested, return detailed info
+    if (appId) {
+      const { data: appUsage, error: usageError } = await supabase
+        .from('app_usage')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('app_id', appId)
+        .order('created_at', { ascending: false })
+        .limit(100);
 
-    if (usageError) {
-      console.error('Error fetching app usage:', usageError);
-      return NextResponse.json(
-        { error: 'Failed to fetch app usage data' },
-        { status: 500 }
-      );
-    }
+      if (usageError) {
+        return NextResponse.json(
+          { error: 'Failed to fetch app usage', details: usageError.message },
+          { status: 500 }
+        );
+      }
 
-    // Aggregate statistics by app
-    const appStats = new Map<string, AppUsageStats>();
-    
-    if (usageData) {
-      usageData.forEach(usage => {
-        const existing = appStats.get(usage.app_id);
-        
-        if (existing) {
-          existing.total_generations++;
-          existing.total_credits_used += usage.credits_used || 0;
-          
-          // Update last_used if this is more recent
-          if (!existing.last_used || new Date(usage.created_at) > new Date(existing.last_used)) {
-            existing.last_used = usage.created_at;
-          }
-        } else {
-          appStats.set(usage.app_id, {
-            app_id: usage.app_id,
-            app_name: usage.app_name,
-            total_generations: 1,
-            total_credits_used: usage.credits_used || 0,
-            last_used: usage.created_at,
-            is_active: true,
-          });
+      // Calculate statistics
+      const totalGenerations = appUsage?.length || 0;
+      const totalCreditsUsed = appUsage?.reduce((sum, usage) => sum + (usage.credits_used || 0), 0) || 0;
+      const avgCreditsPerGeneration = totalGenerations > 0 ? totalCreditsUsed / totalGenerations : 0;
+
+      return NextResponse.json({
+        success: true,
+        appId,
+        statistics: {
+          totalGenerations,
+          totalCreditsUsed,
+          avgCreditsPerGeneration: Math.round(avgCreditsPerGeneration * 100) / 100,
+          recentUsage: appUsage?.slice(0, 10) || []
         }
       });
     }
 
-    // Get all available apps from catalog
-    const availableApps = [
-      { id: 'ebook-creator', name: 'eBook Creator', category: 'Content' },
-      { id: 'paycheck-calculator', name: 'Paycheck Calculator', category: 'Finance' },
-      { id: 'social-scheduler', name: 'Social Media Scheduler', category: 'Marketing' },
-      { id: 'landing-builder', name: 'Landing Page Builder', category: 'Web' },
-      { id: 'site-builder', name: 'Site Builder', category: 'Web' },
-      { id: 'video-editor', name: 'Video Editor', category: 'Media' },
-      { id: 'audio-mixer', name: 'Audio Mixer', category: 'Media' },
-      { id: 'image-generator', name: 'Image Generator', category: 'Design' },
-      { id: 'logo-maker', name: 'Logo Maker', category: 'Design' },
-    ];
+    // Otherwise return all apps with summary statistics
+    const { data: allUsage, error: allUsageError } = await supabase
+      .from('app_usage')
+      .select('app_id, credits_used, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1000);
 
-    // Merge catalog with usage stats
-    const appsWithStats = availableApps.map(app => {
-      const stats = appStats.get(app.id);
-      
-      return {
-        ...app,
-        total_generations: stats?.total_generations || 0,
-        total_credits_used: stats?.total_credits_used || 0,
-        last_used: stats?.last_used || null,
-        is_active: true,
-      };
-    });
+    if (allUsageError) {
+      return NextResponse.json(
+        { error: 'Failed to fetch usage data', details: allUsageError.message },
+        { status: 500 }
+      );
+    }
 
-    // Calculate totals
-    const totals = {
-      total_apps: availableApps.length,
-      total_generations: Array.from(appStats.values()).reduce(
-        (sum, app) => sum + app.total_generations,
-        0
-      ),
-      total_credits_used: Array.from(appStats.values()).reduce(
-        (sum, app) => sum + app.total_credits_used,
-        0
-      ),
-      apps_used: appStats.size,
-    };
+    // Group by app_id and calculate statistics
+    const appStats = (allUsage || []).reduce((acc: any, usage: any) => {
+      const appId = usage.app_id;
+      if (!acc[appId]) {
+        acc[appId] = {
+          appId,
+          totalGenerations: 0,
+          totalCreditsUsed: 0,
+          lastUsed: usage.created_at
+        };
+      }
+      acc[appId].totalGenerations += 1;
+      acc[appId].totalCreditsUsed += usage.credits_used || 0;
+      return acc;
+    }, {});
+
+    const appsArray = Object.values(appStats);
 
     return NextResponse.json({
       success: true,
-      data: {
-        apps: appsWithStats,
-        totals,
-        user_id: user.id,
-      },
+      totalApps: appsArray.length,
+      apps: appsArray
     });
 
-  } catch (error) {
-    console.error('Error in /api/admin/apps:', error);
+  } catch (error: any) {
+    console.error('Admin Apps API Error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error.message },
       { status: 500 }
     );
   }
 }
 
-/**
- * POST /api/admin/apps
- * Update app settings or toggle app status
- */
-export async function POST(request: NextRequest) {
+// POST: Record new app usage or toggle app access
+export async function POST(request: Request) {
   try {
-    // Verify authentication
-    const user = await verifyAuth();
-    if (!user) {
+    const supabase = createRouteHandlerClient({ cookies });
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    
+    if (authError || !session) {
       return NextResponse.json(
-        { error: 'Unauthorized - Please sign in' },
+        { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
+    const userId = session.user.id;
     const body = await request.json();
-    const { app_id, action, settings } = body;
+    const { action, appId, creditsUsed, metadata } = body;
 
-    if (!app_id || !action) {
+    if (action === 'record_usage') {
+      // Record app usage
+      if (!appId || creditsUsed === undefined) {
+        return NextResponse.json(
+          { error: 'Missing required fields: appId, creditsUsed' },
+          { status: 400 }
+        );
+      }
+
+      // Check user has enough credits
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('credits_balance')
+        .eq('id', userId)
+        .single();
+
+      if (profileError || !profile) {
+        return NextResponse.json(
+          { error: 'Failed to fetch user profile' },
+          { status: 500 }
+        );
+      }
+
+      if (profile.credits_balance < creditsUsed) {
+        return NextResponse.json(
+          { error: 'Insufficient credits', availableCredits: profile.credits_balance },
+          { status: 402 }
+        );
+      }
+
+      // Record usage
+      const { data: usage, error: usageError } = await supabase
+        .from('app_usage')
+        .insert({
+          user_id: userId,
+          app_id: appId,
+          credits_used: creditsUsed,
+          metadata: metadata || {},
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (usageError) {
+        return NextResponse.json(
+          { error: 'Failed to record usage', details: usageError.message },
+          { status: 500 }
+        );
+      }
+
+      // Deduct credits
+      const { error: deductError } = await supabase
+        .from('profiles')
+        .update({ 
+          credits_balance: profile.credits_balance - creditsUsed,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+
+      if (deductError) {
+        console.error('Failed to deduct credits:', deductError);
+      }
+
+      return NextResponse.json({
+        success: true,
+        usage,
+        remainingCredits: profile.credits_balance - creditsUsed
+      });
+    }
+
+    return NextResponse.json(
+      { error: 'Invalid action' },
+      { status: 400 }
+    );
+
+  } catch (error: any) {
+    console.error('Admin Apps API POST Error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error', details: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE: Clear app usage history
+export async function DELETE(request: Request) {
+  try {
+    const supabase = createRouteHandlerClient({ cookies });
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    
+    if (authError || !session) {
       return NextResponse.json(
-        { error: 'Missing required fields: app_id, action' },
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
+    const userId = session.user.id;
+    const { searchParams } = new URL(request.url);
+    const appId = searchParams.get('appId');
+
+    if (!appId) {
+      return NextResponse.json(
+        { error: 'Missing appId parameter' },
         { status: 400 }
       );
     }
 
-    const supabase = await getSupabaseClient();
+    // Delete usage history for specific app
+    const { error: deleteError } = await supabase
+      .from('app_usage')
+      .delete()
+      .eq('user_id', userId)
+      .eq('app_id', appId);
 
-    // Handle different actions
-    switch (action) {
-      case 'toggle_status':
-        // Toggle app active status for user
-        // This could be stored in a user_app_preferences table
-        return NextResponse.json({
-          success: true,
-          message: `App ${app_id} status toggled`,
-        });
-
-      case 'update_settings':
-        // Update app-specific settings
-        if (!settings) {
-          return NextResponse.json(
-            { error: 'Missing settings data' },
-            { status: 400 }
-          );
-        }
-
-        // Store settings in user_app_preferences table
-        const { error: settingsError } = await supabase
-          .from('user_app_preferences')
-          .upsert({
-            user_id: user.id,
-            app_id,
-            settings,
-            updated_at: new Date().toISOString(),
-          });
-
-        if (settingsError) {
-          console.error('Error updating app settings:', settingsError);
-          return NextResponse.json(
-            { error: 'Failed to update app settings' },
-            { status: 500 }
-          );
-        }
-
-        return NextResponse.json({
-          success: true,
-          message: `Settings updated for ${app_id}`,
-        });
-
-      case 'reset_usage':
-        // Reset usage statistics for an app
-        return NextResponse.json({
-          success: true,
-          message: `Usage statistics reset for ${app_id}`,
-        });
-
-      default:
-        return NextResponse.json(
-          { error: `Unknown action: ${action}` },
-          { status: 400 }
-        );
+    if (deleteError) {
+      return NextResponse.json(
+        { error: 'Failed to delete usage history', details: deleteError.message },
+        { status: 500 }
+      );
     }
 
-  } catch (error) {
-    console.error('Error in POST /api/admin/apps:', error);
+    return NextResponse.json({
+      success: true,
+      message: `Usage history cleared for app: ${appId}`
+    });
+
+  } catch (error: any) {
+    console.error('Admin Apps API DELETE Error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error.message },
       { status: 500 }
     );
   }
