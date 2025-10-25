@@ -8,7 +8,7 @@ import Image from 'next/image';
 import { Sparkles, MessageSquare, Zap, Code2, Wand2, Rocket, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { User } from '@supabase/supabase-js';
-import { JavariChat } from '@/components/javari/JavariChat';
+import JavariChat from '@/components/javari/JavariChat';
 
 export default function JavariPage() {
   const [user, setUser] = useState<User | null>(null);
