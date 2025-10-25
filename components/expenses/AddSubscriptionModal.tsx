@@ -28,7 +28,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { CalendarIcon, Loader2 } from 'lucide-react'
-import { format } from 'date-fns'
 
 interface AddSubscriptionModalProps {
   open: boolean
@@ -60,7 +59,7 @@ export default function AddSubscriptionModal({ open, onOpenChange, onSuccess }: 
         status: formData.status,
         auto_renew: formData.auto_renew,
         renewal_alert_days: parseInt(formData.renewal_alert_days) || 7,
-        next_renewal_date: nextRenewalDate ? format(nextRenewalDate, 'yyyy-MM-dd') : undefined
+        next_renewal_date: nextRenewalDate ? nextRenewalDate.toISOString().split('T')[0] : undefined
       }
 
       const response = await fetch('/api/expenses/subscriptions', {
