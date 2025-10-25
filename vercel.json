@@ -6,8 +6,8 @@
   },
   "crons": [
     {
-      "path": "/api/expenses/cron/renewalAlerts",
-      "schedule": "0 13 * * *"
+      "path": "/api/expenses/cron/renewals",
+      "schedule": "0 9 * * *"
     }
   ]
 }
