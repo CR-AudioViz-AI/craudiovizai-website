@@ -8,6 +8,7 @@ import {
   MessageSquare, Mail, BookOpen, Twitch
 } from 'lucide-react';
 
+import FeaturedApps from '@/components/home/FeaturedApps';
 export default async function HomePage() {
   const supabase = await createClient();
   
@@ -151,6 +152,9 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Featured Apps Section */}
+      <FeaturedApps />
 
       {/* Coming Soon Projects Section */}
       {comingSoonProjects && comingSoonProjects.length > 0 && (
@@ -440,3 +444,4 @@ export default async function HomePage() {
     </div>
   );
 }
+
