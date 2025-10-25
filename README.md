@@ -14,31 +14,6 @@ A unified AI-powered platform for creators, businesses, and communities.
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14, React, TypeScript, Tailwind CSS
-- **Backend**: Supabase (PostgreSQL)
-- **Payments**: Stripe + PayPal
-- **AI**: OpenAI GPT-4
-- **Hosting**: Vercel
+- **Frontend**: Next.js 14, React, TypeSc
 
-## Getting Started
-
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Copy `.env.example` to `.env.local` and add your credentials
-4. Run development server: `npm run dev`
-5. Open [http://localhost:3000](http://localhost:3000)
-
-## Environment Variables
-
-See `.env.example` for required environment variables.
-
-## Deployment 
-
-Deploy to Vercel:
-```bash
-vercel --prod
-```
-
-## License
-
-© 2025 CR AudioViz AI, LLC. All rights reserved.
+<!-- Build trigger: 1761350963 -->
