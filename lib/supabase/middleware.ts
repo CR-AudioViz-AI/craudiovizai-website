@@ -12,7 +12,7 @@ export async function updateSession(request: NextRequest) {
   const supabase = createMiddlewareClient({ req: request, res: response })
 
   // Refresh session if expired - required for Server Components
-  await supabase.auth.getSession()
+  const { data: { session } } = await supabase.auth.getSession()
 
   return response
 }
