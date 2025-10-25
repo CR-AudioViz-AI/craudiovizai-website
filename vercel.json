@@ -3,5 +3,11 @@
   "github": {
     "autoAlias": false,
     "silent": true
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/expenses/cron/renewalAlerts",
+      "schedule": "0 13 * * *"
+    }
+  ]
 }
