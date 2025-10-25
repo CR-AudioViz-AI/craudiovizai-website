@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'edge';
 
 // Credit costs for different actions
-export const CREDIT_COSTS = {
+const CREDIT_COSTS = {
   JAVARI_MESSAGE: 1, // 1 credit per message to Javari
   JAVARI_LONG_RESPONSE: 2, // 2 credits for responses over 1000 tokens
   JAVARI_CODE_GENERATION: 3, // 3 credits for code generation
