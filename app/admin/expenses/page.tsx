@@ -281,7 +281,7 @@ export default function ExpensesDashboard() {
                       </td>
                       <td className="p-4">
                         <span className="font-medium">
-                          ${parseFloat(sub.amount).toFixed(2)}
+                          ${Number(sub.amount).toFixed(2)}
                         </span>
                         <span className="text-xs text-muted-foreground ml-1">{sub.currency}</span>
                       </td>
