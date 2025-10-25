@@ -1,483 +1,359 @@
-import { createServerClient } from '@supabase/ssr';
+// CR AUDIOVIZ AI - Admin Billing API Route
+// Session: 2025-10-25 - Phase 3 API Routes
+// Purpose: Manage subscriptions, billing history, and payment methods
+
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-11-20.acacia',
+});
 
 export const dynamic = 'force-dynamic';
 
-/**
- * Admin Billing Management API
- * 
- * GET: Get subscription details and payment history
- * POST: Manage subscriptions (upgrade, downgrade, cancel)
- * 
- * Session: 2025-10-25 19:00 EST
- */
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-12-18.acacia',
-});
-
-async function getSupabaseClient() {
-  const cookieStore = cookies();
-  
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-      },
-    }
-  );
-}
-
-async function verifyAuth() {
-  const supabase = await getSupabaseClient();
-  
-  const { data: { user }, error } = await supabase.auth.getUser();
-  
-  if (error || !user) {
-    return null;
-  }
-  
-  return user;
-}
-
-/**
- * GET /api/admin/billing
- * Returns subscription details and payment history
- */
-export async function GET(request: NextRequest) {
+// GET: Fetch billing information and subscription details
+export async function GET(request: Request) {
   try {
-    // Verify authentication
-    const user = await verifyAuth();
-    if (!user) {
+    const supabase = createRouteHandlerClient({ cookies });
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    
+    if (authError || !session) {
       return NextResponse.json(
-        { error: 'Unauthorized - Please sign in' },
+        { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const supabase = await getSupabaseClient();
+    const userId = session.user.id;
+    const { searchParams } = new URL(request.url);
+    const includeInvoices = searchParams.get('invoices') === 'true';
 
     // Get user profile with subscription info
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('subscription_tier, stripe_customer_id, stripe_subscription_id, subscription_status')
-      .eq('id', user.id)
+      .select('subscription_tier, subscription_status, stripe_customer_id, stripe_subscription_id, subscription_start_date, subscription_end_date')
+      .eq('id', userId)
       .single();
 
-    if (profileError) {
-      console.error('Error fetching profile:', profileError);
+    if (profileError || !profile) {
       return NextResponse.json(
-        { error: 'Failed to fetch billing information' },
+        { error: 'Failed to fetch profile', details: profileError?.message },
         { status: 500 }
       );
     }
 
-    let stripeSubscription = null;
-    let paymentMethods = [];
-    let invoices = [];
+    const response: any = {
+      success: true,
+      subscription: {
+        tier: profile.subscription_tier || 'free',
+        status: profile.subscription_status || 'inactive',
+        startDate: profile.subscription_start_date,
+        endDate: profile.subscription_end_date
+      }
+    };
 
-    // If user has Stripe customer ID, fetch Stripe data
-    if (profile?.stripe_customer_id) {
+    // If user has Stripe customer, fetch additional details
+    if (profile.stripe_customer_id) {
       try {
-        // Get active subscription from Stripe
-        if (profile.stripe_subscription_id) {
-          stripeSubscription = await stripe.subscriptions.retrieve(
-            profile.stripe_subscription_id
-          );
+        const customer = await stripe.customers.retrieve(profile.stripe_customer_id);
+        
+        if (customer && !customer.deleted) {
+          response.customer = {
+            email: customer.email,
+            name: customer.name,
+            defaultPaymentMethod: customer.invoice_settings?.default_payment_method
+          };
         }
 
-        // Get payment methods
-        const paymentMethodsList = await stripe.paymentMethods.list({
+        // Fetch active subscription if exists
+        if (profile.stripe_subscription_id) {
+          const subscription = await stripe.subscriptions.retrieve(profile.stripe_subscription_id);
+          
+          response.subscription.details = {
+            id: subscription.id,
+            status: subscription.status,
+            currentPeriodStart: new Date(subscription.current_period_start * 1000).toISOString(),
+            currentPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
+            cancelAtPeriodEnd: subscription.cancel_at_period_end,
+            canceledAt: subscription.canceled_at ? new Date(subscription.canceled_at * 1000).toISOString() : null,
+            items: subscription.items.data.map(item => ({
+              id: item.id,
+              priceId: item.price.id,
+              amount: item.price.unit_amount,
+              currency: item.price.currency,
+              interval: item.price.recurring?.interval
+            }))
+          };
+        }
+
+        // Fetch payment methods
+        const paymentMethods = await stripe.paymentMethods.list({
           customer: profile.stripe_customer_id,
-          type: 'card',
+          type: 'card'
         });
-        paymentMethods = paymentMethodsList.data;
 
-        // Get recent invoices
-        const invoicesList = await stripe.invoices.list({
-          customer: profile.stripe_customer_id,
-          limit: 20,
-        });
-        invoices = invoicesList.data;
-
-      } catch (stripeError) {
-        console.error('Error fetching Stripe data:', stripeError);
-        // Continue without Stripe data
-      }
-    }
-
-    // Get payment history from database
-    const { data: payments, error: paymentsError } = await supabase
-      .from('payments')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(50);
-
-    if (paymentsError) {
-      console.error('Error fetching payments:', paymentsError);
-    }
-
-    // Available subscription plans
-    const plans = [
-      {
-        id: 'free',
-        name: 'Free',
-        price: 0,
-        interval: 'month',
-        credits_per_month: 100,
-        features: [
-          '100 credits per month',
-          'Basic apps access',
-          'Community support',
-          'Standard processing speed',
-        ],
-        stripe_price_id: null,
-      },
-      {
-        id: 'starter',
-        name: 'Starter',
-        price: 19,
-        interval: 'month',
-        credits_per_month: 500,
-        features: [
-          '500 credits per month',
-          'All basic apps',
-          'Email support',
-          'Priority processing',
-          'No watermarks',
-        ],
-        stripe_price_id: 'price_starter_monthly',
-        popular: false,
-      },
-      {
-        id: 'pro',
-        name: 'Pro',
-        price: 49,
-        interval: 'month',
-        credits_per_month: 2000,
-        features: [
-          '2,000 credits per month',
-          'All apps including premium',
-          'Priority support',
-          'Faster processing',
-          'API access',
-          'Custom branding',
-        ],
-        stripe_price_id: 'price_pro_monthly',
-        popular: true,
-      },
-      {
-        id: 'enterprise',
-        name: 'Enterprise',
-        price: 199,
-        interval: 'month',
-        credits_per_month: 10000,
-        features: [
-          '10,000 credits per month',
-          'Unlimited apps',
-          'Dedicated support',
-          'Fastest processing',
-          'Full API access',
-          'White-label options',
-          'Custom integrations',
-        ],
-        stripe_price_id: 'price_enterprise_monthly',
-        popular: false,
-      },
-    ];
-
-    // Format subscription data
-    const subscriptionData = stripeSubscription ? {
-      id: stripeSubscription.id,
-      status: stripeSubscription.status,
-      current_period_start: new Date(stripeSubscription.current_period_start * 1000).toISOString(),
-      current_period_end: new Date(stripeSubscription.current_period_end * 1000).toISOString(),
-      cancel_at_period_end: stripeSubscription.cancel_at_period_end,
-      canceled_at: stripeSubscription.canceled_at ? new Date(stripeSubscription.canceled_at * 1000).toISOString() : null,
-    } : null;
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        current_plan: {
-          tier: profile?.subscription_tier || 'free',
-          status: profile?.subscription_status || 'active',
-          subscription: subscriptionData,
-        },
-        plans,
-        payment_methods: paymentMethods.map(pm => ({
+        response.paymentMethods = paymentMethods.data.map(pm => ({
           id: pm.id,
           brand: pm.card?.brand,
           last4: pm.card?.last4,
-          exp_month: pm.card?.exp_month,
-          exp_year: pm.card?.exp_year,
-          is_default: pm.id === stripeSubscription?.default_payment_method,
-        })),
-        invoices: invoices.map(inv => ({
-          id: inv.id,
-          amount: inv.amount_paid / 100,
-          currency: inv.currency,
-          status: inv.status,
-          created: new Date(inv.created * 1000).toISOString(),
-          pdf_url: inv.invoice_pdf,
-          hosted_url: inv.hosted_invoice_url,
-        })),
-        payment_history: payments || [],
-        user_id: user.id,
-      },
-    });
+          expMonth: pm.card?.exp_month,
+          expYear: pm.card?.exp_year,
+          isDefault: pm.id === customer.invoice_settings?.default_payment_method
+        }));
 
-  } catch (error) {
-    console.error('Error in /api/admin/billing:', error);
+        // Fetch invoices if requested
+        if (includeInvoices) {
+          const invoices = await stripe.invoices.list({
+            customer: profile.stripe_customer_id,
+            limit: 20
+          });
+
+          response.invoices = invoices.data.map(invoice => ({
+            id: invoice.id,
+            number: invoice.number,
+            amount: invoice.amount_paid,
+            currency: invoice.currency,
+            status: invoice.status,
+            paid: invoice.paid,
+            created: new Date(invoice.created * 1000).toISOString(),
+            hostedInvoiceUrl: invoice.hosted_invoice_url,
+            invoicePdf: invoice.invoice_pdf
+          }));
+        }
+
+      } catch (stripeError: any) {
+        console.error('Stripe API Error:', stripeError);
+        response.stripeError = stripeError.message;
+      }
+    }
+
+    return NextResponse.json(response);
+
+  } catch (error: any) {
+    console.error('Admin Billing API GET Error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error.message },
       { status: 500 }
     );
   }
 }
 
-/**
- * POST /api/admin/billing
- * Manage subscription (upgrade, downgrade, cancel, update payment)
- */
-export async function POST(request: NextRequest) {
+// POST: Manage subscription (create, update, cancel)
+export async function POST(request: Request) {
   try {
-    // Verify authentication
-    const user = await verifyAuth();
-    if (!user) {
+    const supabase = createRouteHandlerClient({ cookies });
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    
+    if (authError || !session) {
       return NextResponse.json(
-        { error: 'Unauthorized - Please sign in' },
+        { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
+    const userId = session.user.id;
     const body = await request.json();
-    const { action, plan_id, payment_method_id } = body;
-
-    if (!action) {
-      return NextResponse.json(
-        { error: 'Missing required field: action' },
-        { status: 400 }
-      );
-    }
-
-    const supabase = await getSupabaseClient();
+    const { action, priceId, paymentMethodId } = body;
 
     // Get user profile
     const { data: profile } = await supabase
       .from('profiles')
-      .select('email, stripe_customer_id, stripe_subscription_id')
-      .eq('id', user.id)
+      .select('stripe_customer_id, stripe_subscription_id, email')
+      .eq('id', userId)
       .single();
 
-    // Handle different actions
-    switch (action) {
-      case 'subscribe':
-      case 'upgrade':
-      case 'downgrade':
-        if (!plan_id) {
-          return NextResponse.json(
-            { error: 'Missing plan_id' },
-            { status: 400 }
-          );
-        }
-
-        // Get plan details
-        const planMap: Record<string, string> = {
-          starter: 'price_starter_monthly',
-          pro: 'price_pro_monthly',
-          enterprise: 'price_enterprise_monthly',
-        };
-
-        const stripePriceId = planMap[plan_id];
-        if (!stripePriceId) {
-          return NextResponse.json(
-            { error: 'Invalid plan_id' },
-            { status: 400 }
-          );
-        }
-
-        // Create or retrieve Stripe customer
-        let customerId = profile?.stripe_customer_id;
-        
-        if (!customerId) {
-          const customer = await stripe.customers.create({
-            email: profile?.email || user.email,
-            metadata: {
-              supabase_user_id: user.id,
-            },
-          });
-          
-          customerId = customer.id;
-          
-          await supabase
-            .from('profiles')
-            .update({ stripe_customer_id: customerId })
-            .eq('id', user.id);
-        }
-
-        // If user has existing subscription, update it
-        if (profile?.stripe_subscription_id) {
-          const subscription = await stripe.subscriptions.retrieve(
-            profile.stripe_subscription_id
-          );
-
-          const updatedSubscription = await stripe.subscriptions.update(
-            profile.stripe_subscription_id,
-            {
-              items: [{
-                id: subscription.items.data[0].id,
-                price: stripePriceId,
-              }],
-              proration_behavior: 'always_invoice',
-            }
-          );
-
-          // Update database
-          await supabase
-            .from('profiles')
-            .update({
-              subscription_tier: plan_id,
-              subscription_status: updatedSubscription.status,
-            })
-            .eq('id', user.id);
-
-          return NextResponse.json({
-            success: true,
-            message: `Subscription updated to ${plan_id}`,
-          });
-        }
-
-        // Create new subscription checkout
-        const session = await stripe.checkout.sessions.create({
-          customer: customerId,
-          mode: 'subscription',
-          payment_method_types: ['card'],
-          line_items: [
-            {
-              price: stripePriceId,
-              quantity: 1,
-            },
-          ],
-          success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/admin/billing?success=true`,
-          cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/admin/billing?canceled=true`,
-          metadata: {
-            user_id: user.id,
-            plan_id,
-          },
-        });
-
-        return NextResponse.json({
-          success: true,
-          checkout_url: session.url,
-          session_id: session.id,
-        });
-
-      case 'cancel':
-        if (!profile?.stripe_subscription_id) {
-          return NextResponse.json(
-            { error: 'No active subscription to cancel' },
-            { status: 400 }
-          );
-        }
-
-        // Cancel subscription at period end
-        const canceledSubscription = await stripe.subscriptions.update(
-          profile.stripe_subscription_id,
-          {
-            cancel_at_period_end: true,
-          }
-        );
-
-        // Update database
-        await supabase
-          .from('profiles')
-          .update({
-            subscription_status: 'canceling',
-          })
-          .eq('id', user.id);
-
-        return NextResponse.json({
-          success: true,
-          message: 'Subscription will cancel at end of billing period',
-          cancel_at: new Date(canceledSubscription.current_period_end * 1000).toISOString(),
-        });
-
-      case 'reactivate':
-        if (!profile?.stripe_subscription_id) {
-          return NextResponse.json(
-            { error: 'No subscription to reactivate' },
-            { status: 400 }
-          );
-        }
-
-        // Remove cancellation
-        const reactivatedSubscription = await stripe.subscriptions.update(
-          profile.stripe_subscription_id,
-          {
-            cancel_at_period_end: false,
-          }
-        );
-
-        // Update database
-        await supabase
-          .from('profiles')
-          .update({
-            subscription_status: reactivatedSubscription.status,
-          })
-          .eq('id', user.id);
-
-        return NextResponse.json({
-          success: true,
-          message: 'Subscription reactivated successfully',
-        });
-
-      case 'update_payment_method':
-        if (!payment_method_id) {
-          return NextResponse.json(
-            { error: 'Missing payment_method_id' },
-            { status: 400 }
-          );
-        }
-
-        if (!profile?.stripe_subscription_id) {
-          return NextResponse.json(
-            { error: 'No active subscription' },
-            { status: 400 }
-          );
-        }
-
-        // Update subscription payment method
-        await stripe.subscriptions.update(
-          profile.stripe_subscription_id,
-          {
-            default_payment_method: payment_method_id,
-          }
-        );
-
-        return NextResponse.json({
-          success: true,
-          message: 'Payment method updated successfully',
-        });
-
-      default:
-        return NextResponse.json(
-          { error: `Unknown action: ${action}` },
-          { status: 400 }
-        );
+    if (!profile) {
+      return NextResponse.json(
+        { error: 'Profile not found' },
+        { status: 404 }
+      );
     }
 
-  } catch (error) {
-    console.error('Error in POST /api/admin/billing:', error);
+    if (action === 'create_subscription') {
+      // Create new subscription
+      if (!priceId) {
+        return NextResponse.json(
+          { error: 'Missing priceId' },
+          { status: 400 }
+        );
+      }
+
+      let customerId = profile.stripe_customer_id;
+
+      // Create customer if doesn't exist
+      if (!customerId) {
+        const customer = await stripe.customers.create({
+          email: profile.email || session.user.email,
+          metadata: {
+            userId
+          }
+        });
+        customerId = customer.id;
+
+        // Update profile with customer ID
+        await supabase
+          .from('profiles')
+          .update({ stripe_customer_id: customerId })
+          .eq('id', userId);
+      }
+
+      // Create subscription
+      const subscription = await stripe.subscriptions.create({
+        customer: customerId,
+        items: [{ price: priceId }],
+        payment_behavior: 'default_incomplete',
+        payment_settings: { save_default_payment_method: 'on_subscription' },
+        expand: ['latest_invoice.payment_intent'],
+        metadata: {
+          userId
+        }
+      });
+
+      // Update profile with subscription ID
+      await supabase
+        .from('profiles')
+        .update({
+          stripe_subscription_id: subscription.id,
+          subscription_status: subscription.status,
+          subscription_start_date: new Date(subscription.current_period_start * 1000).toISOString(),
+          subscription_end_date: new Date(subscription.current_period_end * 1000).toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+
+      return NextResponse.json({
+        success: true,
+        subscription: {
+          id: subscription.id,
+          status: subscription.status,
+          clientSecret: (subscription.latest_invoice as any)?.payment_intent?.client_secret
+        }
+      });
+    }
+
+    if (action === 'cancel_subscription') {
+      // Cancel subscription
+      if (!profile.stripe_subscription_id) {
+        return NextResponse.json(
+          { error: 'No active subscription' },
+          { status: 400 }
+        );
+      }
+
+      const subscription = await stripe.subscriptions.update(
+        profile.stripe_subscription_id,
+        { cancel_at_period_end: true }
+      );
+
+      // Update profile
+      await supabase
+        .from('profiles')
+        .update({
+          subscription_status: 'canceling',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+
+      return NextResponse.json({
+        success: true,
+        message: 'Subscription will cancel at period end',
+        cancelAt: new Date(subscription.current_period_end * 1000).toISOString()
+      });
+    }
+
+    if (action === 'reactivate_subscription') {
+      // Reactivate canceled subscription
+      if (!profile.stripe_subscription_id) {
+        return NextResponse.json(
+          { error: 'No subscription to reactivate' },
+          { status: 400 }
+        );
+      }
+
+      const subscription = await stripe.subscriptions.update(
+        profile.stripe_subscription_id,
+        { cancel_at_period_end: false }
+      );
+
+      // Update profile
+      await supabase
+        .from('profiles')
+        .update({
+          subscription_status: subscription.status,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+
+      return NextResponse.json({
+        success: true,
+        message: 'Subscription reactivated',
+        subscription: {
+          id: subscription.id,
+          status: subscription.status
+        }
+      });
+    }
+
+    if (action === 'update_payment_method') {
+      // Update default payment method
+      if (!paymentMethodId || !profile.stripe_customer_id) {
+        return NextResponse.json(
+          { error: 'Missing paymentMethodId or customer ID' },
+          { status: 400 }
+        );
+      }
+
+      // Attach payment method to customer
+      await stripe.paymentMethods.attach(paymentMethodId, {
+        customer: profile.stripe_customer_id
+      });
+
+      // Set as default
+      await stripe.customers.update(profile.stripe_customer_id, {
+        invoice_settings: {
+          default_payment_method: paymentMethodId
+        }
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: 'Payment method updated'
+      });
+    }
+
+    if (action === 'create_portal_session') {
+      // Create Stripe customer portal session
+      if (!profile.stripe_customer_id) {
+        return NextResponse.json(
+          { error: 'No Stripe customer found' },
+          { status: 400 }
+        );
+      }
+
+      const portalSession = await stripe.billingPortal.sessions.create({
+        customer: profile.stripe_customer_id,
+        return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/admin/billing`
+      });
+
+      return NextResponse.json({
+        success: true,
+        url: portalSession.url
+      });
+    }
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Invalid action' },
+      { status: 400 }
+    );
+
+  } catch (error: any) {
+    console.error('Admin Billing API POST Error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error', details: error.message },
       { status: 500 }
     );
   }
