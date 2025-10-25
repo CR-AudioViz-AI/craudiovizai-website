@@ -101,7 +101,7 @@ export async function GET(request: Request) {
           last4: pm.card?.last4,
           expMonth: pm.card?.exp_month,
           expYear: pm.card?.exp_year,
-          isDefault: pm.id === customer.invoice_settings?.default_payment_method
+          isDefault: pm.id === (!customer.deleted ? customer.invoice_settings?.default_payment_method : undefined)
         }));
 
         // Fetch invoices if requested
