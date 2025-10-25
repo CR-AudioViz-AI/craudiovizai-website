@@ -1,473 +1,402 @@
-import { createServerClient } from '@supabase/ssr';
+// CR AUDIOVIZ AI - Admin Assets API Route
+// Session: 2025-10-25 - Phase 3 API Routes
+// Purpose: Manage user-generated assets (images, videos, audio, documents)
+
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-/**
- * Admin Assets Management API
- * 
- * GET: List all user's generated assets
- * POST: Download, delete, or manage assets
- * DELETE: Remove specific assets
- * 
- * Session: 2025-10-25 19:00 EST
- */
-
-async function getSupabaseClient() {
-  const cookieStore = cookies();
-  
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
-        },
-      },
-    }
-  );
-}
-
-async function verifyAuth() {
-  const supabase = await getSupabaseClient();
-  
-  const { data: { user }, error } = await supabase.auth.getUser();
-  
-  if (error || !user) {
-    return null;
-  }
-  
-  return user;
-}
-
-interface Asset {
-  id: string;
-  user_id: string;
-  app_id: string;
-  app_name: string;
-  asset_type: string;
-  file_name: string;
-  file_url: string;
-  file_size: number;
-  mime_type: string;
-  thumbnail_url?: string;
-  metadata?: Record<string, any>;
-  created_at: string;
-}
-
-/**
- * GET /api/admin/assets
- * Returns all user's generated assets with filtering
- */
-export async function GET(request: NextRequest) {
+// GET: Fetch user's assets with filtering and pagination
+export async function GET(request: Request) {
   try {
-    // Verify authentication
-    const user = await verifyAuth();
-    if (!user) {
+    const supabase = createRouteHandlerClient({ cookies });
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    
+    if (authError || !session) {
       return NextResponse.json(
-        { error: 'Unauthorized - Please sign in' },
+        { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
+    const userId = session.user.id;
     const { searchParams } = new URL(request.url);
-    const app_id = searchParams.get('app_id');
-    const asset_type = searchParams.get('type');
+    
+    const assetType = searchParams.get('type'); // image, video, audio, document
+    const appId = searchParams.get('appId');
     const limit = parseInt(searchParams.get('limit') || '50');
     const offset = parseInt(searchParams.get('offset') || '0');
-
-    const supabase = await getSupabaseClient();
+    const sortBy = searchParams.get('sortBy') || 'created_at';
+    const sortOrder = searchParams.get('sortOrder') || 'desc';
 
     // Build query
     let query = supabase
       .from('user_assets')
       .select('*', { count: 'exact' })
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+      .eq('user_id', userId);
 
     // Apply filters
-    if (app_id) {
-      query = query.eq('app_id', app_id);
+    if (assetType) {
+      query = query.eq('asset_type', assetType);
     }
-    
-    if (asset_type) {
-      query = query.eq('asset_type', asset_type);
+
+    if (appId) {
+      query = query.eq('app_id', appId);
     }
+
+    // Apply sorting and pagination
+    query = query
+      .order(sortBy, { ascending: sortOrder === 'asc' })
+      .range(offset, offset + limit - 1);
 
     const { data: assets, error: assetsError, count } = await query;
 
     if (assetsError) {
-      console.error('Error fetching assets:', assetsError);
       return NextResponse.json(
-        { error: 'Failed to fetch assets' },
+        { error: 'Failed to fetch assets', details: assetsError.message },
         { status: 500 }
       );
     }
 
-    // Calculate storage statistics
-    const totalSize = assets?.reduce((sum, asset) => sum + (asset.file_size || 0), 0) || 0;
-    
-    // Group by app
-    const assetsByApp: Record<string, number> = {};
-    const assetsByType: Record<string, number> = {};
-    
-    assets?.forEach(asset => {
-      assetsByApp[asset.app_name] = (assetsByApp[asset.app_name] || 0) + 1;
-      assetsByType[asset.asset_type] = (assetsByType[asset.asset_type] || 0) + 1;
-    });
+    // Calculate statistics
+    const { data: stats } = await supabase
+      .from('user_assets')
+      .select('asset_type, file_size')
+      .eq('user_id', userId);
 
-    // Get storage limits based on subscription
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('subscription_tier')
-      .eq('id', user.id)
-      .single();
-
-    const storageLimits: Record<string, number> = {
-      free: 1024 * 1024 * 1024, // 1 GB
-      starter: 5 * 1024 * 1024 * 1024, // 5 GB
-      pro: 25 * 1024 * 1024 * 1024, // 25 GB
-      enterprise: 100 * 1024 * 1024 * 1024, // 100 GB
+    const statistics = {
+      totalAssets: count || 0,
+      totalSize: stats?.reduce((sum, asset) => sum + (asset.file_size || 0), 0) || 0,
+      byType: {
+        image: stats?.filter(a => a.asset_type === 'image').length || 0,
+        video: stats?.filter(a => a.asset_type === 'video').length || 0,
+        audio: stats?.filter(a => a.asset_type === 'audio').length || 0,
+        document: stats?.filter(a => a.asset_type === 'document').length || 0
+      }
     };
 
-    const storageLimit = storageLimits[profile?.subscription_tier || 'free'];
-
     return NextResponse.json({
       success: true,
-      data: {
-        assets: assets || [],
-        pagination: {
-          total: count || 0,
-          limit,
-          offset,
-          has_more: (count || 0) > offset + limit,
-        },
-        statistics: {
-          total_assets: count || 0,
-          total_size_bytes: totalSize,
-          total_size_mb: (totalSize / (1024 * 1024)).toFixed(2),
-          storage_limit_bytes: storageLimit,
-          storage_used_percent: ((totalSize / storageLimit) * 100).toFixed(2),
-          by_app: assetsByApp,
-          by_type: assetsByType,
-        },
-        user_id: user.id,
-      },
+      assets: assets || [],
+      statistics,
+      pagination: {
+        total: count || 0,
+        limit,
+        offset,
+        hasMore: (offset + limit) < (count || 0)
+      }
     });
 
-  } catch (error) {
-    console.error('Error in /api/admin/assets:', error);
+  } catch (error: any) {
+    console.error('Admin Assets API GET Error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error.message },
       { status: 500 }
     );
   }
 }
 
-/**
- * POST /api/admin/assets
- * Manage assets (download, favorite, tag)
- */
-export async function POST(request: NextRequest) {
+// POST: Upload or create new asset
+export async function POST(request: Request) {
   try {
-    // Verify authentication
-    const user = await verifyAuth();
-    if (!user) {
+    const supabase = createRouteHandlerClient({ cookies });
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    
+    if (authError || !session) {
       return NextResponse.json(
-        { error: 'Unauthorized - Please sign in' },
+        { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
+    const userId = session.user.id;
     const body = await request.json();
-    const { action, asset_id, asset_ids, metadata } = body;
+    const { action, assetId, fileName, fileUrl, fileSize, assetType, appId, metadata } = body;
 
-    if (!action) {
-      return NextResponse.json(
-        { error: 'Missing required field: action' },
-        { status: 400 }
-      );
-    }
-
-    const supabase = await getSupabaseClient();
-
-    switch (action) {
-      case 'download':
-        if (!asset_id) {
-          return NextResponse.json(
-            { error: 'Missing asset_id' },
-            { status: 400 }
-          );
-        }
-
-        // Get asset details
-        const { data: asset, error: assetError } = await supabase
-          .from('user_assets')
-          .select('*')
-          .eq('id', asset_id)
-          .eq('user_id', user.id)
-          .single();
-
-        if (assetError || !asset) {
-          return NextResponse.json(
-            { error: 'Asset not found' },
-            { status: 404 }
-          );
-        }
-
-        // Generate signed URL for download
-        const { data: signedUrlData, error: urlError } = await supabase.storage
-          .from('user-assets')
-          .createSignedUrl(asset.file_url, 3600); // 1 hour expiry
-
-        if (urlError) {
-          console.error('Error generating download URL:', urlError);
-          return NextResponse.json(
-            { error: 'Failed to generate download URL' },
-            { status: 500 }
-          );
-        }
-
-        return NextResponse.json({
-          success: true,
-          download_url: signedUrlData.signedUrl,
-          file_name: asset.file_name,
-          expires_in: 3600,
-        });
-
-      case 'bulk_download':
-        if (!asset_ids || !Array.isArray(asset_ids)) {
-          return NextResponse.json(
-            { error: 'Missing or invalid asset_ids array' },
-            { status: 400 }
-          );
-        }
-
-        // Get all assets
-        const { data: bulkAssets, error: bulkError } = await supabase
-          .from('user_assets')
-          .select('*')
-          .in('id', asset_ids)
-          .eq('user_id', user.id);
-
-        if (bulkError || !bulkAssets) {
-          return NextResponse.json(
-            { error: 'Failed to fetch assets' },
-            { status: 500 }
-          );
-        }
-
-        // Generate signed URLs for all
-        const downloadUrls = await Promise.all(
-          bulkAssets.map(async (asset) => {
-            const { data: urlData } = await supabase.storage
-              .from('user-assets')
-              .createSignedUrl(asset.file_url, 3600);
-
-            return {
-              id: asset.id,
-              file_name: asset.file_name,
-              download_url: urlData?.signedUrl,
-            };
-          })
-        );
-
-        return NextResponse.json({
-          success: true,
-          downloads: downloadUrls,
-          expires_in: 3600,
-        });
-
-      case 'favorite':
-        if (!asset_id) {
-          return NextResponse.json(
-            { error: 'Missing asset_id' },
-            { status: 400 }
-          );
-        }
-
-        // Toggle favorite status
-        const { data: currentAsset } = await supabase
-          .from('user_assets')
-          .select('metadata')
-          .eq('id', asset_id)
-          .eq('user_id', user.id)
-          .single();
-
-        const currentMetadata = currentAsset?.metadata || {};
-        const newFavoriteStatus = !currentMetadata.is_favorite;
-
-        await supabase
-          .from('user_assets')
-          .update({
-            metadata: {
-              ...currentMetadata,
-              is_favorite: newFavoriteStatus,
-            },
-          })
-          .eq('id', asset_id)
-          .eq('user_id', user.id);
-
-        return NextResponse.json({
-          success: true,
-          is_favorite: newFavoriteStatus,
-        });
-
-      case 'add_tags':
-        if (!asset_id || !metadata?.tags) {
-          return NextResponse.json(
-            { error: 'Missing asset_id or tags' },
-            { status: 400 }
-          );
-        }
-
-        // Add tags to asset metadata
-        const { data: tagAsset } = await supabase
-          .from('user_assets')
-          .select('metadata')
-          .eq('id', asset_id)
-          .eq('user_id', user.id)
-          .single();
-
-        const tagMetadata = tagAsset?.metadata || {};
-        const existingTags = tagMetadata.tags || [];
-        const newTags = [...new Set([...existingTags, ...metadata.tags])];
-
-        await supabase
-          .from('user_assets')
-          .update({
-            metadata: {
-              ...tagMetadata,
-              tags: newTags,
-            },
-          })
-          .eq('id', asset_id)
-          .eq('user_id', user.id);
-
-        return NextResponse.json({
-          success: true,
-          tags: newTags,
-        });
-
-      case 'rename':
-        if (!asset_id || !metadata?.new_name) {
-          return NextResponse.json(
-            { error: 'Missing asset_id or new_name' },
-            { status: 400 }
-          );
-        }
-
-        await supabase
-          .from('user_assets')
-          .update({ file_name: metadata.new_name })
-          .eq('id', asset_id)
-          .eq('user_id', user.id);
-
-        return NextResponse.json({
-          success: true,
-          message: 'Asset renamed successfully',
-        });
-
-      default:
+    if (action === 'create_asset') {
+      // Record new asset
+      if (!fileName || !fileUrl || !assetType) {
         return NextResponse.json(
-          { error: `Unknown action: ${action}` },
+          { error: 'Missing required fields: fileName, fileUrl, assetType' },
           { status: 400 }
         );
+      }
+
+      const { data: asset, error: createError } = await supabase
+        .from('user_assets')
+        .insert({
+          user_id: userId,
+          app_id: appId,
+          file_name: fileName,
+          file_url: fileUrl,
+          file_size: fileSize || 0,
+          asset_type: assetType,
+          metadata: metadata || {},
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (createError) {
+        return NextResponse.json(
+          { error: 'Failed to create asset', details: createError.message },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        asset
+      });
     }
 
-  } catch (error) {
-    console.error('Error in POST /api/admin/assets:', error);
+    if (action === 'generate_download_url') {
+      // Generate temporary signed URL for download
+      if (!assetId) {
+        return NextResponse.json(
+          { error: 'Missing assetId' },
+          { status: 400 }
+        );
+      }
+
+      // Verify asset ownership
+      const { data: asset, error: assetError } = await supabase
+        .from('user_assets')
+        .select('file_url, file_name')
+        .eq('id', assetId)
+        .eq('user_id', userId)
+        .single();
+
+      if (assetError || !asset) {
+        return NextResponse.json(
+          { error: 'Asset not found or access denied' },
+          { status: 404 }
+        );
+      }
+
+      // If asset is in Supabase Storage, generate signed URL
+      if (asset.file_url.includes('supabase.co/storage')) {
+        const pathMatch = asset.file_url.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)/);
+        
+        if (pathMatch) {
+          const bucket = pathMatch[1];
+          const path = pathMatch[2];
+
+          const { data: signedUrl, error: urlError } = await supabase
+            .storage
+            .from(bucket)
+            .createSignedUrl(path, 3600); // 1 hour expiration
+
+          if (urlError) {
+            return NextResponse.json(
+              { error: 'Failed to generate download URL', details: urlError.message },
+              { status: 500 }
+            );
+          }
+
+          return NextResponse.json({
+            success: true,
+            downloadUrl: signedUrl.signedUrl,
+            expiresIn: 3600
+          });
+        }
+      }
+
+      // For non-Supabase URLs, return direct URL
+      return NextResponse.json({
+        success: true,
+        downloadUrl: asset.file_url,
+        fileName: asset.file_name
+      });
+    }
+
+    if (action === 'update_metadata') {
+      // Update asset metadata
+      if (!assetId || !metadata) {
+        return NextResponse.json(
+          { error: 'Missing assetId or metadata' },
+          { status: 400 }
+        );
+      }
+
+      const { data: asset, error: updateError } = await supabase
+        .from('user_assets')
+        .update({
+          metadata,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', assetId)
+        .eq('user_id', userId)
+        .select()
+        .single();
+
+      if (updateError) {
+        return NextResponse.json(
+          { error: 'Failed to update asset', details: updateError.message },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        asset
+      });
+    }
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Invalid action' },
+      { status: 400 }
+    );
+
+  } catch (error: any) {
+    console.error('Admin Assets API POST Error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error', details: error.message },
       { status: 500 }
     );
   }
 }
 
-/**
- * DELETE /api/admin/assets
- * Delete one or more assets
- */
-export async function DELETE(request: NextRequest) {
+// DELETE: Delete assets
+export async function DELETE(request: Request) {
   try {
-    // Verify authentication
-    const user = await verifyAuth();
-    if (!user) {
+    const supabase = createRouteHandlerClient({ cookies });
+    
+    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    
+    if (authError || !session) {
       return NextResponse.json(
-        { error: 'Unauthorized - Please sign in' },
+        { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
+    const userId = session.user.id;
     const { searchParams } = new URL(request.url);
-    const asset_id = searchParams.get('id');
-    const asset_ids = searchParams.get('ids')?.split(',');
+    const assetId = searchParams.get('assetId');
+    const assetIds = searchParams.get('assetIds')?.split(',');
 
-    if (!asset_id && !asset_ids) {
+    if (!assetId && !assetIds) {
       return NextResponse.json(
-        { error: 'Missing asset_id or asset_ids' },
+        { error: 'Missing assetId or assetIds parameter' },
         { status: 400 }
       );
     }
 
-    const supabase = await getSupabaseClient();
+    // Single asset deletion
+    if (assetId) {
+      // Get asset details for storage deletion
+      const { data: asset, error: fetchError } = await supabase
+        .from('user_assets')
+        .select('file_url')
+        .eq('id', assetId)
+        .eq('user_id', userId)
+        .single();
 
-    const idsToDelete = asset_ids || [asset_id!];
+      if (fetchError || !asset) {
+        return NextResponse.json(
+          { error: 'Asset not found or access denied' },
+          { status: 404 }
+        );
+      }
 
-    // Get assets to delete (verify ownership and get file paths)
-    const { data: assets, error: fetchError } = await supabase
-      .from('user_assets')
-      .select('*')
-      .in('id', idsToDelete)
-      .eq('user_id', user.id);
+      // Delete from storage if in Supabase
+      if (asset.file_url.includes('supabase.co/storage')) {
+        const pathMatch = asset.file_url.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)/);
+        
+        if (pathMatch) {
+          const bucket = pathMatch[1];
+          const path = pathMatch[2];
 
-    if (fetchError || !assets || assets.length === 0) {
-      return NextResponse.json(
-        { error: 'No assets found to delete' },
-        { status: 404 }
-      );
+          await supabase.storage.from(bucket).remove([path]);
+        }
+      }
+
+      // Delete from database
+      const { error: deleteError } = await supabase
+        .from('user_assets')
+        .delete()
+        .eq('id', assetId)
+        .eq('user_id', userId);
+
+      if (deleteError) {
+        return NextResponse.json(
+          { error: 'Failed to delete asset', details: deleteError.message },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: 'Asset deleted successfully'
+      });
     }
 
-    // Delete files from storage
-    const filePaths = assets.map(asset => asset.file_url);
-    
-    const { error: storageError } = await supabase.storage
-      .from('user-assets')
-      .remove(filePaths);
+    // Bulk deletion
+    if (assetIds && assetIds.length > 0) {
+      // Get all asset URLs
+      const { data: assets, error: fetchError } = await supabase
+        .from('user_assets')
+        .select('id, file_url')
+        .in('id', assetIds)
+        .eq('user_id', userId);
 
-    if (storageError) {
-      console.error('Error deleting from storage:', storageError);
-      // Continue anyway - database cleanup is more important
+      if (fetchError || !assets) {
+        return NextResponse.json(
+          { error: 'Failed to fetch assets' },
+          { status: 500 }
+        );
+      }
+
+      // Delete from storage
+      const storagePaths: { [bucket: string]: string[] } = {};
+      
+      assets.forEach(asset => {
+        if (asset.file_url.includes('supabase.co/storage')) {
+          const pathMatch = asset.file_url.match(/\/storage\/v1\/object\/public\/([^/]+)\/(.+)/);
+          if (pathMatch) {
+            const bucket = pathMatch[1];
+            const path = pathMatch[2];
+            if (!storagePaths[bucket]) storagePaths[bucket] = [];
+            storagePaths[bucket].push(path);
+          }
+        }
+      });
+
+      // Delete from each bucket
+      for (const [bucket, paths] of Object.entries(storagePaths)) {
+        await supabase.storage.from(bucket).remove(paths);
+      }
+
+      // Delete from database
+      const { error: deleteError } = await supabase
+        .from('user_assets')
+        .delete()
+        .in('id', assetIds)
+        .eq('user_id', userId);
+
+      if (deleteError) {
+        return NextResponse.json(
+          { error: 'Failed to delete assets', details: deleteError.message },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: `${assets.length} assets deleted successfully`,
+        deletedCount: assets.length
+      });
     }
 
-    // Delete from database
-    const { error: deleteError } = await supabase
-      .from('user_assets')
-      .delete()
-      .in('id', idsToDelete)
-      .eq('user_id', user.id);
-
-    if (deleteError) {
-      console.error('Error deleting from database:', deleteError);
-      return NextResponse.json(
-        { error: 'Failed to delete assets' },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: `${assets.length} asset(s) deleted successfully`,
-      deleted_count: assets.length,
-    });
-
-  } catch (error) {
-    console.error('Error in DELETE /api/admin/assets:', error);
+  } catch (error: any) {
+    console.error('Admin Assets API DELETE Error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error.message },
       { status: 500 }
     );
   }
