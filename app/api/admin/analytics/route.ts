@@ -1,7 +1,7 @@
 /**
  * CR AudioViz AI - Analytics API
  * Comprehensive business intelligence and metrics
- * @timestamp October 24, 2025 - 11:32 PM EST - Fixed TypeScript type errors in calculateGrowth
+ * @timestamp October 24, 2025 - 2:22 PM EST - Fixed TypeScript function overload types
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -154,10 +154,10 @@ export async function GET(request: NextRequest) {
     const paidUsers = new Set(allPayments.data?.map(p => p.payment_method) || []).size;
     const conversionRate = totalUsers > 0 ? (paidUsers / totalUsers) * 100 : 0;
 
-    // Calculate growth data
-    const userGrowth = calculateGrowth(allUsers.data || [], 'created_at', days, granularity);
-    const revenueGrowth = calculateGrowth(recentPayments.data || [], 'created_at', days, granularity, 'amount');
-    const projectGrowth = calculateGrowth(recentProjects.data || [], 'created_at', days, granularity);
+    // Calculate growth data - now using properly typed functions
+    const userGrowth = calculateCountGrowth(allUsers.data || [], 'created_at', days, granularity);
+    const revenueGrowth = calculateAmountGrowth(recentPayments.data || [], 'created_at', days, granularity, 'amount');
+    const projectGrowth = calculateCountGrowth(recentProjects.data || [], 'created_at', days, granularity);
 
     // Calculate engagement metrics
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
@@ -307,52 +307,14 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Helper function to calculate growth data - with proper type overloading
-function calculateGrowth(
+// Helper function to calculate count-based growth data
+function calculateCountGrowth(
   data: any[],
   dateField: string,
   days: number,
   granularity: string
-): Array<{ date: string; count: number }>;
-
-function calculateGrowth(
-  data: any[],
-  dateField: string,
-  days: number,
-  granularity: string,
-  amountField: string
-): Array<{ date: string; amount: number }>;
-
-function calculateGrowth(
-  data: any[],
-  dateField: string,
-  days: number,
-  granularity: string,
-  amountField?: string
-): Array<{ date: string; count: number }> | Array<{ date: string; amount: number }> {
+): Array<{ date: string; count: number }> {
   const now = new Date();
-
-  // Return amount-based results
-  if (amountField) {
-    const result: Array<{ date: string; amount: number }> = [];
-    
-    for (let i = days; i >= 0; i--) {
-      const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-      const dateStr = date.toISOString().split('T')[0];
-
-      const dayData = data.filter(item => {
-        const itemDate = new Date(item[dateField]).toISOString().split('T')[0];
-        return itemDate === dateStr;
-      });
-
-      const amount = dayData.reduce((sum, item) => sum + (item[amountField] || 0), 0) / 100;
-      result.push({ date: dateStr, amount: Math.round(amount * 100) / 100 });
-    }
-    
-    return result;
-  }
-
-  // Return count-based results
   const result: Array<{ date: string; count: number }> = [];
   
   for (let i = days; i >= 0; i--) {
@@ -365,6 +327,33 @@ function calculateGrowth(
     });
 
     result.push({ date: dateStr, count: dayData.length });
+  }
+  
+  return result;
+}
+
+// Helper function to calculate amount-based growth data
+function calculateAmountGrowth(
+  data: any[],
+  dateField: string,
+  days: number,
+  granularity: string,
+  amountField: string
+): Array<{ date: string; amount: number }> {
+  const now = new Date();
+  const result: Array<{ date: string; amount: number }> = [];
+  
+  for (let i = days; i >= 0; i--) {
+    const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    const dateStr = date.toISOString().split('T')[0];
+
+    const dayData = data.filter(item => {
+      const itemDate = new Date(item[dateField]).toISOString().split('T')[0];
+      return itemDate === dateStr;
+    });
+
+    const amount = dayData.reduce((sum, item) => sum + (item[amountField] || 0), 0) / 100;
+    result.push({ date: dateStr, amount: Math.round(amount * 100) / 100 });
   }
   
   return result;
