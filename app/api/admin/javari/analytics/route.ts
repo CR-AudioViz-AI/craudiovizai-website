@@ -176,7 +176,7 @@ export async function GET(request: NextRequest) {
         totalCreditsSpent,
         uniqueUsers,
         averageCreditsPerUser: uniqueUsers > 0 ? Math.round(totalCreditsSpent / uniqueUsers) : 0,
-        averageMessagesPerConversation: totalConversations > 0 ? Math.round((totalMessages || 0) / totalConversations) : 0
+        averageMessagesPerConversation: (totalConversations || 0) > 0 ? Math.round((totalMessages || 0) / totalConversations) : 0
       },
       actionBreakdown: Object.entries(actionStats).map(([action, stats]) => ({
         action,
