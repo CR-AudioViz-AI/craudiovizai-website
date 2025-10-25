@@ -21,12 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Calendar } from '@/components/ui/calendar'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
 import { CalendarIcon, Loader2 } from 'lucide-react'
 
 interface AddSubscriptionModalProps {
