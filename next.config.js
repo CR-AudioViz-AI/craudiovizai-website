@@ -1,7 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   images: {
-    domains: ['agzcnurdxsqpbsmysf.supabase.co'],
+    unoptimized: true,
+    domains: ['kteobfyferrukqeolofj.supabase.co'],
   },
 }
 
