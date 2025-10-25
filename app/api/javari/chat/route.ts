@@ -1,199 +1,236 @@
-/**
- * CR AudioViz AI - Javari AI Chat API
- * OpenAI-powered streaming chat with credit management
- * @timestamp October 24, 2025 - 6:15 PM EST
- */
-
-import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { CREDIT_COSTS } from '../credits/route';
 
 export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
 
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
-interface Message {
-  role: 'system' | 'user' | 'assistant';
-  content: string;
-}
+const JAVARI_SYSTEM_PROMPT = `You are Javari, an expert AI Master Builder created by CR AudioViz AI. Your specialty is building complete, production-ready applications through conversation.
 
+**Your Capabilities:**
+- Build websites, web apps, mobile apps, games, and business tools
+- Write clean, production-ready code in multiple languages
+- Integrate APIs, databases, authentication, and payments
+- Create responsive, accessible user interfaces
+- Provide detailed explanations and documentation
+
+**Your Personality:**
+- Professional but friendly and approachable
+- Patient and thorough in explanations
+- Enthusiastic about building great products
+- Honest about limitations or challenges
+
+**Your Approach:**
+1. Ask clarifying questions to understand requirements
+2. Suggest best practices and modern technologies
+3. Build incrementally with user feedback
+4. Provide complete, working code - never partial snippets
+5. Explain your decisions and alternatives
+
+When building applications:
+- Use Next.js 14 for web apps (App Router)
+- Use Tailwind CSS and shadcn/ui for styling
+- Use Supabase for database and authentication
+- Use TypeScript for type safety
+- Follow accessibility standards (WCAG 2.1 AA)
+- Write clean, maintainable, well-documented code
+
+Always be helpful, creative, and focused on delivering real value to users.`;
+
+/**
+ * POST /api/javari/chat
+ * Process chat message with credit management
+ */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient();
-
-    // Authenticate user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const supabase = await createClient();
     
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
+    // Parse request body
     const body = await request.json();
-    const { message, conversationId, messages = [] } = body;
+    const { message, conversationHistory = [], conversationId } = body;
 
     if (!message) {
-      return NextResponse.json({ error: 'Message required' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Message is required' },
+        { status: 400 }
+      );
     }
 
-    // Check user credits
-    const { data: credits } = await supabase
-      .from('credits')
-      .select('balance')
+    // Check credit balance BEFORE processing
+    const { data: customer, error: customerError } = await supabase
+      .from('stripe_customers')
+      .select('credits')
       .eq('user_id', user.id)
       .single();
 
-    if (!credits || credits.balance < 1) {
-      return NextResponse.json({ 
-        error: 'Insufficient credits',
-        balance: credits?.balance || 0 
-      }, { status: 402 });
+    if (customerError) {
+      console.error('Error fetching customer:', customerError);
+      return NextResponse.json(
+        { error: 'Failed to check credits' },
+        { status: 500 }
+      );
     }
 
-    // Get or create conversation
-    let convId = conversationId;
-    if (!convId) {
-      const { data: newConv } = await supabase
-        .from('conversations')
-        .insert({
-          user_id: user.id,
-          title: message.substring(0, 100),
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .select()
-        .single();
-      
-      convId = newConv?.id;
+    const currentCredits = customer?.credits || 0;
+
+    // Check if user has enough credits for a basic message
+    if (currentCredits < CREDIT_COSTS.JAVARI_MESSAGE) {
+      return NextResponse.json(
+        { 
+          error: 'Insufficient credits',
+          required: CREDIT_COSTS.JAVARI_MESSAGE,
+          current: currentCredits,
+          message: 'You need at least 1 credit to chat with Javari. Please purchase more credits to continue.'
+        },
+        { status: 402 } // Payment Required
+      );
     }
 
-    // Build message history
-    const messageHistory: Message[] = [
-      {
-        role: 'system',
-        content: `You are Javari, an advanced AI assistant powering CR AudioViz AI - a comprehensive creative platform. 
-
-You help users:
-- Create music, videos, images, and games
-- Build websites and applications
-- Develop business plans and strategies
-- Learn new skills
-- Manage social media and marketing
-- Write code and solve technical problems
-
-You are knowledgeable, creative, efficient, and always focused on helping users achieve their goals. You provide clear, actionable advice and can generate artifacts like code, documents, and designs.
-
-Current user: ${user.email}
-Credits remaining: ${credits.balance}`
-      },
-      ...messages,
-      {
-        role: 'user',
-        content: message
-      }
+    // Build messages array for OpenAI
+    const messages: any[] = [
+      { role: 'system', content: JAVARI_SYSTEM_PROMPT }
     ];
 
-    // Create streaming response
+    // Add conversation history
+    if (conversationHistory.length > 0) {
+      messages.push(...conversationHistory);
+    }
+
+    // Add current message
+    messages.push({
+      role: 'user',
+      content: message
+    });
+
+    // Call OpenAI API with streaming
+    const stream = await openai.chat.completions.create({
+      model: 'gpt-4-turbo-preview',
+      messages,
+      temperature: 0.7,
+      max_tokens: 2000,
+      stream: true,
+    });
+
+    // Create readable stream for response
     const encoder = new TextEncoder();
-    const stream = new ReadableStream({
+    let fullResponse = '';
+    let tokenCount = 0;
+
+    const readableStream = new ReadableStream({
       async start(controller) {
         try {
-          // Call OpenAI with streaming
-          const completion = await openai.chat.completions.create({
-            model: 'gpt-4-turbo-preview',
-            messages: messageHistory,
-            temperature: 0.7,
-            max_tokens: 2000,
-            stream: true,
-          });
-
-          let fullResponse = '';
-
-          // Stream the response
-          for await (const chunk of completion) {
+          for await (const chunk of stream) {
             const content = chunk.choices[0]?.delta?.content || '';
-            if (content) {
-              fullResponse += content;
-              controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content })}\n\n`));
-            }
+            fullResponse += content;
+            tokenCount += content.length / 4; // Rough estimate
+
+            // Send chunk to client
+            const data = JSON.stringify({ content });
+            controller.enqueue(encoder.encode(`data: ${data}\n\n`));
           }
 
-          // Deduct credit
-          const newBalance = credits.balance - 1;
+          // Response complete - determine credit cost
+          let creditCost = CREDIT_COSTS.JAVARI_MESSAGE;
+          let action = 'message';
+
+          // Check if response is long
+          if (tokenCount > 1000) {
+            creditCost = CREDIT_COSTS.JAVARI_LONG_RESPONSE;
+            action = 'long_response';
+          }
+
+          // Check if response contains code
+          if (fullResponse.includes('```')) {
+            creditCost = CREDIT_COSTS.JAVARI_CODE_GENERATION;
+            action = 'code_generation';
+          }
+
+          // Deduct credits
+          const newBalance = currentCredits - creditCost;
           await supabase
-            .from('credits')
-            .update({ balance: newBalance })
+            .from('stripe_customers')
+            .update({ credits: newBalance })
             .eq('user_id', user.id);
 
-          // Record transaction
+          // Log transaction
           await supabase
             .from('credit_transactions')
             .insert({
               user_id: user.id,
-              amount: -1,
+              amount: -creditCost,
               type: 'deduction',
-              reason: 'Javari AI chat message',
-              balance_after: newBalance,
-              created_at: new Date().toISOString()
+              description: `Javari AI: ${action}`,
+              metadata: {
+                conversationId,
+                messageLength: message.length,
+                responseLength: fullResponse.length,
+                estimatedTokens: tokenCount
+              },
+              balance_after: newBalance
             });
 
-          // Save messages to database
-          if (convId) {
+          // Save conversation if conversationId provided
+          if (conversationId) {
             await supabase
-              .from('messages')
+              .from('javari_conversations')
+              .upsert({
+                id: conversationId,
+                user_id: user.id,
+                updated_at: new Date().toISOString()
+              });
+
+            // Save messages
+            await supabase
+              .from('javari_messages')
               .insert([
                 {
-                  conversation_id: convId,
+                  conversation_id: conversationId,
                   role: 'user',
-                  content: message,
-                  created_at: new Date().toISOString()
+                  content: message
                 },
                 {
-                  conversation_id: convId,
+                  conversation_id: conversationId,
                   role: 'assistant',
-                  content: fullResponse,
-                  created_at: new Date().toISOString()
+                  content: fullResponse
                 }
               ]);
-
-            // Update conversation - fetch current count first
-            const { data: currentConv } = await supabase
-              .from('conversations')
-              .select('message_count')
-              .eq('id', convId)
-              .single();
-
-            await supabase
-              .from('conversations')
-              .update({ 
-                updated_at: new Date().toISOString(),
-                message_count: (currentConv?.message_count || 0) + 2
-              })
-              .eq('id', convId);
           }
 
-          // Send final data with conversation ID and new balance
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
-            done: true, 
-            conversationId: convId,
-            creditsRemaining: newBalance 
-          })}\n\n`));
+          // Send final metadata
+          const metadata = JSON.stringify({
+            done: true,
+            creditsUsed: creditCost,
+            creditsRemaining: newBalance,
+            action
+          });
+          controller.enqueue(encoder.encode(`data: ${metadata}\n\n`));
 
           controller.close();
         } catch (error) {
-          console.error('Streaming error:', error);
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
-            error: 'Failed to generate response',
-            details: error instanceof Error ? error.message : 'Unknown error'
-          })}\n\n`));
+          console.error('Error in stream:', error);
+          const errorData = JSON.stringify({ 
+            error: error instanceof Error ? error.message : 'Stream error' 
+          });
+          controller.enqueue(encoder.encode(`data: ${errorData}\n\n`));
           controller.close();
         }
       },
     });
 
-    return new Response(stream, {
+    return new Response(readableStream, {
       headers: {
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
@@ -202,133 +239,94 @@ Credits remaining: ${credits.balance}`
     });
 
   } catch (error) {
-    console.error('Chat API error:', error);
+    console.error('Error in chat API:', error);
     return NextResponse.json(
       { 
-        error: 'Failed to process chat',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Internal server error'
       },
       { status: 500 }
     );
   }
 }
 
-// GET - Retrieve conversation history
+/**
+ * GET /api/javari/chat?conversationId=xxx
+ * Get conversation history
+ */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient();
-
-    // Authenticate user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const supabase = await createClient();
     
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
     const searchParams = request.nextUrl.searchParams;
     const conversationId = searchParams.get('conversationId');
 
     if (!conversationId) {
-      // Return all conversations
+      // Get all conversations for user
       const { data: conversations, error } = await supabase
-        .from('conversations')
+        .from('javari_conversations')
         .select('*')
         .eq('user_id', user.id)
-        .order('updated_at', { ascending: false })
-        .limit(50);
+        .order('updated_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching conversations:', error);
+        return NextResponse.json(
+          { error: 'Failed to fetch conversations' },
+          { status: 500 }
+        );
+      }
 
-      return NextResponse.json({
-        success: true,
-        data: conversations || []
-      });
-    } else {
-      // Return specific conversation with messages
-      const { data: conversation, error: convError } = await supabase
-        .from('conversations')
-        .select('*')
-        .eq('id', conversationId)
-        .eq('user_id', user.id)
-        .single();
-
-      if (convError) throw convError;
-
-      const { data: messages, error: msgError } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('conversation_id', conversationId)
-        .order('created_at', { ascending: true });
-
-      if (msgError) throw msgError;
-
-      return NextResponse.json({
-        success: true,
-        data: {
-          conversation,
-          messages: messages || []
-        }
-      });
+      return NextResponse.json({ conversations });
     }
 
-  } catch (error) {
-    console.error('Get conversation error:', error);
-    return NextResponse.json(
-      { 
-        error: 'Failed to retrieve conversation',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
-      { status: 500 }
-    );
-  }
-}
-
-// DELETE - Delete conversation
-export async function DELETE(request: NextRequest) {
-  try {
-    const supabase = createClient();
-
-    // Authenticate user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const searchParams = request.nextUrl.searchParams;
-    const conversationId = searchParams.get('id');
-
-    if (!conversationId) {
-      return NextResponse.json({ error: 'Conversation ID required' }, { status: 400 });
-    }
-
-    // Delete messages first
-    await supabase
-      .from('messages')
-      .delete()
-      .eq('conversation_id', conversationId);
-
-    // Delete conversation
-    const { error } = await supabase
-      .from('conversations')
-      .delete()
+    // Get specific conversation with messages
+    const { data: conversation, error: convError } = await supabase
+      .from('javari_conversations')
+      .select('*')
       .eq('id', conversationId)
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .single();
 
-    if (error) throw error;
+    if (convError) {
+      console.error('Error fetching conversation:', convError);
+      return NextResponse.json(
+        { error: 'Conversation not found' },
+        { status: 404 }
+      );
+    }
+
+    const { data: messages, error: msgError } = await supabase
+      .from('javari_messages')
+      .select('*')
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: true });
+
+    if (msgError) {
+      console.error('Error fetching messages:', msgError);
+      return NextResponse.json(
+        { error: 'Failed to fetch messages' },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
-      success: true,
-      message: 'Conversation deleted successfully'
+      conversation,
+      messages
     });
 
   } catch (error) {
-    console.error('Delete conversation error:', error);
+    console.error('Error in chat GET:', error);
     return NextResponse.json(
-      { 
-        error: 'Failed to delete conversation',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
