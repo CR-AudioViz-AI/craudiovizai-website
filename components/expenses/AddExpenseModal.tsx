@@ -21,14 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Calendar } from '@/components/ui/calendar'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import { CalendarIcon, Loader2 } from 'lucide-react'
-import { format } from 'date-fns'
+import { Loader2 } from 'lucide-react'
 
 interface Vendor {
   id: string
@@ -50,13 +43,12 @@ export default function AddExpenseModal({ open, onOpenChange, onSuccess }: AddEx
   const [loading, setLoading] = useState(false)
   const [vendors, setVendors] = useState<Vendor[]>([])
   const [categories, setCategories] = useState<Category[]>([])
-  const [date, setDate] = useState<Date>(new Date())
   const [formData, setFormData] = useState({
+    date: new Date().toISOString().split('T')[0],
     amount: '',
     description: '',
     vendor_id: '',
-    category_id: '',
-    subscription_id: ''
+    category_id: ''
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
 
@@ -90,7 +82,7 @@ export default function AddExpenseModal({ open, onOpenChange, onSuccess }: AddEx
       newErrors.amount = 'Amount must be greater than 0'
     }
 
-    if (!date) {
+    if (!formData.date) {
       newErrors.date = 'Date is required'
     }
 
@@ -106,12 +98,11 @@ export default function AddExpenseModal({ open, onOpenChange, onSuccess }: AddEx
     setLoading(true)
     try {
       const payload = {
-        date: format(date, 'yyyy-MM-dd'),
+        date: formData.date,
         amount: parseFloat(formData.amount),
         description: formData.description || undefined,
         vendor_id: formData.vendor_id || undefined,
-        category_id: formData.category_id || undefined,
-        subscription_id: formData.subscription_id || undefined
+        category_id: formData.category_id || undefined
       }
 
       const response = await fetch('/api/expenses', {
@@ -123,18 +114,14 @@ export default function AddExpenseModal({ open, onOpenChange, onSuccess }: AddEx
       const data = await response.json()
 
       if (data.success) {
-        // Reset form
         setFormData({
+          date: new Date().toISOString().split('T')[0],
           amount: '',
           description: '',
           vendor_id: '',
-          category_id: '',
-          subscription_id: ''
+          category_id: ''
         })
-        setDate(new Date())
         setErrors({})
-        
-        // Close modal and trigger success callback
         onOpenChange(false)
         if (onSuccess) onSuccess()
       } else {
@@ -159,32 +146,17 @@ export default function AddExpenseModal({ open, onOpenChange, onSuccess }: AddEx
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Date */}
           <div className="space-y-2">
             <Label htmlFor="date">Date *</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, 'PPP') : <span>Pick a date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={(day) => day && setDate(day)}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
+            <Input
+              id="date"
+              type="date"
+              value={formData.date}
+              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            />
             {errors.date && <p className="text-sm text-destructive">{errors.date}</p>}
           </div>
 
-          {/* Amount */}
           <div className="space-y-2">
             <Label htmlFor="amount">Amount *</Label>
             <div className="relative">
@@ -202,7 +174,6 @@ export default function AddExpenseModal({ open, onOpenChange, onSuccess }: AddEx
             {errors.amount && <p className="text-sm text-destructive">{errors.amount}</p>}
           </div>
 
-          {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
@@ -214,7 +185,6 @@ export default function AddExpenseModal({ open, onOpenChange, onSuccess }: AddEx
             />
           </div>
 
-          {/* Vendor */}
           <div className="space-y-2">
             <Label htmlFor="vendor">Vendor</Label>
             <Select value={formData.vendor_id} onValueChange={(value) => setFormData({ ...formData, vendor_id: value })}>
@@ -232,7 +202,6 @@ export default function AddExpenseModal({ open, onOpenChange, onSuccess }: AddEx
             </Select>
           </div>
 
-          {/* Category */}
           <div className="space-y-2">
             <Label htmlFor="category">Category</Label>
             <Select value={formData.category_id} onValueChange={(value) => setFormData({ ...formData, category_id: value })}>
