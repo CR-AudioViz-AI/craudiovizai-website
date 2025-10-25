@@ -1,62 +1,65 @@
-/**
- * CR AudioViz AI - Admin Settings API Route
- * Manages user profile, preferences, and security settings
- * @timestamp October 25, 2025 - 3:52 PM EST
- */
-
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import bcrypt from 'bcryptjs';
 
 export const dynamic = 'force-dynamic';
 
-interface UserSettings {
-  profile: {
-    email: string;
-    fullName: string;
-    company?: string;
-    timezone: string;
-    language: string;
-    avatarUrl?: string;
-  };
-  preferences: {
-    emailNotifications: boolean;
-    marketingEmails: boolean;
-    productUpdates: boolean;
-    weeklyDigest: boolean;
-    theme: 'light' | 'dark' | 'system';
-    compactMode: boolean;
-  };
-  security: {
-    twoFactorEnabled: boolean;
-    lastPasswordChange?: string;
-    activeSessions: number;
-  };
-  api: {
-    apiKey?: string;
-    apiKeysCount: number;
-    lastApiCall?: string;
-  };
+/**
+ * Admin Settings Management API
+ * 
+ * GET: Get user profile and preferences
+ * POST: Update profile, password, preferences, API keys
+ * 
+ * Session: 2025-10-25 19:00 EST
+ */
+
+async function getSupabaseClient() {
+  const cookieStore = cookies();
+  
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+      },
+    }
+  );
+}
+
+async function verifyAuth() {
+  const supabase = await getSupabaseClient();
+  
+  const { data: { user }, error } = await supabase.auth.getUser();
+  
+  if (error || !user) {
+    return null;
+  }
+  
+  return user;
 }
 
 /**
  * GET /api/admin/settings
- * Retrieve all user settings and preferences
+ * Returns user settings and preferences
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !user) {
+    // Verify authentication
+    const user = await verifyAuth();
+    if (!user) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized - Please sign in' },
         { status: 401 }
       );
     }
 
-    // Fetch user profile
+    const supabase = await getSupabaseClient();
+
+    // Get user profile
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('*')
@@ -65,75 +68,81 @@ export async function GET(request: NextRequest) {
 
     if (profileError) {
       console.error('Error fetching profile:', profileError);
+      return NextResponse.json(
+        { error: 'Failed to fetch profile' },
+        { status: 500 }
+      );
     }
 
-    // Fetch user preferences
+    // Get user preferences
     const { data: preferences, error: prefsError } = await supabase
       .from('user_preferences')
       .select('*')
       .eq('user_id', user.id)
       .single();
 
-    if (prefsError) {
+    if (prefsError && prefsError.code !== 'PGRST116') { // PGRST116 = no rows returned
       console.error('Error fetching preferences:', prefsError);
     }
 
-    // Fetch API keys count
-    const { count: apiKeysCount } = await supabase
-      .from('api_keys')
-      .select('*', { count: 'exact', head: true })
+    // Get API keys (mask the actual keys)
+    const { data: apiKeys, error: keysError } = await supabase
+      .from('user_api_keys')
+      .select('id, key_name, key_prefix, created_at, last_used, is_active')
       .eq('user_id', user.id)
-      .eq('is_active', true);
+      .order('created_at', { ascending: false });
 
-    // Fetch last API call
-    const { data: lastApiCall } = await supabase
-      .from('api_usage')
-      .select('created_at')
+    if (keysError) {
+      console.error('Error fetching API keys:', keysError);
+    }
+
+    // Get notification settings
+    const { data: notifications, error: notifError } = await supabase
+      .from('notification_settings')
+      .select('*')
       .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-      .limit(1)
       .single();
 
-    // Count active sessions
-    const { count: activeSessions } = await supabase
-      .from('user_sessions')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .eq('is_active', true);
+    if (notifError && notifError.code !== 'PGRST116') {
+      console.error('Error fetching notification settings:', notifError);
+    }
 
-    const settings: UserSettings = {
-      profile: {
-        email: user.email || '',
-        fullName: profile?.full_name || '',
-        company: profile?.company || undefined,
-        timezone: profile?.timezone || 'America/New_York',
-        language: profile?.language || 'en',
-        avatarUrl: profile?.avatar_url || undefined
-      },
-      preferences: {
-        emailNotifications: preferences?.email_notifications ?? true,
-        marketingEmails: preferences?.marketing_emails ?? false,
-        productUpdates: preferences?.product_updates ?? true,
-        weeklyDigest: preferences?.weekly_digest ?? false,
-        theme: preferences?.theme || 'system',
-        compactMode: preferences?.compact_mode ?? false
-      },
-      security: {
-        twoFactorEnabled: profile?.two_factor_enabled ?? false,
-        lastPasswordChange: profile?.last_password_change || undefined,
-        activeSessions: activeSessions || 0
-      },
-      api: {
-        apiKey: profile?.api_key || undefined,
-        apiKeysCount: apiKeysCount || 0,
-        lastApiCall: lastApiCall?.created_at || undefined
-      }
+    // Prepare safe profile data (remove sensitive fields)
+    const safeProfile = {
+      ...profile,
+      stripe_customer_id: undefined, // Don't expose Stripe IDs
+      stripe_subscription_id: undefined,
     };
 
-    return NextResponse.json(settings);
+    return NextResponse.json({
+      success: true,
+      data: {
+        profile: safeProfile,
+        preferences: preferences || {
+          theme: 'light',
+          language: 'en',
+          timezone: 'America/New_York',
+          notifications_enabled: true,
+        },
+        api_keys: apiKeys || [],
+        notifications: notifications || {
+          email_enabled: true,
+          push_enabled: false,
+          credits_low_alert: true,
+          subscription_updates: true,
+          new_features: true,
+        },
+        security: {
+          two_factor_enabled: profile?.two_factor_enabled || false,
+          last_password_change: profile?.last_password_change || null,
+          active_sessions: 1, // TODO: Implement session tracking
+        },
+        user_id: user.id,
+      },
+    });
 
   } catch (error) {
-    console.error('Admin settings API error:', error);
+    console.error('Error in /api/admin/settings:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -142,50 +151,65 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * PATCH /api/admin/settings
- * Update user settings and preferences
+ * POST /api/admin/settings
+ * Update user settings
  */
-export async function PATCH(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
-    
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !user) {
+    // Verify authentication
+    const user = await verifyAuth();
+    if (!user) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized - Please sign in' },
         { status: 401 }
       );
     }
 
     const body = await request.json();
-    const { section, data } = body;
+    const { action, data } = body;
 
-    if (!section || !data) {
+    if (!action) {
       return NextResponse.json(
-        { error: 'Missing required fields: section and data' },
+        { error: 'Missing required field: action' },
         { status: 400 }
       );
     }
 
-    switch (section) {
-      case 'profile': {
-        const { fullName, company, timezone, language } = data;
-        
-        const { error: updateError } = await supabase
+    const supabase = await getSupabaseClient();
+
+    switch (action) {
+      case 'update_profile':
+        if (!data) {
+          return NextResponse.json(
+            { error: 'Missing profile data' },
+            { status: 400 }
+          );
+        }
+
+        // Update allowed profile fields
+        const allowedFields = ['full_name', 'company', 'phone', 'avatar_url', 'bio'];
+        const updateData: Record<string, any> = {};
+
+        allowedFields.forEach(field => {
+          if (data[field] !== undefined) {
+            updateData[field] = data[field];
+          }
+        });
+
+        if (Object.keys(updateData).length === 0) {
+          return NextResponse.json(
+            { error: 'No valid fields to update' },
+            { status: 400 }
+          );
+        }
+
+        const { error: profileError } = await supabase
           .from('profiles')
-          .update({
-            full_name: fullName,
-            company: company || null,
-            timezone: timezone,
-            language: language,
-            updated_at: new Date().toISOString()
-          })
+          .update(updateData)
           .eq('id', user.id);
 
-        if (updateError) {
-          console.error('Profile update error:', updateError);
+        if (profileError) {
+          console.error('Error updating profile:', profileError);
           return NextResponse.json(
             { error: 'Failed to update profile' },
             { status: 500 }
@@ -194,38 +218,94 @@ export async function PATCH(request: NextRequest) {
 
         return NextResponse.json({
           success: true,
-          message: 'Profile updated successfully'
+          message: 'Profile updated successfully',
         });
-      }
 
-      case 'preferences': {
-        const { 
-          emailNotifications, 
-          marketingEmails, 
-          productUpdates, 
-          weeklyDigest,
-          theme,
-          compactMode
-        } = data;
+      case 'update_email':
+        if (!data.new_email) {
+          return NextResponse.json(
+            { error: 'Missing new_email' },
+            { status: 400 }
+          );
+        }
+
+        // Update email via Supabase Auth
+        const { error: emailError } = await supabase.auth.updateUser({
+          email: data.new_email,
+        });
+
+        if (emailError) {
+          console.error('Error updating email:', emailError);
+          return NextResponse.json(
+            { error: 'Failed to update email' },
+            { status: 500 }
+          );
+        }
+
+        return NextResponse.json({
+          success: true,
+          message: 'Confirmation email sent to new address',
+        });
+
+      case 'update_password':
+        if (!data.current_password || !data.new_password) {
+          return NextResponse.json(
+            { error: 'Missing current_password or new_password' },
+            { status: 400 }
+          );
+        }
+
+        // Validate new password strength
+        if (data.new_password.length < 8) {
+          return NextResponse.json(
+            { error: 'Password must be at least 8 characters' },
+            { status: 400 }
+          );
+        }
+
+        // Update password via Supabase Auth
+        const { error: passwordError } = await supabase.auth.updateUser({
+          password: data.new_password,
+        });
+
+        if (passwordError) {
+          console.error('Error updating password:', passwordError);
+          return NextResponse.json(
+            { error: 'Failed to update password' },
+            { status: 500 }
+          );
+        }
+
+        // Update last password change timestamp
+        await supabase
+          .from('profiles')
+          .update({ last_password_change: new Date().toISOString() })
+          .eq('id', user.id);
+
+        return NextResponse.json({
+          success: true,
+          message: 'Password updated successfully',
+        });
+
+      case 'update_preferences':
+        if (!data) {
+          return NextResponse.json(
+            { error: 'Missing preferences data' },
+            { status: 400 }
+          );
+        }
 
         // Upsert preferences
-        const { error: upsertError } = await supabase
+        const { error: prefsError } = await supabase
           .from('user_preferences')
           .upsert({
             user_id: user.id,
-            email_notifications: emailNotifications,
-            marketing_emails: marketingEmails,
-            product_updates: productUpdates,
-            weekly_digest: weeklyDigest,
-            theme: theme,
-            compact_mode: compactMode,
-            updated_at: new Date().toISOString()
-          }, {
-            onConflict: 'user_id'
+            ...data,
+            updated_at: new Date().toISOString(),
           });
 
-        if (upsertError) {
-          console.error('Preferences update error:', upsertError);
+        if (prefsError) {
+          console.error('Error updating preferences:', prefsError);
           return NextResponse.json(
             { error: 'Failed to update preferences' },
             { status: 500 }
@@ -234,271 +314,157 @@ export async function PATCH(request: NextRequest) {
 
         return NextResponse.json({
           success: true,
-          message: 'Preferences updated successfully'
+          message: 'Preferences updated successfully',
         });
-      }
 
-      case 'security': {
-        const { action, ...params } = data;
-
-        switch (action) {
-          case 'enable_2fa': {
-            const { error: updateError } = await supabase
-              .from('profiles')
-              .update({
-                two_factor_enabled: true,
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', user.id);
-
-            if (updateError) {
-              return NextResponse.json(
-                { error: 'Failed to enable 2FA' },
-                { status: 500 }
-              );
-            }
-
-            return NextResponse.json({
-              success: true,
-              message: 'Two-factor authentication enabled'
-            });
-          }
-
-          case 'disable_2fa': {
-            const { error: updateError } = await supabase
-              .from('profiles')
-              .update({
-                two_factor_enabled: false,
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', user.id);
-
-            if (updateError) {
-              return NextResponse.json(
-                { error: 'Failed to disable 2FA' },
-                { status: 500 }
-              );
-            }
-
-            return NextResponse.json({
-              success: true,
-              message: 'Two-factor authentication disabled'
-            });
-          }
-
-          case 'change_password': {
-            const { currentPassword, newPassword } = params;
-
-            if (!currentPassword || !newPassword) {
-              return NextResponse.json(
-                { error: 'Current and new password required' },
-                { status: 400 }
-              );
-            }
-
-            // Use Supabase auth to update password
-            const { error: passwordError } = await supabase.auth.updateUser({
-              password: newPassword
-            });
-
-            if (passwordError) {
-              return NextResponse.json(
-                { error: 'Failed to change password' },
-                { status: 400 }
-              );
-            }
-
-            // Update last password change timestamp
-            await supabase
-              .from('profiles')
-              .update({
-                last_password_change: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', user.id);
-
-            return NextResponse.json({
-              success: true,
-              message: 'Password changed successfully'
-            });
-          }
-
-          case 'revoke_sessions': {
-            // Mark all other sessions as inactive
-            const { error: revokeError } = await supabase
-              .from('user_sessions')
-              .update({
-                is_active: false,
-                updated_at: new Date().toISOString()
-              })
-              .eq('user_id', user.id)
-              .neq('session_id', params.currentSessionId);
-
-            if (revokeError) {
-              return NextResponse.json(
-                { error: 'Failed to revoke sessions' },
-                { status: 500 }
-              );
-            }
-
-            return NextResponse.json({
-              success: true,
-              message: 'All other sessions revoked'
-            });
-          }
-
-          default:
-            return NextResponse.json(
-              { error: 'Invalid security action' },
-              { status: 400 }
-            );
+      case 'update_notifications':
+        if (!data) {
+          return NextResponse.json(
+            { error: 'Missing notification settings' },
+            { status: 400 }
+          );
         }
-      }
 
-      case 'api': {
-        const { action } = data;
+        // Upsert notification settings
+        const { error: notifError } = await supabase
+          .from('notification_settings')
+          .upsert({
+            user_id: user.id,
+            ...data,
+            updated_at: new Date().toISOString(),
+          });
 
-        switch (action) {
-          case 'generate_key': {
-            // Generate new API key
-            const apiKey = `crav_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
-            
-            const { error: insertError } = await supabase
-              .from('api_keys')
-              .insert({
-                user_id: user.id,
-                key: apiKey,
-                name: data.name || 'API Key',
-                is_active: true,
-                created_at: new Date().toISOString()
-              });
-
-            if (insertError) {
-              return NextResponse.json(
-                { error: 'Failed to generate API key' },
-                { status: 500 }
-              );
-            }
-
-            return NextResponse.json({
-              success: true,
-              apiKey: apiKey,
-              message: 'API key generated successfully'
-            });
-          }
-
-          case 'revoke_key': {
-            const { keyId } = data;
-
-            if (!keyId) {
-              return NextResponse.json(
-                { error: 'Key ID required' },
-                { status: 400 }
-              );
-            }
-
-            const { error: revokeError } = await supabase
-              .from('api_keys')
-              .update({
-                is_active: false,
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', keyId)
-              .eq('user_id', user.id);
-
-            if (revokeError) {
-              return NextResponse.json(
-                { error: 'Failed to revoke API key' },
-                { status: 500 }
-              );
-            }
-
-            return NextResponse.json({
-              success: true,
-              message: 'API key revoked successfully'
-            });
-          }
-
-          default:
-            return NextResponse.json(
-              { error: 'Invalid API action' },
-              { status: 400 }
-            );
+        if (notifError) {
+          console.error('Error updating notifications:', notifError);
+          return NextResponse.json(
+            { error: 'Failed to update notification settings' },
+            { status: 500 }
+          );
         }
-      }
+
+        return NextResponse.json({
+          success: true,
+          message: 'Notification settings updated successfully',
+        });
+
+      case 'generate_api_key':
+        if (!data.key_name) {
+          return NextResponse.json(
+            { error: 'Missing key_name' },
+            { status: 400 }
+          );
+        }
+
+        // Generate new API key
+        const apiKey = `crav_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
+        const keyPrefix = apiKey.substring(0, 12);
+
+        // Hash the key before storing
+        const hashedKey = await bcrypt.hash(apiKey, 10);
+
+        // Store hashed key
+        const { data: newKey, error: keyError } = await supabase
+          .from('user_api_keys')
+          .insert({
+            user_id: user.id,
+            key_name: data.key_name,
+            key_hash: hashedKey,
+            key_prefix: keyPrefix,
+            is_active: true,
+          })
+          .select()
+          .single();
+
+        if (keyError) {
+          console.error('Error generating API key:', keyError);
+          return NextResponse.json(
+            { error: 'Failed to generate API key' },
+            { status: 500 }
+          );
+        }
+
+        return NextResponse.json({
+          success: true,
+          message: 'API key generated successfully',
+          api_key: apiKey, // Only show once!
+          key_id: newKey.id,
+          warning: 'Save this key now - it will not be shown again',
+        });
+
+      case 'revoke_api_key':
+        if (!data.key_id) {
+          return NextResponse.json(
+            { error: 'Missing key_id' },
+            { status: 400 }
+          );
+        }
+
+        // Deactivate API key
+        const { error: revokeError } = await supabase
+          .from('user_api_keys')
+          .update({ is_active: false })
+          .eq('id', data.key_id)
+          .eq('user_id', user.id);
+
+        if (revokeError) {
+          console.error('Error revoking API key:', revokeError);
+          return NextResponse.json(
+            { error: 'Failed to revoke API key' },
+            { status: 500 }
+          );
+        }
+
+        return NextResponse.json({
+          success: true,
+          message: 'API key revoked successfully',
+        });
+
+      case 'enable_2fa':
+        // TODO: Implement 2FA setup with TOTP
+        return NextResponse.json({
+          success: false,
+          message: '2FA setup coming soon',
+        });
+
+      case 'disable_2fa':
+        // TODO: Implement 2FA disable
+        return NextResponse.json({
+          success: false,
+          message: '2FA disable coming soon',
+        });
+
+      case 'delete_account':
+        // Soft delete - mark account for deletion
+        const { error: deleteError } = await supabase
+          .from('profiles')
+          .update({
+            account_status: 'pending_deletion',
+            deletion_requested_at: new Date().toISOString(),
+          })
+          .eq('id', user.id);
+
+        if (deleteError) {
+          console.error('Error marking account for deletion:', deleteError);
+          return NextResponse.json(
+            { error: 'Failed to process account deletion' },
+            { status: 500 }
+          );
+        }
+
+        return NextResponse.json({
+          success: true,
+          message: 'Account marked for deletion. You have 30 days to cancel.',
+        });
 
       default:
         return NextResponse.json(
-          { error: 'Invalid settings section' },
+          { error: `Unknown action: ${action}` },
           { status: 400 }
         );
     }
 
   } catch (error) {
-    console.error('Admin settings PATCH error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * DELETE /api/admin/settings
- * Delete user account and all associated data
- */
-export async function DELETE(request: NextRequest) {
-  try {
-    const supabase = await createClient();
-    
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
-
-    const body = await request.json();
-    const { confirmation } = body;
-
-    if (confirmation !== user.email) {
-      return NextResponse.json(
-        { error: 'Email confirmation does not match' },
-        { status: 400 }
-      );
-    }
-
-    // Soft delete - mark account as deleted
-    const { error: deleteError } = await supabase
-      .from('profiles')
-      .update({
-        is_deleted: true,
-        deleted_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', user.id);
-
-    if (deleteError) {
-      console.error('Account deletion error:', deleteError);
-      return NextResponse.json(
-        { error: 'Failed to delete account' },
-        { status: 500 }
-      );
-    }
-
-    // Sign out the user
-    await supabase.auth.signOut();
-
-    return NextResponse.json({
-      success: true,
-      message: 'Account deleted successfully'
-    });
-
-  } catch (error) {
-    console.error('Admin settings DELETE error:', error);
+    console.error('Error in POST /api/admin/settings:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
