@@ -1,183 +1,261 @@
-'use client'
+'use client';
 
-// app/admin/expenses/page.tsx  
-// Full expense tracking dashboard with forms, tables, alerts, and reports
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { 
+  DollarSign, 
+  TrendingUp, 
+  Calendar, 
+  AlertTriangle,
+  Plus,
+  Download,
+  Upload,
+  FileText,
+  CreditCard,
+  Bell,
+  Settings
+} from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
-import { useEffect, useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { AlertCircle, DollarSign, Calendar, TrendingUp, Download, Plus } from 'lucide-react'
+interface Expense {
+  id: string;
+  vendor_id: string;
+  vendor_name: string;
+  amount: number;
+  category: string;
+  expense_date: string;
+  payment_method: string;
+  notes?: string;
+  is_recurring: boolean;
+}
 
 interface Subscription {
-  id: string
-  name: string
-  vendor: { name: string } | null
-  amount: number
-  currency: string
-  billing_interval: string
-  end_date: string | null
-  active: boolean
+  id: string;
+  vendor_id: string;
+  vendor_name: string;
+  amount: number;
+  billing_cycle: string;
+  next_billing_date: string;
+  status: string;
 }
 
 interface Alert {
-  id: number
-  title: string
-  description: string
-  due_on: string
+  id: string;
+  alert_type: string;
+  message: string;
+  severity: string;
+  is_read: boolean;
+  created_at: string;
 }
 
-interface ExpenseSummary {
-  monthlyTotal: number
-  annualTotal: number
-  active: number
+interface Stats {
+  monthly_expenses: number;
+  annual_expenses: number;
+  active_subscriptions: number;
+  upcoming_renewals: number;
+  total_alerts: number;
 }
 
-export default function ExpensesDashboard() {
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([])
-  const [alerts, setAlerts] = useState<Alert[]>([])
-  const [summary, setSummary] = useState<ExpenseSummary | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+export default function ExpensesPage() {
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState('overview');
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [isAddExpenseOpen, setIsAddExpenseOpen] = useState(false);
+  const [isAddSubscriptionOpen, setIsAddSubscriptionOpen] = useState(false);
 
+  // Fetch data on mount
   useEffect(() => {
-    fetchDashboardData()
-  }, [])
+    fetchAllData();
+  }, []);
 
-  const fetchDashboardData = async () => {
+  const fetchAllData = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
+      
+      // Fetch stats
+      const statsRes = await fetch('/api/expenses/reports/stats');
+      if (statsRes.ok) {
+        const statsData = await statsRes.json();
+        setStats(statsData);
+      }
+
+      // Fetch expenses
+      const expensesRes = await fetch('/api/expenses?limit=10');
+      if (expensesRes.ok) {
+        const expensesData = await expensesRes.json();
+        setExpenses(expensesData);
+      }
 
       // Fetch subscriptions
-      const subsRes = await fetch('/api/expenses/subscriptions?active=true')
-      const subsData = await subsRes.json()
+      const subsRes = await fetch('/api/expenses/subscriptions?limit=10');
+      if (subsRes.ok) {
+        const subsData = await subsRes.json();
+        setSubscriptions(subsData);
+      }
 
       // Fetch alerts
-      const alertsRes = await fetch('/api/expenses/alerts')
-      const alertsData = await alertsRes.json()
-
-      setSubscriptions(subsData.subscriptions || [])
-      setAlerts(alertsData.alerts || [])
-      setSummary(subsData.summary)
-      setError(null)
-    } catch (err) {
-      console.error('Error fetching dashboard data:', err)
-      setError('Failed to load data')
+      const alertsRes = await fetch('/api/expenses/alerts?unread_only=true&limit=10');
+      if (alertsRes.ok) {
+        const alertsData = await alertsRes.json();
+        setAlerts(alertsData);
+      }
+    } catch (error) {
+      console.error('Error fetching expense data:', error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const acknowledgeAlert = async (alertId: number) => {
+  const handleExport = async () => {
     try {
-      await fetch('/api/expenses/alerts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ alert_id: alertId })
-      })
-      
-      // Refresh alerts
-      fetchDashboardData()
-    } catch (err) {
-      console.error('Error acknowledging alert:', err)
+      const response = await fetch('/api/expenses/export?format=csv');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `expenses-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error exporting expenses:', error);
     }
-  }
+  };
 
-  const exportExpenses = async () => {
-    try {
-      const response = await fetch('/api/expenses/export')
-      const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `expenses-${new Date().toISOString().split('T')[0]}.csv`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
-    } catch (err) {
-      console.error('Error exporting:', err)
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity.toLowerCase()) {
+      case 'high':
+        return 'destructive';
+      case 'medium':
+        return 'default';
+      case 'low':
+        return 'secondary';
+      default:
+        return 'default';
     }
-  }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'active':
+        return 'default';
+      case 'canceled':
+        return 'secondary';
+      case 'paused':
+        return 'outline';
+      default:
+        return 'default';
+    }
+  };
 
   if (loading) {
     return (
-      <div className="p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">Bill Management & Expense Tracking</h1>
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-        <div className="grid gap-4">
-          {[1, 2, 3].map((i) => (
-            <Card key={i}>
-              <CardContent className="p-6">
-                <div className="h-32 bg-muted animate-pulse rounded" />
-              </CardContent>
-            </Card>
-          ))}
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading expense dashboard...</p>
         </div>
       </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="p-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">Bill Management & Expense Tracking</h1>
-        </div>
-        <Card className="border-destructive">
-          <CardHeader>
-            <CardTitle className="text-destructive">Error</CardTitle>
-            <CardDescription>{error}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <button 
-              onClick={fetchDashboardData}
-              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-            >
-              Retry
-            </button>
-          </CardContent>
-        </Card>
-      </div>
-    )
+    );
   }
 
   return (
-    <div className="p-8">
-      <div className="mb-8 flex justify-between items-center">
+    <div className="container mx-auto py-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Bill Management & Expense Tracking</h1>
-          <p className="text-muted-foreground">Manage subscriptions, track expenses, and monitor renewals</p>
+          <h1 className="text-3xl font-bold tracking-tight">Expense Tracker</h1>
+          <p className="text-muted-foreground">
+            Manage your expenses, subscriptions, and budgets
+          </p>
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={exportExpenses}
-            className="flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80"
-          >
-            <Download className="h-4 w-4" />
-            Export CSV
-          </button>
-          <button
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-          >
-            <Plus className="h-4 w-4" />
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleExport}>
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+          <Button variant="outline" size="sm">
+            <Upload className="h-4 w-4 mr-2" />
+            Import
+          </Button>
+          <Button size="sm">
+            <Plus className="h-4 w-4 mr-2" />
             Add Expense
-          </button>
+          </Button>
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-3 mb-8">
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Monthly Spend</CardTitle>
+            <CardTitle className="text-sm font-medium">Monthly Expenses</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${summary?.monthlyTotal.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
-              ${summary?.annualTotal.toLocaleString()}/year
-            </p>
+            <div className="text-2xl font-bold">{formatCurrency(stats?.monthly_expenses || 0)}</div>
+            <p className="text-xs text-muted-foreground">Current month</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Annual Expenses</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(stats?.annual_expenses || 0)}</div>
+            <p className="text-xs text-muted-foreground">Year to date</p>
           </CardContent>
         </Card>
 
@@ -187,116 +265,328 @@ export default function ExpensesDashboard() {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{summary?.active || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Recurring services
-            </p>
+            <div className="text-2xl font-bold">{stats?.active_subscriptions || 0}</div>
+            <p className="text-xs text-muted-foreground">Monthly recurring</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Alerts</CardTitle>
-            <AlertCircle className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Upcoming Renewals</CardTitle>
+            <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{alerts.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Renewals due soon
-            </p>
+            <div className="text-2xl font-bold">{stats?.upcoming_renewals || 0}</div>
+            <p className="text-xs text-muted-foreground">Next 30 days</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active Alerts</CardTitle>
+            <Bell className="h-4 w-4 text-destructive" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.total_alerts || 0}</div>
+            <p className="text-xs text-muted-foreground">Needs attention</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Alerts Section */}
-      {alerts.length > 0 && (
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-yellow-600" />
-              Renewal Alerts
-            </CardTitle>
-            <CardDescription>Upcoming subscriptions that need attention</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {alerts.map((alert) => (
-                <div
-                  key={alert.id}
-                  className="flex items-start justify-between p-4 bg-yellow-50 dark:bg-yellow-950 rounded-lg border border-yellow-200 dark:border-yellow-800"
-                >
-                  <div className="flex-1">
-                    <h4 className="font-medium text-yellow-900 dark:text-yellow-100">{alert.title}</h4>
-                    <p className="text-sm text-yellow-700 dark:text-yellow-300 mt-1">{alert.description}</p>
-                    <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">Due: {alert.due_on}</p>
-                  </div>
-                  <button
-                    onClick={() => acknowledgeAlert(alert.id)}
-                    className="px-3 py-1 text-sm bg-yellow-600 text-white rounded hover:bg-yellow-700"
-                  >
-                    Acknowledge
-                  </button>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Main Content Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="expenses">Expenses</TabsTrigger>
+          <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
+          <TabsTrigger value="alerts">Alerts</TabsTrigger>
+          <TabsTrigger value="reports">Reports</TabsTrigger>
+        </TabsList>
 
-      {/* Subscriptions Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Active Subscriptions</CardTitle>
-          <CardDescription>Your recurring services and their costs</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {subscriptions.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No active subscriptions yet</p>
-              <button className="mt-4 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90">
-                Add Your First Subscription
-              </button>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left p-4 font-medium">Name</th>
-                    <th className="text-left p-4 font-medium">Vendor</th>
-                    <th className="text-left p-4 font-medium">Amount</th>
-                    <th className="text-left p-4 font-medium">Frequency</th>
-                    <th className="text-left p-4 font-medium">Renewal Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {subscriptions.map((sub) => (
-                    <tr key={sub.id} className="border-b hover:bg-muted/50">
-                      <td className="p-4">
-                        <div className="font-medium">{sub.name}</div>
-                      </td>
-                      <td className="p-4 text-muted-foreground">
-                        {sub.vendor?.name || '—'}
-                      </td>
-                      <td className="p-4">
-                        <span className="font-medium">
-                          ${Number(sub.amount).toFixed(2)}
-                        </span>
-                        <span className="text-xs text-muted-foreground ml-1">{sub.currency}</span>
-                      </td>
-                      <td className="p-4 capitalize">{sub.billing_interval}ly</td>
-                      <td className="p-4">
-                        {sub.end_date || '—'}
-                      </td>
-                    </tr>
+        {/* Overview Tab */}
+        <TabsContent value="overview" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Recent Expenses */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Recent Expenses</CardTitle>
+                <CardDescription>Your latest transactions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {expenses.slice(0, 5).map((expense) => (
+                    <div key={expense.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <DollarSign className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{expense.vendor_name}</p>
+                          <p className="text-sm text-muted-foreground">{formatDate(expense.expense_date)}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold">{formatCurrency(expense.amount)}</p>
+                        <Badge variant="outline" className="text-xs">{expense.category}</Badge>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Active Subscriptions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Active Subscriptions</CardTitle>
+                <CardDescription>Your recurring payments</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {subscriptions.slice(0, 5).map((sub) => (
+                    <div key={sub.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                          <Calendar className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium">{sub.vendor_name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            Next: {formatDate(sub.next_billing_date)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold">{formatCurrency(sub.amount)}</p>
+                        <Badge variant={getStatusColor(sub.status)} className="text-xs">
+                          {sub.billing_cycle}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Active Alerts */}
+          {alerts.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Active Alerts</CardTitle>
+                <CardDescription>Important notifications that need your attention</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {alerts.map((alert) => (
+                    <div key={alert.id} className="flex items-start gap-3 p-3 rounded-lg border">
+                      <AlertTriangle className="h-5 w-5 text-orange-500 mt-0.5" />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-1">
+                          <p className="font-medium">{alert.alert_type.replace('_', ' ').toUpperCase()}</p>
+                          <Badge variant={getSeverityColor(alert.severity)}>
+                            {alert.severity}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{alert.message}</p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {formatDate(alert.created_at)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           )}
-        </CardContent>
-      </Card>
+        </TabsContent>
+
+        {/* Expenses Tab */}
+        <TabsContent value="expenses" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>All Expenses</CardTitle>
+              <CardDescription>View and manage all your expenses</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Vendor</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Payment Method</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {expenses.map((expense) => (
+                    <TableRow key={expense.id}>
+                      <TableCell>{formatDate(expense.expense_date)}</TableCell>
+                      <TableCell className="font-medium">{expense.vendor_name}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{expense.category}</Badge>
+                      </TableCell>
+                      <TableCell>{expense.payment_method}</TableCell>
+                      <TableCell className="text-right font-bold">
+                        {formatCurrency(expense.amount)}
+                      </TableCell>
+                      <TableCell>
+                        {expense.is_recurring ? (
+                          <Badge>Recurring</Badge>
+                        ) : (
+                          <Badge variant="secondary">One-time</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm">Edit</Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Subscriptions Tab */}
+        <TabsContent value="subscriptions" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Subscription Management</CardTitle>
+              <CardDescription>Manage all your recurring subscriptions</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Vendor</TableHead>
+                    <TableHead>Billing Cycle</TableHead>
+                    <TableHead>Next Billing</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {subscriptions.map((sub) => (
+                    <TableRow key={sub.id}>
+                      <TableCell className="font-medium">{sub.vendor_name}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{sub.billing_cycle}</Badge>
+                      </TableCell>
+                      <TableCell>{formatDate(sub.next_billing_date)}</TableCell>
+                      <TableCell className="text-right font-bold">
+                        {formatCurrency(sub.amount)}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusColor(sub.status)}>{sub.status}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm">Manage</Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Alerts Tab */}
+        <TabsContent value="alerts" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Alert Management</CardTitle>
+              <CardDescription>View and manage all expense alerts</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {alerts.map((alert) => (
+                  <div key={alert.id} className="flex items-start gap-4 p-4 rounded-lg border">
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-semibold">
+                          {alert.alert_type.replace('_', ' ').toUpperCase()}
+                        </h4>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={getSeverityColor(alert.severity)}>
+                            {alert.severity}
+                          </Badge>
+                          {!alert.is_read && <Badge variant="default">New</Badge>}
+                        </div>
+                      </div>
+                      <p className="text-sm text-muted-foreground mb-2">{alert.message}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDate(alert.created_at)}
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      Mark as Read
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Reports Tab */}
+        <TabsContent value="reports" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Expense Reports</CardTitle>
+              <CardDescription>Generate and view expense reports</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div className="grid gap-4 md:grid-cols-3">
+                  <Button variant="outline" className="h-24 flex flex-col items-center justify-center">
+                    <FileText className="h-6 w-6 mb-2" />
+                    <span>Monthly Report</span>
+                  </Button>
+                  <Button variant="outline" className="h-24 flex flex-col items-center justify-center">
+                    <FileText className="h-6 w-6 mb-2" />
+                    <span>Yearly Report</span>
+                  </Button>
+                  <Button variant="outline" className="h-24 flex flex-col items-center justify-center">
+                    <FileText className="h-6 w-6 mb-2" />
+                    <span>Custom Report</span>
+                  </Button>
+                </div>
+
+                <div className="pt-6 border-t">
+                  <h3 className="text-lg font-semibold mb-4">Quick Stats</h3>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Top Categories</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground">
+                          Category breakdown coming soon...
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Spending Trends</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground">
+                          Trend analysis coming soon...
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
-  )
+  );
 }
