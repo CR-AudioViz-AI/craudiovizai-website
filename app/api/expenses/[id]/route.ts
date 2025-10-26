@@ -73,7 +73,7 @@ export async function PATCH(
     // Validate partial updates
     const validation = expenseSchema.partial().safeParse(body)
     if (!validation.success) {
-      return errorResponse('Validation failed', 400, validation.error.errors)
+      return errorResponse('Validation failed', 400)
     }
 
     // Update expense
