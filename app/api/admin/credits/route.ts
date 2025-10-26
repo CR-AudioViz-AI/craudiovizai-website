@@ -200,7 +200,7 @@ export async function POST(request: Request) {
         const { data: updatedProfile, error: updateError } = await supabase
           .from('profiles')
           .update({ 
-            credits_balance: supabase.raw(`credits_balance + ${credits}`),
+            credits_balance: (profile?.credits_balance || 0) + credits,
             updated_at: new Date().toISOString()
           })
           .eq('id', userId)
@@ -256,10 +256,17 @@ export async function POST(request: Request) {
 
       // TODO: Add admin role verification here
       
+      // Fetch current balance first
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('credits_balance')
+        .eq('id', userId)
+        .single();
+      
       const { data: updatedProfile, error: updateError } = await supabase
         .from('profiles')
         .update({ 
-          credits_balance: supabase.raw(`credits_balance + ${bonusCredits}`),
+          credits_balance: (existingProfile?.credits_balance || 0) + bonusCredits,
           updated_at: new Date().toISOString()
         })
         .eq('id', userId)
