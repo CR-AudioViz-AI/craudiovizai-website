@@ -18,7 +18,7 @@ export const runtime = 'nodejs';
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Authenticate user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = createClient();
     const searchParams = request.nextUrl.searchParams;
     const chatSessionId = searchParams.get('chat_session_id');
     const limit = parseInt(searchParams.get('limit') || '50');
