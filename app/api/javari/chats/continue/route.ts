@@ -2,13 +2,15 @@
  * Javari AI - Chat Continuation API
  * Intelligent chat continuation with context preservation
  * Route: /api/javari/chats/continue
+ * 
+ * FIXED: Added explicit type annotation to resolve TypeScript circular reference error
  */
 
 import { createClient } from '@/lib/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { getChatSession, createChatSession, updateChatSession, listWorkLogs } from '@/lib/javari-db';
 import { generateContextSummary } from '@/lib/javari-ai';
-import type { ContinueChatRequest, ContinueChatResponse } from '@/lib/javari-types';
+import type { ContinueChatRequest, ContinueChatResponse, JavariChatSession } from '@/lib/javari-types';
 
 export const runtime = 'edge';
 
@@ -59,8 +61,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create new chat session as a continuation
-    const { data: newChat, error: createError } = await createChatSession({
+    // FIX: Explicitly type the session data as Partial<JavariChatSession>
+    const newSessionData: Partial<JavariChatSession> = {
       project_id: currentChat.project_id,
       subproject_id: currentChat.subproject_id,
       user_id: user.id,
@@ -94,7 +96,10 @@ export async function POST(request: NextRequest) {
       starred: false,
       
       started_at: new Date().toISOString()
-    });
+    };
+
+    // Create new chat session as a continuation
+    const { data: newChat, error: createError } = await createChatSession(newSessionData);
 
     if (createError || !newChat) {
       console.error('Error creating new chat:', createError);
