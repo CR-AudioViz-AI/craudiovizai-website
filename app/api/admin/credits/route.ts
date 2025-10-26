@@ -18,16 +18,16 @@ export async function GET(request: Request) {
   try {
     const supabase = createRouteHandlerClient({ cookies });
     
-    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    const { data: { session: authSession }, error: authError } = await supabase.auth.getSession();
     
-    if (authError || !session) {
+    if (authError || !authSession) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const userId = session.user.id;
+    const userId = authSession.user.id;
     const { searchParams } = new URL(request.url);
     const includeHistory = searchParams.get('history') === 'true';
 
@@ -95,16 +95,16 @@ export async function POST(request: Request) {
   try {
     const supabase = createRouteHandlerClient({ cookies });
     
-    const { data: { session }, error: authError } = await supabase.auth.getSession();
+    const { data: { session: authSession }, error: authError } = await supabase.auth.getSession();
     
-    if (authError || !session) {
+    if (authError || !authSession) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
-    const userId = session.user.id;
+    const userId = authSession.user.id;
     const body = await request.json();
     const { action, amount, credits, paymentMethodId } = body;
 
@@ -124,8 +124,8 @@ export async function POST(request: Request) {
         .eq('id', userId)
         .single();
 
-      const session = await stripe.checkout.sessions.create({
-        customer_email: profile?.email || session.user.email,
+      const stripeSession = await stripe.checkout.sessions.create({
+        customer_email: profile?.email || authSession.user.email,
         payment_method_types: ['card'],
         line_items: [
           {
@@ -152,8 +152,8 @@ export async function POST(request: Request) {
 
       return NextResponse.json({
         success: true,
-        checkoutUrl: session.url,
-        sessionId: session.id
+        checkoutUrl: stripeSession.url,
+        sessionId: stripeSession.id
       });
     }
 
