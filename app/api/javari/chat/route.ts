@@ -5,9 +5,20 @@ import { CREDIT_COSTS } from '@/lib/constants/credits';
 
 export const runtime = 'edge';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// FIX: Lazy initialization of OpenAI client to avoid build-time errors
+let openaiClient: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI {
+  if (!openaiClient) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY environment variable is required');
+    }
+    openaiClient = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openaiClient;
+}
 
 const JAVARI_SYSTEM_PROMPT = `You are Javari, an expert AI Master Builder created by CR AudioViz AI. Your specialty is building complete, production-ready applications through conversation.
 
@@ -47,7 +58,7 @@ Always be helpful, creative, and focused on delivering real value to users.`;
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = createClient(); // FIXED: Remove await
     
     // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -79,170 +90,119 @@ export async function POST(request: NextRequest) {
     if (customerError) {
       console.error('Error fetching customer:', customerError);
       return NextResponse.json(
-        { error: 'Failed to check credits' },
+        { error: 'Failed to fetch customer data' },
         { status: 500 }
       );
     }
 
     const currentCredits = customer?.credits || 0;
+    const cost = CREDIT_COSTS.javari_chat;
 
-    // Check if user has enough credits for a basic message
-    if (currentCredits < CREDIT_COSTS.JAVARI_MESSAGE) {
+    if (currentCredits < cost) {
       return NextResponse.json(
-        { 
+        {
           error: 'Insufficient credits',
-          required: CREDIT_COSTS.JAVARI_MESSAGE,
-          current: currentCredits,
-          message: 'You need at least 1 credit to chat with Javari. Please purchase more credits to continue.'
+          required: cost,
+          available: currentCredits,
+          shortfall: cost - currentCredits
         },
-        { status: 402 } // Payment Required
+        { status: 402 }
       );
     }
 
-    // Build messages array for OpenAI
-    const messages: any[] = [
-      { role: 'system', content: JAVARI_SYSTEM_PROMPT }
+    // Build messages array
+    const messages = [
+      { role: 'system', content: JAVARI_SYSTEM_PROMPT },
+      ...conversationHistory.map((msg: any) => ({
+        role: msg.role,
+        content: msg.content
+      })),
+      { role: 'user', content: message }
     ];
 
-    // Add conversation history
-    if (conversationHistory.length > 0) {
-      messages.push(...conversationHistory);
-    }
+    const openai = getOpenAIClient(); // Get client at runtime
 
-    // Add current message
-    messages.push({
-      role: 'user',
-      content: message
-    });
-
-    // Call OpenAI API with streaming
-    const stream = await openai.chat.completions.create({
+    // Call OpenAI
+    const completion = await openai.chat.completions.create({
       model: 'gpt-4-turbo-preview',
-      messages,
+      messages: messages as any,
       temperature: 0.7,
       max_tokens: 2000,
-      stream: true,
+      stream: false,
     });
 
-    // Create readable stream for response
-    const encoder = new TextEncoder();
-    let fullResponse = '';
-    let tokenCount = 0;
+    const response = completion.choices[0]?.message?.content || '';
+    const tokensUsed = completion.usage?.total_tokens || 0;
 
-    const readableStream = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of stream) {
-            const content = chunk.choices[0]?.delta?.content || '';
-            fullResponse += content;
-            tokenCount += content.length / 4; // Rough estimate
+    // Deduct credits AFTER successful API call
+    const { error: deductError } = await supabase
+      .from('stripe_customers')
+      .update({
+        credits: currentCredits - cost,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', user.id);
 
-            // Send chunk to client
-            const data = JSON.stringify({ content });
-            controller.enqueue(encoder.encode(`data: ${data}\n\n`));
-          }
+    if (deductError) {
+      console.error('Error deducting credits:', deductError);
+      // Note: API call succeeded but credit deduction failed
+      // You may want to implement a credit reconciliation system
+    }
 
-          // Response complete - determine credit cost
-          let creditCost = CREDIT_COSTS.JAVARI_MESSAGE;
-          let action = 'message';
+    // Log the conversation if conversationId exists
+    if (conversationId) {
+      await supabase
+        .from('javari_conversations')
+        .update({
+          messages: [
+            ...conversationHistory,
+            { role: 'user', content: message, timestamp: new Date().toISOString() },
+            { role: 'assistant', content: response, timestamp: new Date().toISOString() }
+          ],
+          token_count: (conversationHistory.reduce((sum: number, msg: any) => sum + (msg.tokens || 0), 0)) + tokensUsed,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', conversationId)
+        .eq('user_id', user.id);
+    } else {
+      // Create new conversation
+      await supabase
+        .from('javari_conversations')
+        .insert({
+          user_id: user.id,
+          title: message.slice(0, 100),
+          messages: [
+            { role: 'user', content: message, timestamp: new Date().toISOString() },
+            { role: 'assistant', content: response, timestamp: new Date().toISOString() }
+          ],
+          token_count: tokensUsed,
+          credits_used: cost
+        });
+    }
 
-          // Check if response is long
-          if (tokenCount > 1000) {
-            creditCost = CREDIT_COSTS.JAVARI_LONG_RESPONSE;
-            action = 'long_response';
-          }
-
-          // Check if response contains code
-          if (fullResponse.includes('```')) {
-            creditCost = CREDIT_COSTS.JAVARI_CODE_GENERATION;
-            action = 'code_generation';
-          }
-
-          // Deduct credits
-          const newBalance = currentCredits - creditCost;
-          await supabase
-            .from('stripe_customers')
-            .update({ credits: newBalance })
-            .eq('user_id', user.id);
-
-          // Log transaction
-          await supabase
-            .from('credit_transactions')
-            .insert({
-              user_id: user.id,
-              amount: -creditCost,
-              type: 'deduction',
-              description: `Javari AI: ${action}`,
-              metadata: {
-                conversationId,
-                messageLength: message.length,
-                responseLength: fullResponse.length,
-                estimatedTokens: tokenCount
-              },
-              balance_after: newBalance
-            });
-
-          // Save conversation if conversationId provided
-          if (conversationId) {
-            await supabase
-              .from('javari_conversations')
-              .upsert({
-                id: conversationId,
-                user_id: user.id,
-                updated_at: new Date().toISOString()
-              });
-
-            // Save messages
-            await supabase
-              .from('javari_messages')
-              .insert([
-                {
-                  conversation_id: conversationId,
-                  role: 'user',
-                  content: message
-                },
-                {
-                  conversation_id: conversationId,
-                  role: 'assistant',
-                  content: fullResponse
-                }
-              ]);
-          }
-
-          // Send final metadata
-          const metadata = JSON.stringify({
-            done: true,
-            creditsUsed: creditCost,
-            creditsRemaining: newBalance,
-            action
-          });
-          controller.enqueue(encoder.encode(`data: ${metadata}\n\n`));
-
-          controller.close();
-        } catch (error) {
-          console.error('Error in stream:', error);
-          const errorData = JSON.stringify({ 
-            error: error instanceof Error ? error.message : 'Stream error' 
-          });
-          controller.enqueue(encoder.encode(`data: ${errorData}\n\n`));
-          controller.close();
-        }
-      },
+    return NextResponse.json({
+      response,
+      creditsUsed: cost,
+      creditsRemaining: currentCredits - cost,
+      tokensUsed,
+      conversationId
     });
 
-    return new Response(readableStream, {
-      headers: {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-      },
-    });
+  } catch (error: any) {
+    console.error('Error in Javari chat:', error);
+    
+    // Handle OpenAI-specific errors
+    if (error?.status === 429) {
+      return NextResponse.json(
+        { error: 'API rate limit exceeded. Please try again in a moment.' },
+        { status: 429 }
+      );
+    }
 
-  } catch (error) {
-    console.error('Error in chat API:', error);
     return NextResponse.json(
-      { 
-        error: error instanceof Error ? error.message : 'Internal server error'
+      {
+        error: 'Failed to process chat',
+        details: error?.message || 'Unknown error'
       },
       { status: 500 }
     );
@@ -250,32 +210,47 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * GET /api/javari/chat?conversationId=xxx
+ * GET /api/javari/chat
  * Get conversation history
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = createClient(); // FIXED: Remove await
     
-    // Get authenticated user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const searchParams = request.nextUrl.searchParams;
-    const conversationId = searchParams.get('conversationId');
+    const conversationId = searchParams.get('id');
+    const limit = parseInt(searchParams.get('limit') || '50');
 
-    if (!conversationId) {
+    if (conversationId) {
+      // Get specific conversation
+      const { data: conversation, error } = await supabase
+        .from('javari_conversations')
+        .select('*')
+        .eq('id', conversationId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) {
+        return NextResponse.json(
+          { error: 'Conversation not found' },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json(conversation);
+    } else {
       // Get all conversations for user
       const { data: conversations, error } = await supabase
         .from('javari_conversations')
-        .select('*')
+        .select('id, title, created_at, updated_at, token_count, credits_used')
         .eq('user_id', user.id)
-        .order('updated_at', { ascending: false });
+        .order('updated_at', { ascending: false })
+        .limit(limit);
 
       if (error) {
         console.error('Error fetching conversations:', error);
@@ -285,46 +260,57 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      return NextResponse.json({ conversations });
+      return NextResponse.json({ conversations: conversations || [] });
+    }
+  } catch (error) {
+    console.error('Error in GET conversations:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * DELETE /api/javari/chat
+ * Delete a conversation
+ */
+export async function DELETE(request: NextRequest) {
+  try {
+    const supabase = createClient(); // FIXED: Remove await
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get specific conversation with messages
-    const { data: conversation, error: convError } = await supabase
-      .from('javari_conversations')
-      .select('*')
-      .eq('id', conversationId)
-      .eq('user_id', user.id)
-      .single();
+    const searchParams = request.nextUrl.searchParams;
+    const conversationId = searchParams.get('id');
 
-    if (convError) {
-      console.error('Error fetching conversation:', convError);
+    if (!conversationId) {
       return NextResponse.json(
-        { error: 'Conversation not found' },
-        { status: 404 }
+        { error: 'Conversation ID required' },
+        { status: 400 }
       );
     }
 
-    const { data: messages, error: msgError } = await supabase
-      .from('javari_messages')
-      .select('*')
-      .eq('conversation_id', conversationId)
-      .order('created_at', { ascending: true });
+    const { error } = await supabase
+      .from('javari_conversations')
+      .delete()
+      .eq('id', conversationId)
+      .eq('user_id', user.id);
 
-    if (msgError) {
-      console.error('Error fetching messages:', msgError);
+    if (error) {
+      console.error('Error deleting conversation:', error);
       return NextResponse.json(
-        { error: 'Failed to fetch messages' },
+        { error: 'Failed to delete conversation' },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({
-      conversation,
-      messages
-    });
-
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error in chat GET:', error);
+    console.error('Error in DELETE conversation:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
