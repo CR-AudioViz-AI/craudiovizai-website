@@ -23,7 +23,7 @@ interface EbookRequest {
 
 export async function POST(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const supabase = createClient()
     
     // Verify authentication
     const { data: { session }, error: authError } = await supabase.auth.getSession()
