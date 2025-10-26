@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { ChatWorkLog } from '@/lib/javari-types';
+import type { ChatWorkLog } from '@/lib/javari-types';
+
+export const runtime = 'edge';
 
 /**
  * GET /api/javari/work/log
