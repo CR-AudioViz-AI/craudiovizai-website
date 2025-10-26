@@ -21,7 +21,7 @@ import type {
 // ============================================================================
 
 export async function getProject(projectId: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_projects')
     .select('*')
@@ -32,7 +32,7 @@ export async function getProject(projectId: string) {
 }
 
 export async function getProjectByName(projectName: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_projects')
     .select('*')
@@ -43,7 +43,7 @@ export async function getProjectByName(projectName: string) {
 }
 
 export async function listProjects(organizationId?: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
   let query = supabase
     .from('javari_projects')
     .select('*')
@@ -58,7 +58,7 @@ export async function listProjects(organizationId?: string) {
 }
 
 export async function createProject(project: Partial<JavariProject>) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_projects')
     .insert(project)
@@ -69,7 +69,7 @@ export async function createProject(project: Partial<JavariProject>) {
 }
 
 export async function updateProject(projectId: string, updates: Partial<JavariProject>) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_projects')
     .update(updates)
@@ -85,7 +85,7 @@ export async function updateProject(projectId: string, updates: Partial<JavariPr
 // ============================================================================
 
 export async function getSubProject(subProjectId: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_sub_projects')
     .select('*')
@@ -96,7 +96,7 @@ export async function getSubProject(subProjectId: string) {
 }
 
 export async function listSubProjects(parentProjectId: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_sub_projects')
     .select('*')
@@ -107,7 +107,7 @@ export async function listSubProjects(parentProjectId: string) {
 }
 
 export async function createSubProject(subProject: Partial<JavariSubProject>) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_sub_projects')
     .insert(subProject)
@@ -118,7 +118,7 @@ export async function createSubProject(subProject: Partial<JavariSubProject>) {
 }
 
 export async function updateSubProject(subProjectId: string, updates: Partial<JavariSubProject>) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_sub_projects')
     .update(updates)
@@ -134,7 +134,7 @@ export async function updateSubProject(subProjectId: string, updates: Partial<Ja
 // ============================================================================
 
 export async function getChatSession(chatId: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_chat_sessions')
     .select('*')
@@ -151,7 +151,7 @@ export async function listChatSessions(filters?: {
   status?: string;
   limit?: number;
 }) {
-  const supabase = await createClient();
+  const supabase = createClient();
   let query = supabase
     .from('javari_chat_sessions')
     .select('*')
@@ -178,7 +178,7 @@ export async function listChatSessions(filters?: {
 }
 
 export async function createChatSession(session: Partial<JavariChatSession>) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_chat_sessions')
     .insert(session)
@@ -189,7 +189,7 @@ export async function createChatSession(session: Partial<JavariChatSession>) {
 }
 
 export async function updateChatSession(chatId: string, updates: Partial<JavariChatSession>) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_chat_sessions')
     .update(updates)
@@ -205,7 +205,7 @@ export async function updateChatSession(chatId: string, updates: Partial<JavariC
 // ============================================================================
 
 export async function getWorkLog(logId: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_chat_work_logs')
     .select('*')
@@ -216,7 +216,7 @@ export async function getWorkLog(logId: string) {
 }
 
 export async function listWorkLogs(chatSessionId: string, limit?: number) {
-  const supabase = await createClient();
+  const supabase = createClient();
   let query = supabase
     .from('javari_chat_work_logs')
     .select('*')
@@ -232,7 +232,7 @@ export async function listWorkLogs(chatSessionId: string, limit?: number) {
 }
 
 export async function createWorkLog(log: Partial<ChatWorkLog>) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_chat_work_logs')
     .insert(log)
@@ -247,7 +247,7 @@ export async function createWorkLog(log: Partial<ChatWorkLog>) {
 // ============================================================================
 
 export async function getBuildHealth(buildId: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_build_health_tracking')
     .select('*')
@@ -258,7 +258,7 @@ export async function getBuildHealth(buildId: string) {
 }
 
 export async function listBuildHealth(projectId: string, limit?: number) {
-  const supabase = await createClient();
+  const supabase = createClient();
   let query = supabase
     .from('javari_build_health_tracking')
     .select('*')
@@ -274,7 +274,7 @@ export async function listBuildHealth(projectId: string, limit?: number) {
 }
 
 export async function createBuildHealth(build: Partial<BuildHealthTracking>) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_build_health_tracking')
     .insert(build)
@@ -285,7 +285,7 @@ export async function createBuildHealth(build: Partial<BuildHealthTracking>) {
 }
 
 export async function updateBuildHealth(buildId: string, updates: Partial<BuildHealthTracking>) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_build_health_tracking')
     .update(updates)
@@ -301,7 +301,7 @@ export async function updateBuildHealth(buildId: string, updates: Partial<BuildH
 // ============================================================================
 
 export async function getDependency(dependencyId: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_dependency_tracking')
     .select('*')
@@ -315,7 +315,7 @@ export async function listDependencies(projectId: string, filters?: {
   hasCVE?: boolean;
   limit?: number;
 }) {
-  const supabase = await createClient();
+  const supabase = createClient();
   let query = supabase
     .from('javari_dependency_tracking')
     .select('*')
@@ -334,7 +334,7 @@ export async function listDependencies(projectId: string, filters?: {
 }
 
 export async function createDependency(dependency: Partial<DependencyTracking>) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_dependency_tracking')
     .insert(dependency)
@@ -349,7 +349,7 @@ export async function createDependency(dependency: Partial<DependencyTracking>) 
 // ============================================================================
 
 export async function getCodeReview(reviewId: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_code_review_queue')
     .select('*')
@@ -364,7 +364,7 @@ export async function listCodeReviews(projectId: string, filters?: {
   priority?: string;
   limit?: number;
 }) {
-  const supabase = await createClient();
+  const supabase = createClient();
   let query = supabase
     .from('javari_code_review_queue')
     .select('*')
@@ -386,7 +386,7 @@ export async function listCodeReviews(projectId: string, filters?: {
 }
 
 export async function createCodeReview(review: Partial<CodeReviewQueue>) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_code_review_queue')
     .insert(review)
@@ -397,7 +397,7 @@ export async function createCodeReview(review: Partial<CodeReviewQueue>) {
 }
 
 export async function updateCodeReview(reviewId: string, updates: Partial<CodeReviewQueue>) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_code_review_queue')
     .update(updates)
@@ -413,7 +413,7 @@ export async function updateCodeReview(reviewId: string, updates: Partial<CodeRe
 // ============================================================================
 
 export async function getSuggestion(suggestionId: string) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_smart_suggestions')
     .select('*')
@@ -429,7 +429,7 @@ export async function listSuggestions(projectId: string, filters?: {
   status?: string;
   limit?: number;
 }) {
-  const supabase = await createClient();
+  const supabase = createClient();
   let query = supabase
     .from('javari_smart_suggestions')
     .select('*')
@@ -454,7 +454,7 @@ export async function listSuggestions(projectId: string, filters?: {
 }
 
 export async function createSuggestion(suggestion: Partial<SmartSuggestion>) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_smart_suggestions')
     .insert(suggestion)
@@ -465,7 +465,7 @@ export async function createSuggestion(suggestion: Partial<SmartSuggestion>) {
 }
 
 export async function updateSuggestion(suggestionId: string, updates: Partial<SmartSuggestion>) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase
     .from('javari_smart_suggestions')
     .update(updates)
