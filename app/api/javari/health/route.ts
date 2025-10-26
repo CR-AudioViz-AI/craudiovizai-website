@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { 
-  JavariBuildHealthTracking, 
+  BuildHealthTracking, 
   CreateHealthCheckRequest,
   HealthCheckResult 
 } from '@/lib/javari-types';
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create health check record
-    const healthData: Partial<JavariBuildHealthTracking> = {
+    const healthData: Partial<BuildHealthTracking> = {
       project_id: body.project_id,
       health_score: body.health_score,
       build_status: body.build_status || null,
