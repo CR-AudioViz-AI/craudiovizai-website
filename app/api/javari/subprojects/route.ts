@@ -20,7 +20,7 @@ export const runtime = 'nodejs';
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = createClient();
     const searchParams = request.nextUrl.searchParams;
     const subprojectId = searchParams.get('id');
     const parentProjectId = searchParams.get('parent_id');
@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Authenticate user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -203,7 +203,7 @@ export async function POST(request: NextRequest) {
  */
 export async function PATCH(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Authenticate user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -273,7 +273,7 @@ export async function PATCH(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = createClient();
     const searchParams = request.nextUrl.searchParams;
     const subprojectId = searchParams.get('id');
     const hardDelete = searchParams.get('hard') === 'true';
