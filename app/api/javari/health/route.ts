@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { 
-  BuildHealthTracking, 
-  CreateHealthCheckRequest
-} from '@/lib/javari-types';
+import { BuildHealthTracking } from '@/lib/javari-types';
 
 /**
  * GET /api/javari/health
@@ -81,7 +78,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const supabase = createClient();
-    const body: CreateHealthCheckRequest = await request.json();
+    const body = await request.json();
 
     // Validate required fields
     if (!body.project_id || !body.build_status) {
