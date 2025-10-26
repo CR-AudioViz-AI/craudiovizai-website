@@ -1,347 +1,41 @@
 /**
  * Javari AI - Type Definitions
- * Complete type system for Javari AI platform
+ * Complete type system matching the new database schema
  */
 
 // ============================================================================
-// PROJECTS
+// PROJECT TYPES (javari_projects table)
 // ============================================================================
 
 export interface JavariProject {
   id: string;
+  user_id: string;
   name: string;
-  display_name: string;
-  type: 'main' | 'subsidiary';
-  description?: string;
+  description: string | null;
+  repository_url: string | null;
+  primary_language: string | null;
+  framework: string | null;
+  status: 'active' | 'archived' | 'paused';
   
-  // Repository Info
-  github_org?: string;
-  github_repo?: string;
-  vercel_project?: string;
-  
-  // Credentials (stored as encrypted JSONB)
-  credentials_snapshot?: Record<string, any>;
-  
-  // Health Metrics
-  health_score: number;
-  last_build_status?: 'success' | 'failed' | 'pending';
-  last_build_at?: string;
-  last_deploy_at?: string;
-  
-  // Tracking
-  active_chats_count: number;
-  total_chats_count: number;
-  starred: boolean;
-  
-  // Timestamps
-  created_at: string;
-  updated_at: string;
-}
-
-export interface JavariSubProject {
-  id: string;
-  parent_project_id: string;
-  name: string;
-  display_name: string;
-  description?: string;
-  
-  // Repository Info
-  github_repo?: string;
-  vercel_project?: string;
-  
-  // Credentials (inherits from parent, can override)
-  credential_overrides?: Record<string, any>;
+  // Counters
+  total_subprojects: number;
+  total_sessions: number;
+  total_work_logs: number;
+  total_tokens_used: number;
+  total_cost: number;
   
   // Health
   health_score: number;
-  
-  // Tracking
-  active_chats_count: number;
-  starred: boolean;
-  
-  // Timestamps
-  created_at: string;
-  updated_at: string;
-}
-
-// ============================================================================
-// CHAT SESSIONS
-// ============================================================================
-
-export interface JavariChatSession {
-  id: string;
-  project_id: string;
-  subproject_id?: string;
-  user_id: string;
-  
-  // Session Info
-  title: string;
-  status: 'active' | 'continued' | 'completed' | 'failed';
-  priority: 'low' | 'normal' | 'high' | 'urgent';
-  
-  // Continuation Chain
-  parent_chat_id?: string;
-  continuation_depth: number;
-  context_summary?: string;
-  
-  // Credentials Snapshot
-  credentials_snapshot?: Record<string, any>;
-  
-  // Metrics
-  token_count: number;
-  message_count: number;
-  lines_of_code_added: number;
-  lines_of_code_deleted: number;
-  files_created: number;
-  files_modified: number;
-  apis_created: number;
-  tests_written: number;
-  estimated_cost_saved: number;
-  actual_cost_incurred: number;
-  issues_identified: number;
-  issues_resolved: number;
-  
-  // Duration
-  started_at: string;
-  ended_at?: string;
-  total_duration_minutes?: number;
-  active_duration_minutes?: number;
-  
-  // Organization
-  starred: boolean;
-  
-  // Timestamps
-  created_at: string;
-  updated_at: string;
-}
-
-export interface ChatWorkLog {
-  id: string;
-  chat_session_id: string;
-  
-  // Action Info
-  action_type: 'file_created' | 'file_modified' | 'file_deleted' | 'api_created' | 'test_written' | 'bug_fixed' | 'feature_added' | 'refactored' | 'deployed';
-  action_category: 'code' | 'config' | 'docs' | 'tests' | 'deployment';
-  description: string;
-  
-  // Impact
-  impact_level: 'minor' | 'moderate' | 'major' | 'critical';
-  files_affected?: string[];
-  lines_added?: number;
-  lines_deleted?: number;
-  complexity_added?: number;
-  
-  // Quality
-  tests_added: boolean;
-  breaking_change: boolean;
-  
-  // Cost Tracking
-  cost_saved?: number;
-  cost_incurred?: number;
-  
-  // Review
-  needs_review: boolean;
-  review_completed: boolean;
-  
-  // Links
-  commit_sha?: string;
-  deploy_url?: string;
-  
-  // Timestamps
-  created_at: string;
-}
-
-// ============================================================================
-// BUILD & DEPENDENCY TRACKING
-// ============================================================================
-
-export interface BuildHealthTracking {
-  id: string;
-  project_id: string;
-  chat_session_id?: string;
-  
-  // Build Info
-  build_id?: string;
-  build_status: 'success' | 'failed' | 'pending';
-  error_type?: string;
-  error_message?: string;
-  error_stack?: string;
-  
-  // Auto-Fix
-  auto_fixable: boolean;
-  fix_suggestion?: string;
-  fix_confidence?: number;
-  fix_applied: boolean;
-  fix_result?: 'success' | 'failed';
-  
-  // Metrics
-  build_duration_seconds?: number;
-  files_affected?: string[];
-  
-  // Timestamps
-  build_started_at: string;
-  build_completed_at?: string;
-  created_at: string;
-}
-
-export interface DependencyTracking {
-  id: string;
-  project_id: string;
-  
-  // Package Info
-  package_name: string;
-  current_version: string;
-  latest_version: string;
-  package_type: 'npm' | 'pip' | 'other';
-  
-  // Security
-  has_vulnerabilities: boolean;
-  cve_ids?: string[];
-  severity?: 'low' | 'medium' | 'high' | 'critical';
-  
-  // Update Safety
-  safe_to_update: boolean;
-  breaking_changes: boolean;
-  auto_update_eligible: boolean;
+  last_health_check: string;
   
   // Metadata
-  last_checked_at: string;
-  created_at: string;
-  updated_at: string;
-}
-
-// ============================================================================
-// CODE REVIEW & SUGGESTIONS
-// ============================================================================
-
-export interface CodeReviewQueue {
-  id: string;
-  chat_session_id: string;
-  work_log_id?: string;
-  
-  // Code Info
-  file_path: string;
-  code_before?: string;
-  code_after: string;
-  diff?: string;
-  
-  // Analysis
-  complexity_score: number;
-  security_score: number;
-  quality_score: number;
-  ai_concerns?: string[];
-  
-  // Review Status
-  status: 'pending' | 'reviewing' | 'approved' | 'changes_requested';
-  priority: 'low' | 'normal' | 'high';
-  reviewed_by?: string;
-  reviewed_at?: string;
+  metadata: Record<string, any>;
   
   // Timestamps
   created_at: string;
   updated_at: string;
 }
 
-export interface SmartSuggestion {
-  id: string;
-  project_id: string;
-  chat_session_id?: string;
-  
-  // Suggestion Info
-  type: 'security' | 'optimization' | 'refactoring' | 'testing' | 'dependency' | 'performance' | 'accessibility' | 'seo' | 'cost_saving' | 'automation';
-  title: string;
-  description: string;
-  
-  // Impact
-  priority: 'low' | 'normal' | 'high' | 'critical';
-  estimated_time_minutes?: number;
-  estimated_cost_impact?: number;
-  
-  // Implementation
-  implementation_steps?: string[];
-  code_example?: string;
-  
-  // Status
-  status: 'pending' | 'in_progress' | 'completed' | 'dismissed';
-  applied_at?: string;
-  expires_at?: string;
-  
-  // Metrics
-  metrics_before?: Record<string, any>;
-  metrics_after?: Record<string, any>;
-  
-  // Timestamps
-  created_at: string;
-  updated_at: string;
-}
-
-// ============================================================================
-// API REQUEST/RESPONSE TYPES
-// ============================================================================
-
-export interface ContinueChatRequest {
-  chat_session_id: string;
-  reason?: string;
-  preserve_context?: boolean;
-}
-
-export interface ContinueChatResponse {
-  new_chat_id: string;
-  context_summary: string;
-  credentials_transferred: boolean;
-  continuation_url: string;
-  previous_metrics: {
-    token_count: number;
-    message_count: number;
-    issues_identified: number;
-    issues_resolved: number;
-  };
-}
-
-export interface CreateWorkLogRequest {
-  chat_session_id: string;
-  action_type: ChatWorkLog['action_type'];
-  action_category: ChatWorkLog['action_category'];
-  description: string;
-  impact_level?: ChatWorkLog['impact_level'];
-  files_affected?: string[];
-  lines_added?: number;
-  lines_deleted?: number;
-  complexity_added?: number;
-  tests_added?: boolean;
-  breaking_change?: boolean;
-  cost_saved?: number;
-  cost_incurred?: number;
-  commit_sha?: string;
-  deploy_url?: string;
-}
-
-export interface HealthResponse {
-  project: JavariProject;
-  subproject?: JavariSubProject;
-  health_indicators: {
-    build_health: number;
-    security_health: number;
-    code_quality_health: number;
-    overall_health: number;
-  };
-  critical_issues: Array<{
-    type: string;
-    severity: string;
-    title: string;
-    description: string;
-    cve_ids?: string[];
-  }>;
-  recent_builds: BuildHealthTracking[];
-  vulnerabilities: DependencyTracking[];
-  pending_reviews: CodeReviewQueue[];
-  smart_suggestions: SmartSuggestion[];
-}
-// ============================================================================
-// ADDITIONAL API REQUEST TYPES (ADD TO END OF javari-types.ts)
-// ============================================================================
-
-// Project Management
 export interface CreateProjectRequest {
   user_id: string;
   name: string;
@@ -349,7 +43,7 @@ export interface CreateProjectRequest {
   repository_url?: string;
   primary_language?: string;
   framework?: string;
-  status?: 'active' | 'paused' | 'archived';
+  status?: 'active' | 'archived' | 'paused';
   metadata?: Record<string, any>;
 }
 
@@ -360,25 +54,58 @@ export interface UpdateProjectRequest {
   repository_url?: string;
   primary_language?: string;
   framework?: string;
-  status?: 'active' | 'paused' | 'archived';
+  status?: 'active' | 'archived' | 'paused';
   health_score?: number;
   last_health_check?: string;
   metadata?: Record<string, any>;
 }
 
-// SubProject Management
+// ============================================================================
+// SUBPROJECT TYPES (javari_sub_projects table)
+// ============================================================================
+
+export interface JavariSubProject {
+  id: string;
+  project_id: string;
+  name: string;
+  description: string | null;
+  type: 'feature' | 'bugfix' | 'refactor' | 'infrastructure' | 'documentation';
+  status: 'active' | 'completed' | 'on-hold' | 'archived';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  
+  // Time tracking
+  estimated_hours: number | null;
+  actual_hours: number;
+  start_date: string | null;
+  end_date: string | null;
+  completion_percentage: number;
+  
+  // Counters
+  total_sessions: number;
+  total_work_logs: number;
+  total_tokens_used: number;
+  total_cost: number;
+  
+  // Metadata
+  metadata: Record<string, any>;
+  
+  // Timestamps
+  created_at: string;
+  updated_at: string;
+}
+
 export interface CreateSubProjectRequest {
   project_id: string;
   name: string;
   description?: string;
-  type?: 'feature' | 'bugfix' | 'refactor' | 'optimization' | 'documentation';
-  status?: 'active' | 'paused' | 'completed' | 'archived';
-  priority?: 'low' | 'medium' | 'high' | 'critical';
-  assigned_files?: string[];
-  dependencies?: string[];
+  type?: 'feature' | 'bugfix' | 'refactor' | 'infrastructure' | 'documentation';
+  status?: 'active' | 'completed' | 'on-hold' | 'archived';
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
   estimated_hours?: number;
+  actual_hours?: number;
   start_date?: string;
-  target_completion_date?: string;
+  end_date?: string;
+  completion_percentage?: number;
   metadata?: Record<string, any>;
 }
 
@@ -386,23 +113,152 @@ export interface UpdateSubProjectRequest {
   id: string;
   name?: string;
   description?: string;
-  type?: 'feature' | 'bugfix' | 'refactor' | 'optimization' | 'documentation';
-  status?: 'active' | 'paused' | 'completed' | 'archived';
-  priority?: 'low' | 'medium' | 'high' | 'critical';
-  assigned_files?: string[];
-  dependencies?: string[];
-  completion_percentage?: number;
+  type?: 'feature' | 'bugfix' | 'refactor' | 'infrastructure' | 'documentation';
+  status?: 'active' | 'completed' | 'on-hold' | 'archived';
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
   estimated_hours?: number;
   actual_hours?: number;
   start_date?: string;
-  target_completion_date?: string;
-  actual_completion_date?: string;
+  end_date?: string;
+  completion_percentage?: number;
   metadata?: Record<string, any>;
 }
 
-// Health Monitoring
+// ============================================================================
+// CHAT SESSION TYPES (javari_chat_sessions table)
+// ============================================================================
+
+export interface JavariChatSession {
+  id: string;
+  project_id: string;
+  sub_project_id: string | null;
+  user_id: string;
+  
+  // Session Info
+  title: string;
+  status: 'active' | 'completed' | 'failed';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  
+  // Continuation
+  parent_session_id: string | null;
+  continuation_depth: number;
+  context_summary: string | null;
+  
+  // Metrics
+  total_messages: number;
+  total_work_logs: number;
+  total_tokens_used: number;
+  total_cost: number;
+  
+  // Time tracking
+  started_at: string;
+  ended_at: string | null;
+  
+  // Metadata
+  metadata: Record<string, any>;
+  
+  // Timestamps
+  created_at: string;
+  updated_at: string;
+}
+
+// ============================================================================
+// WORK LOG TYPES (javari_chat_work_logs table)
+// ============================================================================
+
+export interface JavariChatWorkLog {
+  id: string;
+  session_id: string;
+  project_id: string;
+  sub_project_id: string | null;
+  
+  // Activity details
+  activity_type: 'file_created' | 'file_modified' | 'file_deleted' | 'api_created' | 
+                  'database_migration' | 'deployment' | 'bug_fixed' | 'test_written' | 'code_review';
+  description: string | null;
+  
+  // File details
+  file_path: string | null;
+  code_changes: string | null;
+  
+  // Cost tracking
+  tokens_used: number;
+  cost: number;
+  model_used: string;
+  
+  // Status
+  success: boolean;
+  error_message: string | null;
+  
+  // Metadata
+  metadata: Record<string, any>;
+  
+  // Timestamp
+  timestamp: string;
+}
+
+export interface ChatWorkLog extends JavariChatWorkLog {} // Alias for compatibility
+
+export interface CreateWorkLogRequest {
+  session_id: string;
+  project_id: string;
+  sub_project_id?: string;
+  activity_type: string;
+  action_type: string; // Alias for activity_type
+  description?: string;
+  file_path?: string;
+  files_modified?: string[];
+  code_changes?: string;
+  tokens_used?: number;
+  cost_usd?: number;
+  execution_time_ms?: number;
+  success?: boolean;
+  error_message?: string;
+  metadata?: Record<string, any>;
+}
+
+// ============================================================================
+// HEALTH TRACKING TYPES (javari_build_health_tracking table)
+// ============================================================================
+
+export interface BuildHealthTracking {
+  id: string;
+  project_id: string;
+  session_id: string | null;
+  
+  // Health metrics
+  health_score: number;
+  build_status: 'success' | 'failed' | 'pending' | null;
+  
+  // Code quality
+  test_coverage_percentage: number | null;
+  lint_errors_count: number;
+  lint_warnings_count: number;
+  type_errors_count: number;
+  
+  // Security
+  security_vulnerabilities_count: number;
+  dependency_issues_count: number;
+  
+  // Performance
+  build_time_ms: number | null;
+  bundle_size_kb: number | null;
+  
+  // Issues and recommendations
+  issues_detected: string[];
+  recommendations: string[];
+  
+  // Metadata
+  metadata: Record<string, any>;
+  
+  // Timestamps
+  check_timestamp: string;
+  created_at: string;
+}
+
 export interface CreateHealthCheckRequest {
   project_id: string;
+  session_id?: string;
   health_score: number;
   build_status?: 'success' | 'failed' | 'pending';
   test_coverage_percentage?: number;
@@ -423,25 +279,150 @@ export interface HealthCheckResult {
   status: 'healthy' | 'warning' | 'critical';
   issues: Array<{
     severity: 'low' | 'medium' | 'high' | 'critical';
-    category: 'code_quality' | 'type_safety' | 'security' | 'testing' | 'performance';
+    category: string;
     message: string;
     count: number | null;
   }>;
   recommendations: string[];
 }
 
-// Work Log Updates (additional fields for compatibility)
-export interface CreateWorkLogRequestExtended extends CreateWorkLogRequest {
-  session_id?: string;
-  project_id?: string;
+export interface HealthResponse {
+  success: boolean;
+  data?: BuildHealthTracking | BuildHealthTracking[];
+  error?: string;
+}
+
+// ============================================================================
+// DEPENDENCY TRACKING TYPES (javari_dependency_tracking table)
+// ============================================================================
+
+export interface DependencyTracking {
+  id: string;
+  project_id: string;
+  
+  // Package info
+  package_name: string;
+  package_type: 'npm' | 'pip' | 'other';
+  current_version: string;
+  latest_version: string;
+  
+  // Status
+  is_outdated: boolean;
+  is_vulnerable: boolean;
+  vulnerability_severity: 'low' | 'medium' | 'high' | 'critical' | null;
+  
+  // Update info
+  update_available: boolean;
+  breaking_changes_expected: boolean;
+  auto_update_safe: boolean;
+  
+  // Metadata
+  metadata: Record<string, any>;
+  
+  // Timestamps
+  last_checked: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// ============================================================================
+// CODE REVIEW TYPES (javari_code_review_queue table)
+// ============================================================================
+
+export interface CodeReviewQueue {
+  id: string;
+  project_id: string;
+  session_id: string;
+  work_log_id: string;
+  
+  // Review details
+  file_path: string;
+  change_type: 'created' | 'modified' | 'deleted';
+  code_diff: string | null;
+  
+  // AI Analysis
+  complexity_score: number;
+  security_concerns: string[];
+  performance_concerns: string[];
+  best_practice_violations: string[];
+  suggested_improvements: string[];
+  
+  // Status
+  review_status: 'pending' | 'in_progress' | 'approved' | 'needs_changes';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  
+  // Metadata
+  metadata: Record<string, any>;
+  
+  // Timestamps
+  created_at: string;
+  reviewed_at: string | null;
+}
+
+// ============================================================================
+// SMART SUGGESTIONS TYPES (javari_smart_suggestions table)
+// ============================================================================
+
+export interface SmartSuggestion {
+  id: string;
+  project_id: string;
+  session_id: string | null;
+  
+  // Suggestion details
+  suggestion_type: 'optimization' | 'refactor' | 'security' | 'feature' | 'documentation';
+  title: string;
+  description: string;
+  
+  // Implementation
+  code_example: string | null;
+  files_affected: string[];
+  estimated_effort_hours: number;
+  
+  // Priority
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  confidence_score: number;
+  
+  // Impact
+  expected_benefits: string[];
+  potential_risks: string[];
+  
+  // Status
+  status: 'pending' | 'accepted' | 'rejected' | 'implemented';
+  implemented_in_session_id: string | null;
+  
+  // Metadata
+  metadata: Record<string, any>;
+  
+  // Timestamps
+  created_at: string;
+  updated_at: string;
+}
+
+// ============================================================================
+// API RESPONSE TYPES
+// ============================================================================
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+}
+
+// ============================================================================
+// CHAT CONTINUATION TYPES
+// ============================================================================
+
+export interface ContinueChatRequest {
+  project_id: string;
   sub_project_id?: string;
-  action_type?: 'file_created' | 'file_modified' | 'file_deleted' | 'code_generated' | 'bug_fixed' | 'test_written' | 'api_created' | 'deployment' | 'refactor' | 'documentation';
-  files_modified?: string[];
-  code_changes?: Record<string, any>;
-  tokens_used?: number;
-  cost_usd?: number;
-  execution_time_ms?: number;
-  success?: boolean;
-  error_message?: string;
-  metadata?: Record<string, any>;
+  parent_session_id?: string;
+  title: string;
+  priority?: 'low' | 'medium' | 'high' | 'urgent';
+}
+
+export interface ContinueChatResponse {
+  success: boolean;
+  session?: JavariChatSession;
+  error?: string;
 }
