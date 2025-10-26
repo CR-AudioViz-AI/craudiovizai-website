@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { JavariChatWorkLog, CreateWorkLogRequest } from '@/lib/javari-types';
+import { ChatWorkLog, CreateWorkLogRequest } from '@/lib/javari-types';
 
 /**
  * GET /api/javari/work/log
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create work log entry
-    const workLogData: Partial<JavariChatWorkLog> = {
+    const workLogData: Partial<ChatWorkLog> = {
       session_id: body.session_id,
       project_id: body.project_id,
       sub_project_id: body.sub_project_id || null,
