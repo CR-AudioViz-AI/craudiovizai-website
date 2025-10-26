@@ -38,14 +38,14 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // List subprojects (optionally filtered by project)
+    // List subprojects (optionally filtered by parent project)
     let query = supabase
       .from('javari_sub_projects')
       .select('*')
       .order('created_at', { ascending: false });
 
     if (projectId) {
-      query = query.eq('project_id', projectId);
+      query = query.eq('parent_project_id', projectId);
     }
 
     const { data, error } = await query;
@@ -84,9 +84,9 @@ export async function POST(request: NextRequest) {
     const body: CreateSubProjectRequest = await request.json();
 
     // Validate required fields
-    if (!body.name || !body.project_id) {
+    if (!body.name || !body.parent_project_id) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields: name, project_id' },
+        { success: false, error: 'Missing required fields: name, parent_project_id' },
         { status: 400 }
       );
     }
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     const { data: project, error: projectError } = await supabase
       .from('javari_projects')
       .select('id')
-      .eq('id', body.project_id)
+      .eq('id', body.parent_project_id)
       .single();
 
     if (projectError || !project) {
@@ -107,22 +107,16 @@ export async function POST(request: NextRequest) {
 
     // Create subproject
     const subprojectData: Partial<JavariSubProject> = {
-      project_id: body.project_id,
+      parent_project_id: body.parent_project_id,
       name: body.name,
-      description: body.description || null,
-      type: body.type || 'feature',
-      status: body.status || 'active',
-      priority: body.priority || 'medium',
-      estimated_hours: body.estimated_hours || null,
-      actual_hours: body.actual_hours || 0,
-      start_date: body.start_date || null,
-      end_date: body.end_date || null,
-      completion_percentage: body.completion_percentage || 0,
-      total_sessions: 0,
-      total_work_logs: 0,
-      total_tokens_used: 0,
-      total_cost: 0,
-      metadata: body.metadata || {}
+      display_name: body.display_name || body.name,
+      description: body.description || undefined,
+      github_repo: body.github_repo || undefined,
+      vercel_project: body.vercel_project || undefined,
+      credential_overrides: body.credential_overrides || undefined,
+      health_score: 100,
+      active_chats_count: 0,
+      starred: false
     };
 
     const { data, error } = await supabase
@@ -137,21 +131,6 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-
-    // Update parent project subproject count
-    await supabase.rpc('increment_project_subprojects', { 
-      project_id: body.project_id 
-    }).catch(() => {
-      // If RPC doesn't exist, do manual update
-      supabase
-        .from('javari_projects')
-        .update({ 
-          total_subprojects: supabase.raw('total_subprojects + 1'),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', body.project_id)
-        .then(() => {});
-    });
 
     return NextResponse.json({
       success: true,
@@ -179,7 +158,6 @@ export async function PATCH(request: NextRequest) {
     const supabase = createClient();
     const body: UpdateSubProjectRequest = await request.json();
 
-    // Validate required fields
     if (!body.id) {
       return NextResponse.json(
         { success: false, error: 'Missing required field: id' },
@@ -187,24 +165,19 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // Build update object (only include provided fields)
+    // Build update object
     const updateData: Partial<JavariSubProject> = {
       updated_at: new Date().toISOString()
     };
 
     if (body.name !== undefined) updateData.name = body.name;
+    if (body.display_name !== undefined) updateData.display_name = body.display_name;
     if (body.description !== undefined) updateData.description = body.description;
-    if (body.type !== undefined) updateData.type = body.type;
-    if (body.status !== undefined) updateData.status = body.status;
-    if (body.priority !== undefined) updateData.priority = body.priority;
-    if (body.estimated_hours !== undefined) updateData.estimated_hours = body.estimated_hours;
-    if (body.actual_hours !== undefined) updateData.actual_hours = body.actual_hours;
-    if (body.start_date !== undefined) updateData.start_date = body.start_date;
-    if (body.end_date !== undefined) updateData.end_date = body.end_date;
-    if (body.completion_percentage !== undefined) updateData.completion_percentage = body.completion_percentage;
-    if (body.metadata !== undefined) updateData.metadata = body.metadata;
+    if (body.github_repo !== undefined) updateData.github_repo = body.github_repo;
+    if (body.vercel_project !== undefined) updateData.vercel_project = body.vercel_project;
+    if (body.health_score !== undefined) updateData.health_score = body.health_score;
+    if (body.starred !== undefined) updateData.starred = body.starred;
 
-    // Update subproject
     const { data, error } = await supabase
       .from('javari_sub_projects')
       .update(updateData)
@@ -238,14 +211,13 @@ export async function PATCH(request: NextRequest) {
 
 /**
  * DELETE /api/javari/subprojects
- * Delete a subproject (soft delete by setting status to 'archived')
+ * Delete a subproject
  */
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = createClient();
     const { searchParams } = new URL(request.url);
     const subprojectId = searchParams.get('id');
-    const hardDelete = searchParams.get('hard') === 'true';
 
     if (!subprojectId) {
       return NextResponse.json(
@@ -254,73 +226,22 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Get subproject to find parent project
-    const { data: subproject } = await supabase
+    const { error } = await supabase
       .from('javari_sub_projects')
-      .select('project_id')
-      .eq('id', subprojectId)
-      .single();
+      .delete()
+      .eq('id', subprojectId);
 
-    if (hardDelete) {
-      // Hard delete - permanently remove from database
-      const { error } = await supabase
-        .from('javari_sub_projects')
-        .delete()
-        .eq('id', subprojectId);
-
-      if (error) {
-        return NextResponse.json(
-          { success: false, error: error.message },
-          { status: 500 }
-        );
-      }
-
-      // Update parent project subproject count
-      if (subproject) {
-        await supabase.rpc('decrement_project_subprojects', { 
-          project_id: subproject.project_id 
-        }).catch(() => {
-          // If RPC doesn't exist, do manual update
-          supabase
-            .from('javari_projects')
-            .update({ 
-              total_subprojects: supabase.raw('GREATEST(total_subprojects - 1, 0)'),
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', subproject.project_id)
-            .then(() => {});
-        });
-      }
-
-      return NextResponse.json({
-        success: true,
-        message: 'Subproject permanently deleted'
-      });
-    } else {
-      // Soft delete - archive the subproject
-      const { data, error } = await supabase
-        .from('javari_sub_projects')
-        .update({ 
-          status: 'archived',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', subprojectId)
-        .select()
-        .single();
-
-      if (error) {
-        return NextResponse.json(
-          { success: false, error: error.message },
-          { status: 500 }
-        );
-      }
-
-      return NextResponse.json({
-        success: true,
-        data,
-        message: 'Subproject archived'
-      });
+    if (error) {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: 500 }
+      );
     }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Subproject deleted'
+    });
 
   } catch (error) {
     console.error('DELETE /api/javari/subprojects error:', error);
