@@ -3,8 +3,7 @@
 // Route: /api/tools/ebook-creator/route.ts
 // Generate formatted e-books from text content
 
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 
