@@ -2,7 +2,7 @@
 // Session: 2025-10-25 - Phase 4
 // Purpose: Process image resizing requests
 
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import sharp from 'sharp';
@@ -15,7 +15,7 @@ const CREDITS_REQUIRED = 5;
 // POST: Resize image
 export async function POST(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = createClient();
     
     // Verify authentication
     const { data: { session }, error: authError } = await supabase.auth.getSession();
