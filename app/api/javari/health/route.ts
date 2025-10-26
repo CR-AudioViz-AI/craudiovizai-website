@@ -17,7 +17,7 @@ import {
 import { calculateProjectHealth } from '@/lib/javari-ai';
 import type { HealthCheckResponse } from '@/lib/javari-types';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 /**
  * GET /api/javari/health
