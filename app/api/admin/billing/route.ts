@@ -2,7 +2,7 @@
 // Session: 2025-10-25 - Phase 3 API Routes
 // Purpose: Manage subscriptions, billing history, and payment methods
 
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic';
 // GET: Fetch billing information and subscription details
 export async function GET(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = createClient();
     
     const { data: { session }, error: authError } = await supabase.auth.getSession();
     
@@ -144,7 +144,7 @@ export async function GET(request: Request) {
 // POST: Manage subscription (create, update, cancel)
 export async function POST(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = createClient();
     
     const { data: { session }, error: authError } = await supabase.auth.getSession();
     
