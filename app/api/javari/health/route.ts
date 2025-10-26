@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { BuildHealthTracking } from '@/lib/javari-types';
+import type { BuildHealthTracking } from '@/lib/javari-types';
+
+export const runtime = 'edge';
 
 /**
  * GET /api/javari/health
