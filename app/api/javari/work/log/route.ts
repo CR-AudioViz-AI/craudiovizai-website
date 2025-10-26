@@ -10,7 +10,7 @@ import { createWorkLog, updateChatSession, queueCodeReview } from '@/lib/javari-
 import { analyzeCodeQuality } from '@/lib/javari-ai';
 import type { LogWorkRequest, ChatWorkLog } from '@/lib/javari-types';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 /**
  * POST /api/javari/work/log
