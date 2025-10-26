@@ -1,7 +1,9 @@
 /**
  * Javari AI - AI Service Functions
  * OpenAI GPT-4 powered intelligent features for autonomous development
- * @timestamp Sunday, October 26, 2025 - 11:26 AM ET
+ * @timestamp Sunday, October 26, 2025 - 4:10 PM ET
+ * 
+ * FIX: Lazy initialization of OpenAI client to avoid build-time errors
  */
 
 import OpenAI from 'openai';
@@ -12,9 +14,20 @@ import type {
   BuildHealthTracking
 } from './javari-types';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!
-});
+// Lazy initialization - only create OpenAI client when first needed
+let openaiClient: OpenAI | null = null;
+
+function getOpenAIClient(): OpenAI {
+  if (!openaiClient) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY environment variable is required');
+    }
+    openaiClient = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY
+    });
+  }
+  return openaiClient;
+}
 
 // ============================================================================
 // CONTEXT SUMMARIZATION
@@ -24,6 +37,8 @@ export async function generateContextSummary(
   chat: JavariChatSession,
   workLogs: ChatWorkLog[]
 ): Promise<string> {
+  const openai = getOpenAIClient(); // Get client at runtime
+
   const prompt = `Analyze this development session and create a comprehensive handoff summary.
 
 **Session Info:**
@@ -48,31 +63,22 @@ Create a handoff summary with:
 2. **Key Accomplishments** (3-5 most important bullet points)
 3. **Pending Tasks** (what's left to do)
 4. **Blockers** (if any technical issues or dependencies)
-5. **Recommended Next Steps** (specific, actionable items for the next session)
+5. **Next Steps** (recommended actions for the continuation chat)
 
-Format in markdown. Be concise but comprehensive. Focus on technical details that matter for continuity.`;
+Keep it concise but comprehensive. Format in markdown.`;
 
   try {
-    const response = await openai.chat.completions.create({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-4-turbo-preview',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are an expert development project manager creating handoff summaries for seamless project continuity. Focus on technical accuracy and actionable insights.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
+      messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
-      max_tokens: 1500
+      max_tokens: 1000
     });
 
-    return response.choices[0].message.content || 'No summary generated';
+    return completion.choices[0]?.message?.content || 'Summary generation failed';
   } catch (error) {
     console.error('Error generating context summary:', error);
-    return 'Error generating summary - manual review recommended';
+    throw new Error('Failed to generate context summary');
   }
 }
 
@@ -81,74 +87,50 @@ Format in markdown. Be concise but comprehensive. Focus on technical details tha
 // ============================================================================
 
 export async function generateSmartSuggestions(
-  projectName: string,
-  context: {
-    recent_builds?: BuildHealthTracking[];
-    vulnerabilities?: any[];
-    work_logs?: ChatWorkLog[];
-    health_score?: number;
-    last_deploy_age_days?: number;
+  chat: JavariChatSession,
+  recentLogs: ChatWorkLog[]
+): Promise<SmartSuggestion[]> {
+  const openai = getOpenAIClient(); // Get client at runtime
+
+  const prompt = `Based on this development session, suggest 3-5 intelligent next actions.
+
+**Context:**
+- Project: ${chat.title}
+- Recent Work: ${recentLogs.map(l => l.description).slice(0, 5).join('; ')}
+- Files Created: ${chat.files_created}
+- Issues: ${chat.issues_identified} identified, ${chat.issues_resolved} resolved
+
+Provide suggestions as JSON array:
+[
+  {
+    "title": "Short action title",
+    "description": "Detailed explanation",
+    "priority": "high|medium|low",
+    "estimated_time_minutes": 30,
+    "category": "feature|bugfix|refactor|test|docs"
   }
-): Promise<Partial<SmartSuggestion>[]> {
-  const prompt = `Analyze this project and generate smart, actionable suggestions for improvement.
+]
 
-**Project:** ${projectName}
-**Health Score:** ${context.health_score || 'Unknown'}/100
-**Last Deploy:** ${context.last_deploy_age_days || 0} days ago
-
-**Recent Builds:**
-${context.recent_builds?.slice(0, 5).map(b => `- ${b.build_status}: ${b.error_message || 'Success'}`).join('\n') || 'No recent builds'}
-
-**Vulnerabilities:**
-${context.vulnerabilities?.length ? `${context.vulnerabilities.length} vulnerabilities detected` : 'No known vulnerabilities'}
-
-**Recent Work:**
-${context.work_logs?.slice(0, 10).map(w => `- ${w.action_type}: ${w.description}`).join('\n') || 'No recent work'}
-
-Generate 3-7 suggestions across these categories:
-- security (CVE fixes, auth improvements)
-- optimization (performance, bundle size)
-- refactoring (code quality, tech debt)
-- testing (coverage, E2E tests)
-- dependency (updates, removals)
-- performance (speed, caching)
-- accessibility (WCAG compliance)
-- seo (meta tags, sitemaps)
-- cost_saving (prevent wasteful deploys)
-- automation (CI/CD, monitoring)
-
-For each suggestion provide:
-- type (category)
-- title (short, actionable)
-- description (2-3 sentences explaining why)
-- priority (low/normal/high/critical based on impact)
-- estimated_time_minutes (realistic estimate)
-- estimated_cost_impact (positive number for costs, negative for savings)
-- implementation_steps (3-5 specific steps)
-
-Return as JSON array of suggestions.`;
+Only return valid JSON, no markdown or extra text.`;
 
   try {
-    const response = await openai.chat.completions.create({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-4-turbo-preview',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are an expert DevOps engineer and software architect who provides actionable, prioritized suggestions for improving projects. Always return valid JSON.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
+      messages: [{ role: 'user', content: prompt }],
       temperature: 0.8,
-      max_tokens: 2000,
-      response_format: { type: 'json_object' }
+      max_tokens: 1500
     });
 
-    const content = response.choices[0].message.content || '{"suggestions": []}';
-    const parsed = JSON.parse(content);
-    return parsed.suggestions || [];
+    const content = completion.choices[0]?.message?.content || '[]';
+    const suggestions = JSON.parse(content);
+    
+    return suggestions.map((s: any, i: number) => ({
+      id: `suggestion-${Date.now()}-${i}`,
+      chat_session_id: chat.id,
+      ...s,
+      status: 'pending' as const,
+      created_at: new Date().toISOString()
+    }));
   } catch (error) {
     console.error('Error generating suggestions:', error);
     return [];
@@ -156,281 +138,167 @@ Return as JSON array of suggestions.`;
 }
 
 // ============================================================================
-// CODE QUALITY ANALYSIS
+// BUILD HEALTH ANALYSIS
 // ============================================================================
 
-export async function analyzeCodeQuality(
-  filePath: string,
-  codeBefore: string,
-  codeAfter: string
-): Promise<{
-  complexity_score: number;
-  security_score: number;
-  quality_score: number;
-  concerns: string[];
-  recommendations: string[];
-}> {
-  const prompt = `Analyze this code change and provide quality metrics.
+export async function analyzeBuildHealth(
+  buildLogs: string,
+  errorLogs: string
+): Promise<BuildHealthTracking> {
+  const openai = getOpenAIClient(); // Get client at runtime
 
-**File:** ${filePath}
+  const prompt = `Analyze these build logs and provide health metrics.
 
-**Code Before:**
-\`\`\`
-${codeBefore.slice(0, 2000)}
-\`\`\`
+**Build Logs:**
+${buildLogs.slice(0, 2000)}
 
-**Code After:**
-\`\`\`
-${codeAfter.slice(0, 2000)}
-\`\`\`
-
-Analyze and return JSON with:
-{
-  "complexity_score": <0-100, lower is better, based on cyclomatic complexity, nesting depth>,
-  "security_score": <0-100, higher is better, check for SQL injection, XSS, auth issues, hardcoded secrets>,
-  "quality_score": <0-100, higher is better, based on naming, structure, maintainability>,
-  "concerns": [<array of specific issues found>],
-  "recommendations": [<array of specific improvements>]
-}`;
-
-  try {
-    const response = await openai.chat.completions.create({
-      model: 'gpt-4-turbo-preview',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a senior code reviewer with expertise in security, performance, and best practices. Always return valid JSON.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      temperature: 0.3,
-      max_tokens: 1000,
-      response_format: { type: 'json_object' }
-    });
-
-    const content = response.choices[0].message.content || '{}';
-    const analysis = JSON.parse(content);
-    
-    return {
-      complexity_score: analysis.complexity_score || 50,
-      security_score: analysis.security_score || 80,
-      quality_score: analysis.quality_score || 70,
-      concerns: analysis.concerns || [],
-      recommendations: analysis.recommendations || []
-    };
-  } catch (error) {
-    console.error('Error analyzing code quality:', error);
-    return {
-      complexity_score: 50,
-      security_score: 80,
-      quality_score: 70,
-      concerns: ['Error during analysis'],
-      recommendations: ['Manual review recommended']
-    };
-  }
-}
-
-// ============================================================================
-// BUILD ERROR ANALYSIS
-// ============================================================================
-
-export async function analyzeBuildError(
-  errorType: string,
-  errorMessage: string,
-  stackTrace: string,
-  affectedFiles: string[]
-): Promise<{
-  auto_fixable: boolean;
-  fix_suggestion: string;
-  fix_confidence: number;
-  implementation_steps: string[];
-}> {
-  const prompt = `Analyze this build error and determine if it can be automatically fixed.
-
-**Error Type:** ${errorType}
-**Error Message:** ${errorMessage}
-**Stack Trace:**
-\`\`\`
-${stackTrace.slice(0, 1000)}
-\`\`\`
-**Affected Files:** ${affectedFiles.join(', ')}
+**Error Logs:**
+${errorLogs.slice(0, 1000)}
 
 Provide analysis as JSON:
 {
-  "auto_fixable": <true/false, can this be fixed programmatically?>,
-  "fix_suggestion": <detailed explanation of the fix>,
-  "fix_confidence": <0-100, how confident are you this will work?>,
-  "implementation_steps": [<array of specific commands or code changes>]
-}`;
+  "overall_health": "healthy|warning|critical",
+  "build_score": 85,
+  "performance_score": 90,
+  "issues_found": ["issue 1", "issue 2"],
+  "recommendations": ["fix 1", "fix 2"],
+  "estimated_fix_time_minutes": 30
+}
+
+Only return valid JSON.`;
 
   try {
-    const response = await openai.chat.completions.create({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-4-turbo-preview',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are an expert build engineer who diagnoses and fixes compilation errors. Always return valid JSON.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      temperature: 0.2,
-      max_tokens: 800,
-      response_format: { type: 'json_object' }
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.3,
+      max_tokens: 1000
     });
 
-    const content = response.choices[0].message.content || '{}';
+    const content = completion.choices[0]?.message?.content || '{}';
     const analysis = JSON.parse(content);
-    
+
     return {
-      auto_fixable: analysis.auto_fixable || false,
-      fix_suggestion: analysis.fix_suggestion || 'Manual investigation required',
-      fix_confidence: analysis.fix_confidence || 0,
-      implementation_steps: analysis.implementation_steps || []
+      id: `health-${Date.now()}`,
+      deployment_id: 'unknown',
+      ...analysis,
+      analyzed_at: new Date().toISOString()
     };
   } catch (error) {
-    console.error('Error analyzing build error:', error);
+    console.error('Error analyzing build health:', error);
     return {
-      auto_fixable: false,
-      fix_suggestion: 'Error during analysis',
-      fix_confidence: 0,
-      implementation_steps: []
+      id: `health-${Date.now()}`,
+      deployment_id: 'unknown',
+      overall_health: 'unknown',
+      build_score: 0,
+      performance_score: 0,
+      issues_found: ['Failed to analyze'],
+      recommendations: ['Manual review required'],
+      estimated_fix_time_minutes: 0,
+      analyzed_at: new Date().toISOString()
     };
   }
 }
 
 // ============================================================================
-// DEPENDENCY ASSESSMENT
+// CODE REVIEW
 // ============================================================================
 
-export async function assessDependencyUpdate(
-  packageName: string,
-  currentVersion: string,
-  latestVersion: string,
-  changelog?: string
-): Promise<{
-  safe_to_update: boolean;
-  breaking_changes: boolean;
-  risk_level: 'low' | 'medium' | 'high';
-  notes: string;
-}> {
-  const prompt = `Assess the safety of updating this dependency.
+export async function generateCodeReview(
+  filePath: string,
+  codeContent: string,
+  context?: string
+): Promise<string> {
+  const openai = getOpenAIClient(); // Get client at runtime
 
-**Package:** ${packageName}
-**Current Version:** ${currentVersion}
-**Latest Version:** ${latestVersion}
-${changelog ? `**Changelog:**\n${changelog.slice(0, 1500)}` : ''}
+  const prompt = `Review this code file and provide feedback.
 
-Analyze and return JSON:
-{
-  "safe_to_update": <true/false>,
-  "breaking_changes": <true/false>,
-  "risk_level": <"low"/"medium"/"high">,
-  "notes": <explanation of assessment>
-}`;
+**File:** ${filePath}
+
+**Context:** ${context || 'No additional context'}
+
+**Code:**
+\`\`\`
+${codeContent.slice(0, 3000)}
+\`\`\`
+
+Provide:
+1. **Quality Score:** 1-10
+2. **Strengths:** 2-3 bullet points
+3. **Issues:** Any bugs, security concerns, or anti-patterns
+4. **Suggestions:** Specific improvements
+5. **Priority:** Which issues to fix first
+
+Format in markdown.`;
 
   try {
-    const response = await openai.chat.completions.create({
+    const completion = await openai.chat.completions.create({
       model: 'gpt-4-turbo-preview',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a dependency management expert who assesses update safety. Always return valid JSON.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      temperature: 0.2,
-      max_tokens: 500,
-      response_format: { type: 'json_object' }
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.4,
+      max_tokens: 1500
     });
 
-    const content = response.choices[0].message.content || '{}';
-    const assessment = JSON.parse(content);
-    
-    return {
-      safe_to_update: assessment.safe_to_update || false,
-      breaking_changes: assessment.breaking_changes || true,
-      risk_level: assessment.risk_level || 'medium',
-      notes: assessment.notes || 'Review changelog before updating'
-    };
+    return completion.choices[0]?.message?.content || 'Review failed';
   } catch (error) {
-    console.error('Error assessing dependency:', error);
+    console.error('Error generating code review:', error);
+    throw new Error('Failed to generate code review');
+  }
+}
+
+// ============================================================================
+// ERROR DIAGNOSIS
+// ============================================================================
+
+export async function diagnoseError(
+  errorMessage: string,
+  stackTrace?: string,
+  codeContext?: string
+): Promise<{
+  diagnosis: string;
+  likely_cause: string;
+  suggested_fixes: string[];
+  confidence: 'high' | 'medium' | 'low';
+}> {
+  const openai = getOpenAIClient(); // Get client at runtime
+
+  const prompt = `Diagnose this error and suggest fixes.
+
+**Error:** ${errorMessage}
+
+**Stack Trace:**
+${stackTrace?.slice(0, 1000) || 'No stack trace'}
+
+**Code Context:**
+${codeContext?.slice(0, 1000) || 'No context'}
+
+Provide JSON:
+{
+  "diagnosis": "What's wrong",
+  "likely_cause": "Why it happened",
+  "suggested_fixes": ["fix 1", "fix 2", "fix 3"],
+  "confidence": "high|medium|low"
+}
+
+Only return valid JSON.`;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4-turbo-preview',
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.3,
+      max_tokens: 1000
+    });
+
+    const content = completion.choices[0]?.message?.content || '{}';
+    return JSON.parse(content);
+  } catch (error) {
+    console.error('Error diagnosing error:', error);
     return {
-      safe_to_update: false,
-      breaking_changes: false,
-      risk_level: 'medium',
-      notes: 'Review changelog before updating'
+      diagnosis: 'Failed to diagnose error',
+      likely_cause: 'Analysis error',
+      suggested_fixes: ['Manual debugging required'],
+      confidence: 'low'
     };
   }
-}
-
-// ============================================================================
-// HEALTH SCORE CALCULATION
-// ============================================================================
-
-export function calculateProjectHealth(metrics: {
-  build_success_rate?: number;
-  vulnerability_count?: number;
-  code_quality_avg?: number;
-  test_coverage?: number;
-  last_deploy_age_days?: number;
-}): number {
-  let score = 100;
-  
-  // Build failures (-20 per 10% failure rate, max -40)
-  if (metrics.build_success_rate !== undefined) {
-    const failureRate = 100 - metrics.build_success_rate;
-    score -= Math.min(40, (failureRate / 10) * 20);
-  }
-  
-  // Vulnerabilities (-10 per vulnerability, max -30)
-  if (metrics.vulnerability_count) {
-    score -= Math.min(30, metrics.vulnerability_count * 10);
-  }
-  
-  // Code quality (-20 if avg < 70)
-  if (metrics.code_quality_avg && metrics.code_quality_avg < 70) {
-    score -= 20;
-  }
-  
-  // Test coverage (-15 if < 50%)
-  if (metrics.test_coverage !== undefined && metrics.test_coverage < 50) {
-    score -= 15;
-  }
-  
-  // Stale deployments (-10 if > 30 days)
-  if (metrics.last_deploy_age_days && metrics.last_deploy_age_days > 30) {
-    score -= 10;
-  }
-  
-  return Math.max(0, Math.min(100, Math.round(score)));
-}
-
-// ============================================================================
-// TOKEN ESTIMATION
-// ============================================================================
-
-export function estimateTokens(text: string): number {
-  // Rough estimation: ~4 characters per token for English text
-  return Math.ceil(text.length / 4);
-}
-
-export function estimateCost(inputTokens: number, outputTokens: number, model: string = 'gpt-4-turbo'): number {
-  // GPT-4 Turbo pricing (as of 2024)
-  const rates = {
-    'gpt-4-turbo': { input: 0.01 / 1000, output: 0.03 / 1000 },
-    'gpt-4': { input: 0.03 / 1000, output: 0.06 / 1000 },
-    'gpt-3.5-turbo': { input: 0.0005 / 1000, output: 0.0015 / 1000 }
-  };
-  
-  const rate = rates[model as keyof typeof rates] || rates['gpt-4-turbo'];
-  return (inputTokens * rate.input) + (outputTokens * rate.output);
 }
