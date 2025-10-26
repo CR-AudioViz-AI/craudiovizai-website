@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Wand2, Download, Loader2, ImageIcon, RefreshCw, Settings } from 'lucide-react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/client';
 import Image from 'next/image';
 
 /**
@@ -57,7 +57,7 @@ export default function AIImageGenerator() {
   const [quality, setQuality] = useState<'standard' | 'hd'>('standard');
   const [numImages, setNumImages] = useState(1);
   
-  const supabase = createClientComponentClient();
+  const supabase = createClient();
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
