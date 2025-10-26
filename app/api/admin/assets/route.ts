@@ -2,7 +2,7 @@
 // Session: 2025-10-25 - Phase 3 API Routes
 // Purpose: Manage user-generated assets (images, videos, audio, documents)
 
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 // GET: Fetch user's assets with filtering and pagination
 export async function GET(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = createClient();
     
     const { data: { session }, error: authError } = await supabase.auth.getSession();
     
@@ -102,7 +102,7 @@ export async function GET(request: Request) {
 // POST: Upload or create new asset
 export async function POST(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = createClient();
     
     const { data: { session }, error: authError } = await supabase.auth.getSession();
     
@@ -264,7 +264,7 @@ export async function POST(request: Request) {
 // DELETE: Delete assets
 export async function DELETE(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = createClient();
     
     const { data: { session }, error: authError } = await supabase.auth.getSession();
     
