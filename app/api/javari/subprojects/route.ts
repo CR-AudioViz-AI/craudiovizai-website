@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { 
-  JavariSubProject, 
-  CreateSubProjectRequest, 
-  UpdateSubProjectRequest 
-} from '@/lib/javari-types';
+import { JavariSubProject } from '@/lib/javari-types';
 
 /**
  * GET /api/javari/subprojects
@@ -81,7 +77,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const supabase = createClient();
-    const body: CreateSubProjectRequest = await request.json();
+    const body = await request.json();
 
     // Validate required fields
     if (!body.name || !body.parent_project_id) {
@@ -156,7 +152,7 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   try {
     const supabase = createClient();
-    const body: UpdateSubProjectRequest = await request.json();
+    const body = await request.json();
 
     if (!body.id) {
       return NextResponse.json(
