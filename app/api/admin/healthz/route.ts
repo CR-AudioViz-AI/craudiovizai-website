@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const supabase = createClient()
     
     // Check database connection
     const { error: dbError } = await supabase
