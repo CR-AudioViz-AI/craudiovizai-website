@@ -3,7 +3,7 @@
  * Intelligent chat continuation with context preservation
  * Route: /api/javari/chats/continue
  * 
- * FIXED: Removed await from createClient() calls (it's not async)
+ * FIXED: Added explicit type annotation to resolve TypeScript circular reference error
  */
 
 import { createClient } from '@/lib/supabase/server';
@@ -20,7 +20,7 @@ export const runtime = 'edge';
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient();  // FIX: Removed await
+    const supabase = createClient();
 
     // Authenticate user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient();  // FIX: Removed await
+    const supabase = createClient();
     const searchParams = request.nextUrl.searchParams;
     const chatId = searchParams.get('id');
 
