@@ -2,7 +2,7 @@
 // Session: 2025-10-25 - Phase 4
 // Purpose: Monitor system health, uptime, and performance
 
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
   const checkStartTime = Date.now();
   
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = createClient();
     const { searchParams } = new URL(request.url);
     const detailed = searchParams.get('detailed') === 'true';
     
@@ -219,7 +219,7 @@ export async function GET(request: Request) {
 // POST: Record custom health event or metric
 export async function POST(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = createClient();
     
     // Verify admin authentication
     const { data: { session }, error: authError } = await supabase.auth.getSession();
