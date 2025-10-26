@@ -4,15 +4,13 @@ import { ChatWorkLog, CreateWorkLogRequest } from '@/lib/javari-types';
 
 /**
  * GET /api/javari/work/log
- * Get work logs for a session, subproject, or project
+ * Get work logs for a session
  */
 export async function GET(request: NextRequest) {
   try {
     const supabase = createClient();
     const { searchParams } = new URL(request.url);
     const sessionId = searchParams.get('sessionId');
-    const subprojectId = searchParams.get('subprojectId');
-    const projectId = searchParams.get('projectId');
     const limit = parseInt(searchParams.get('limit') || '50');
 
     let query = supabase
@@ -22,11 +20,7 @@ export async function GET(request: NextRequest) {
       .limit(limit);
 
     if (sessionId) {
-      query = query.eq('session_id', sessionId);
-    } else if (subprojectId) {
-      query = query.eq('sub_project_id', subprojectId);
-    } else if (projectId) {
-      query = query.eq('project_id', projectId);
+      query = query.eq('chat_session_id', sessionId);
     }
 
     const { data, error } = await query;
@@ -65,11 +59,11 @@ export async function POST(request: NextRequest) {
     const body: CreateWorkLogRequest = await request.json();
 
     // Validate required fields
-    if (!body.session_id || !body.project_id || !body.action_type) {
+    if (!body.chat_session_id || !body.action_type) {
       return NextResponse.json(
         { 
           success: false, 
-          error: 'Missing required fields: session_id, project_id, action_type' 
+          error: 'Missing required fields: chat_session_id, action_type' 
         },
         { status: 400 }
       );
@@ -77,19 +71,23 @@ export async function POST(request: NextRequest) {
 
     // Create work log entry
     const workLogData: Partial<ChatWorkLog> = {
-      session_id: body.session_id,
-      project_id: body.project_id,
-      sub_project_id: body.sub_project_id || null,
+      chat_session_id: body.chat_session_id,
       action_type: body.action_type,
-      description: body.description || null,
-      files_modified: body.files_modified || [],
-      code_changes: body.code_changes || null,
-      tokens_used: body.tokens_used || 0,
-      cost_usd: body.cost_usd || 0,
-      execution_time_ms: body.execution_time_ms || null,
-      success: body.success !== undefined ? body.success : true,
-      error_message: body.error_message || null,
-      metadata: body.metadata || {}
+      action_category: body.action_category || 'code',
+      description: body.description || '',
+      impact_level: body.impact_level || 'moderate',
+      files_affected: body.files_affected || [],
+      lines_added: body.lines_added || 0,
+      lines_deleted: body.lines_deleted || 0,
+      complexity_added: body.complexity_added || 0,
+      tests_added: body.tests_added || false,
+      breaking_change: body.breaking_change || false,
+      cost_saved: body.cost_saved || 0,
+      cost_incurred: body.cost_incurred || 0,
+      needs_review: body.needs_review || false,
+      review_completed: body.review_completed || false,
+      commit_sha: body.commit_sha || undefined,
+      deploy_url: body.deploy_url || undefined
     };
 
     const { data, error } = await supabase
@@ -104,10 +102,6 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
-
-    // Update counters in related entities
-    // Note: RPC functions will be added after database migration is complete
-    // For now, counters will be updated via scheduled jobs or manual updates
 
     return NextResponse.json({
       success: true,
