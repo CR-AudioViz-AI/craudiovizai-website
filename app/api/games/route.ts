@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const supabase = createClient()
     const { searchParams } = new URL(request.url)
     
     // Get query parameters
@@ -76,7 +76,7 @@ export async function GET(request: Request) {
 // POST: Track game play
 export async function POST(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies })
+    const supabase = createClient()
     
     const { data: { session } } = await supabase.auth.getSession()
     
