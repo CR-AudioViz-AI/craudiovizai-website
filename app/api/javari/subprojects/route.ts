@@ -84,9 +84,9 @@ export async function POST(request: NextRequest) {
     const body: CreateSubProjectRequest = await request.json();
 
     // Validate required fields
-    if (!body.project_id || !body.name) {
+    if (!body.name || !body.project_id) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields: project_id, name' },
+        { success: false, error: 'Missing required fields: name, project_id' },
         { status: 400 }
       );
     }
@@ -113,18 +113,15 @@ export async function POST(request: NextRequest) {
       type: body.type || 'feature',
       status: body.status || 'active',
       priority: body.priority || 'medium',
-      assigned_files: body.assigned_files || [],
-      dependencies: body.dependencies || [],
+      estimated_hours: body.estimated_hours || null,
+      actual_hours: body.actual_hours || 0,
+      start_date: body.start_date || null,
+      end_date: body.end_date || null,
+      completion_percentage: body.completion_percentage || 0,
       total_sessions: 0,
       total_work_logs: 0,
       total_tokens_used: 0,
       total_cost: 0,
-      completion_percentage: 0,
-      estimated_hours: body.estimated_hours || null,
-      actual_hours: 0,
-      start_date: body.start_date || null,
-      target_completion_date: body.target_completion_date || null,
-      actual_completion_date: null,
       metadata: body.metadata || {}
     };
 
@@ -141,9 +138,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Increment parent project's subproject count
-    // Note: Will be implemented via database triggers after migration
-    
+    // Update parent project subproject count
+    await supabase.rpc('increment_project_subprojects', { 
+      project_id: body.project_id 
+    }).catch(() => {
+      // If RPC doesn't exist, do manual update
+      supabase
+        .from('javari_projects')
+        .update({ 
+          total_subprojects: supabase.raw('total_subprojects + 1'),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', body.project_id)
+        .then(() => {});
+    });
+
     return NextResponse.json({
       success: true,
       data
@@ -188,14 +197,11 @@ export async function PATCH(request: NextRequest) {
     if (body.type !== undefined) updateData.type = body.type;
     if (body.status !== undefined) updateData.status = body.status;
     if (body.priority !== undefined) updateData.priority = body.priority;
-    if (body.assigned_files !== undefined) updateData.assigned_files = body.assigned_files;
-    if (body.dependencies !== undefined) updateData.dependencies = body.dependencies;
-    if (body.completion_percentage !== undefined) updateData.completion_percentage = body.completion_percentage;
     if (body.estimated_hours !== undefined) updateData.estimated_hours = body.estimated_hours;
     if (body.actual_hours !== undefined) updateData.actual_hours = body.actual_hours;
     if (body.start_date !== undefined) updateData.start_date = body.start_date;
-    if (body.target_completion_date !== undefined) updateData.target_completion_date = body.target_completion_date;
-    if (body.actual_completion_date !== undefined) updateData.actual_completion_date = body.actual_completion_date;
+    if (body.end_date !== undefined) updateData.end_date = body.end_date;
+    if (body.completion_percentage !== undefined) updateData.completion_percentage = body.completion_percentage;
     if (body.metadata !== undefined) updateData.metadata = body.metadata;
 
     // Update subproject
@@ -269,8 +275,22 @@ export async function DELETE(request: NextRequest) {
         );
       }
 
-      // Decrement parent project's subproject count
-      // Note: Will be implemented via database triggers after migration
+      // Update parent project subproject count
+      if (subproject) {
+        await supabase.rpc('decrement_project_subprojects', { 
+          project_id: subproject.project_id 
+        }).catch(() => {
+          // If RPC doesn't exist, do manual update
+          supabase
+            .from('javari_projects')
+            .update({ 
+              total_subprojects: supabase.raw('GREATEST(total_subprojects - 1, 0)'),
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', subproject.project_id)
+            .then(() => {});
+        });
+      }
 
       return NextResponse.json({
         success: true,
