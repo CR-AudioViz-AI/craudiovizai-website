@@ -1,21 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import type { JavariSubProject } from '@/lib/javari-types';
-
-export const runtime = 'edge';
+import { JavariSubProject } from '@/lib/javari-types';
 
 /**
  * GET /api/javari/subprojects
- * List all subprojects or get a specific subproject by ID
  */
 export async function GET(request: NextRequest) {
   try {
     const supabase = createClient();
     const { searchParams } = new URL(request.url);
     const subprojectId = searchParams.get('id');
-    const projectId = searchParams.get('projectId');
+    const parentProjectId = searchParams.get('parentProjectId');
 
-    // Get specific subproject by ID
     if (subprojectId) {
       const { data, error } = await supabase
         .from('javari_sub_projects')
@@ -24,49 +20,32 @@ export async function GET(request: NextRequest) {
         .single();
 
       if (error) {
-        return NextResponse.json(
-          { success: false, error: error.message },
-          { status: 404 }
-        );
+        return NextResponse.json({ success: false, error: error.message }, { status: 404 });
       }
 
-      return NextResponse.json({
-        success: true,
-        data
-      });
+      return NextResponse.json({ success: true, data });
     }
 
-    // List subprojects (optionally filtered by parent project)
     let query = supabase
       .from('javari_sub_projects')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (projectId) {
-      query = query.eq('parent_project_id', projectId);
+    if (parentProjectId) {
+      query = query.eq('parent_project_id', parentProjectId);
     }
 
     const { data, error } = await query;
 
     if (error) {
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({
-      success: true,
-      data: data || []
-    });
+    return NextResponse.json({ success: true, data: data || [] });
 
   } catch (error) {
-    console.error('GET /api/javari/subprojects error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
-      },
+      { success: false, error: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
@@ -74,17 +53,15 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/javari/subprojects
- * Create a new subproject
  */
 export async function POST(request: NextRequest) {
   try {
     const supabase = createClient();
     const body = await request.json();
 
-    // Validate required fields
-    if (!body.name || !body.parent_project_id) {
+    if (!body.name || !body.display_name || !body.parent_project_id) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields: name, parent_project_id' },
+        { success: false, error: 'Missing required fields: name, display_name, parent_project_id' },
         { status: 400 }
       );
     }
@@ -97,21 +74,17 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (projectError || !project) {
-      return NextResponse.json(
-        { success: false, error: 'Parent project not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: 'Parent project not found' }, { status: 404 });
     }
 
-    // Create subproject
     const subprojectData: Partial<JavariSubProject> = {
       parent_project_id: body.parent_project_id,
       name: body.name,
-      display_name: body.display_name || body.name,
-      description: body.description || undefined,
-      github_repo: body.github_repo || undefined,
-      vercel_project: body.vercel_project || undefined,
-      credential_overrides: body.credential_overrides || undefined,
+      display_name: body.display_name,
+      description: body.description,
+      github_repo: body.github_repo,
+      vercel_project: body.vercel_project,
+      credential_overrides: body.credential_overrides,
       health_score: 100,
       active_chats_count: 0,
       starred: false
@@ -124,24 +97,14 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({
-      success: true,
-      data
-    }, { status: 201 });
+    return NextResponse.json({ success: true, data }, { status: 201 });
 
   } catch (error) {
-    console.error('POST /api/javari/subprojects error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
-      },
+      { success: false, error: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
@@ -149,7 +112,6 @@ export async function POST(request: NextRequest) {
 
 /**
  * PATCH /api/javari/subprojects
- * Update an existing subproject
  */
 export async function PATCH(request: NextRequest) {
   try {
@@ -157,16 +119,10 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
 
     if (!body.id) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required field: id' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'Missing required field: id' }, { status: 400 });
     }
 
-    // Build update object
-    const updateData: Partial<JavariSubProject> = {
-      updated_at: new Date().toISOString()
-    };
+    const updateData: Partial<JavariSubProject> = { updated_at: new Date().toISOString() };
 
     if (body.name !== undefined) updateData.name = body.name;
     if (body.display_name !== undefined) updateData.display_name = body.display_name;
@@ -184,24 +140,14 @@ export async function PATCH(request: NextRequest) {
       .single();
 
     if (error) {
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({
-      success: true,
-      data
-    });
+    return NextResponse.json({ success: true, data });
 
   } catch (error) {
-    console.error('PATCH /api/javari/subprojects error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
-      },
+      { success: false, error: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
@@ -209,7 +155,6 @@ export async function PATCH(request: NextRequest) {
 
 /**
  * DELETE /api/javari/subprojects
- * Delete a subproject
  */
 export async function DELETE(request: NextRequest) {
   try {
@@ -218,10 +163,7 @@ export async function DELETE(request: NextRequest) {
     const subprojectId = searchParams.get('id');
 
     if (!subprojectId) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required parameter: id' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'Missing required parameter: id' }, { status: 400 });
     }
 
     const { error } = await supabase
@@ -230,24 +172,14 @@ export async function DELETE(request: NextRequest) {
       .eq('id', subprojectId);
 
     if (error) {
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Subproject deleted'
-    });
+    return NextResponse.json({ success: true, message: 'Subproject deleted' });
 
   } catch (error) {
-    console.error('DELETE /api/javari/subprojects error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
-      },
+      { success: false, error: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }
