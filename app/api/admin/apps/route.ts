@@ -2,7 +2,7 @@
 // Session: 2025-10-25 - Phase 3 API Routes
 // Purpose: Manage app access, usage statistics, and app-specific operations
 
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
@@ -11,7 +11,7 @@ export const dynamic = 'force-dynamic';
 // GET: Fetch user's apps with usage statistics
 export async function GET(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = createClient();
     
     // Verify authentication
     const { data: { session }, error: authError } = await supabase.auth.getSession();
@@ -112,7 +112,7 @@ export async function GET(request: Request) {
 // POST: Record new app usage or toggle app access
 export async function POST(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = createClient();
     
     const { data: { session }, error: authError } = await supabase.auth.getSession();
     
@@ -214,7 +214,7 @@ export async function POST(request: Request) {
 // DELETE: Clear app usage history
 export async function DELETE(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = createClient();
     
     const { data: { session }, error: authError } = await supabase.auth.getSession();
     
