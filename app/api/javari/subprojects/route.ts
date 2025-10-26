@@ -142,10 +142,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Increment parent project's subproject count
-    await supabase.rpc('increment_project_subprojects', {
-      project_id: body.project_id
-    });
-
+    // Note: Will be implemented via database triggers after migration
+    
     return NextResponse.json({
       success: true,
       data
@@ -272,11 +270,7 @@ export async function DELETE(request: NextRequest) {
       }
 
       // Decrement parent project's subproject count
-      if (subproject) {
-        await supabase.rpc('decrement_project_subprojects', {
-          project_id: subproject.project_id
-        });
-      }
+      // Note: Will be implemented via database triggers after migration
 
       return NextResponse.json({
         success: true,
