@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { JavariSubProject } from '@/lib/javari-types';
+import type { JavariSubProject } from '@/lib/javari-types';
+
+export const runtime = 'edge';
 
 /**
  * GET /api/javari/subprojects
