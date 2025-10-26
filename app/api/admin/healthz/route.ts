@@ -2,8 +2,7 @@
 // Session: 2025-10-25 Phase 3 Build
 // Route: /api/admin/healthz/route.ts
 
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
