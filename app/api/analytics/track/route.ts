@@ -2,7 +2,7 @@
 // Session: 2025-10-25 - Phase 4
 // Purpose: Receive and store analytics events
 
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@/lib/supabase/server';
 import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
@@ -20,7 +20,7 @@ interface AnalyticsEvent {
 // POST: Track analytics events
 export async function POST(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = createClient();
     
     // Get session (optional - allow anonymous tracking)
     const { data: { session } } = await supabase.auth.getSession();
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
 // GET: Fetch analytics data (admin only)
 export async function GET(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = createClient();
     
     // Verify admin authentication
     const { data: { session }, error: authError } = await supabase.auth.getSession();
@@ -194,7 +194,7 @@ export async function GET(request: Request) {
 // DELETE: Clear analytics data (admin only)
 export async function DELETE(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
+    const supabase = createClient();
     
     // Verify admin authentication
     const { data: { session }, error: authError } = await supabase.auth.getSession();
