@@ -5,7 +5,7 @@ import { cookies } from 'next/headers'
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const supabase = createRouteHandlerClient({ cookies })
+    const supabase = createClient()
 
     // PayPal webhook events
     const eventType = body.event_type
