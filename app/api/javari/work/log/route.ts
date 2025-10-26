@@ -106,41 +106,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Update counters in related entities
-    const updates = [];
-
-    // Update session stats
-    updates.push(
-      supabase.rpc('update_session_stats', {
-        session_id: body.session_id,
-        tokens: body.tokens_used || 0,
-        cost: body.cost_usd || 0
-      })
-    );
-
-    // Update project stats
-    updates.push(
-      supabase.rpc('update_project_stats', {
-        project_id: body.project_id,
-        work_logs: 1,
-        tokens: body.tokens_used || 0,
-        cost: body.cost_usd || 0
-      })
-    );
-
-    // Update subproject stats if applicable
-    if (body.sub_project_id) {
-      updates.push(
-        supabase.rpc('update_subproject_stats', {
-          subproject_id: body.sub_project_id,
-          work_logs: 1,
-          tokens: body.tokens_used || 0,
-          cost: body.cost_usd || 0
-        })
-      );
-    }
-
-    // Execute all updates in parallel
-    await Promise.all(updates);
+    // Note: RPC functions will be added after database migration is complete
+    // For now, counters will be updated via scheduled jobs or manual updates
 
     return NextResponse.json({
       success: true,
