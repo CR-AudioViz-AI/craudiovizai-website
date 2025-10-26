@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { ChatWorkLog, CreateWorkLogRequest } from '@/lib/javari-types';
+import { ChatWorkLog } from '@/lib/javari-types';
 
 /**
  * GET /api/javari/work/log
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const supabase = createClient();
-    const body: CreateWorkLogRequest = await request.json();
+    const body = await request.json();
 
     // Validate required fields
     if (!body.chat_session_id || !body.action_type) {
