@@ -1,6 +1,7 @@
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import type { Session } from '@supabase/supabase-js'
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({
@@ -12,7 +13,8 @@ export async function updateSession(request: NextRequest) {
   const supabase = createMiddlewareClient({ req: request, res: response })
 
   // Refresh session if expired - required for Server Components
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data } = await supabase.auth.getSession()
+  const session: Session | null = data.session
 
   return response
 }
