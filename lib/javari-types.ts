@@ -337,3 +337,111 @@ export interface HealthResponse {
   pending_reviews: CodeReviewQueue[];
   smart_suggestions: SmartSuggestion[];
 }
+// ============================================================================
+// ADDITIONAL API REQUEST TYPES (ADD TO END OF javari-types.ts)
+// ============================================================================
+
+// Project Management
+export interface CreateProjectRequest {
+  user_id: string;
+  name: string;
+  description?: string;
+  repository_url?: string;
+  primary_language?: string;
+  framework?: string;
+  status?: 'active' | 'paused' | 'archived';
+  metadata?: Record<string, any>;
+}
+
+export interface UpdateProjectRequest {
+  id: string;
+  name?: string;
+  description?: string;
+  repository_url?: string;
+  primary_language?: string;
+  framework?: string;
+  status?: 'active' | 'paused' | 'archived';
+  health_score?: number;
+  last_health_check?: string;
+  metadata?: Record<string, any>;
+}
+
+// SubProject Management
+export interface CreateSubProjectRequest {
+  project_id: string;
+  name: string;
+  description?: string;
+  type?: 'feature' | 'bugfix' | 'refactor' | 'optimization' | 'documentation';
+  status?: 'active' | 'paused' | 'completed' | 'archived';
+  priority?: 'low' | 'medium' | 'high' | 'critical';
+  assigned_files?: string[];
+  dependencies?: string[];
+  estimated_hours?: number;
+  start_date?: string;
+  target_completion_date?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface UpdateSubProjectRequest {
+  id: string;
+  name?: string;
+  description?: string;
+  type?: 'feature' | 'bugfix' | 'refactor' | 'optimization' | 'documentation';
+  status?: 'active' | 'paused' | 'completed' | 'archived';
+  priority?: 'low' | 'medium' | 'high' | 'critical';
+  assigned_files?: string[];
+  dependencies?: string[];
+  completion_percentage?: number;
+  estimated_hours?: number;
+  actual_hours?: number;
+  start_date?: string;
+  target_completion_date?: string;
+  actual_completion_date?: string;
+  metadata?: Record<string, any>;
+}
+
+// Health Monitoring
+export interface CreateHealthCheckRequest {
+  project_id: string;
+  health_score: number;
+  build_status?: 'success' | 'failed' | 'pending';
+  test_coverage_percentage?: number;
+  lint_errors_count?: number;
+  lint_warnings_count?: number;
+  type_errors_count?: number;
+  security_vulnerabilities_count?: number;
+  dependency_issues_count?: number;
+  build_time_ms?: number;
+  bundle_size_kb?: number;
+  issues_detected?: string[];
+  recommendations?: string[];
+  metadata?: Record<string, any>;
+}
+
+export interface HealthCheckResult {
+  overall_score: number;
+  status: 'healthy' | 'warning' | 'critical';
+  issues: Array<{
+    severity: 'low' | 'medium' | 'high' | 'critical';
+    category: 'code_quality' | 'type_safety' | 'security' | 'testing' | 'performance';
+    message: string;
+    count: number | null;
+  }>;
+  recommendations: string[];
+}
+
+// Work Log Updates (additional fields for compatibility)
+export interface CreateWorkLogRequestExtended extends CreateWorkLogRequest {
+  session_id?: string;
+  project_id?: string;
+  sub_project_id?: string;
+  action_type?: 'file_created' | 'file_modified' | 'file_deleted' | 'code_generated' | 'bug_fixed' | 'test_written' | 'api_created' | 'deployment' | 'refactor' | 'documentation';
+  files_modified?: string[];
+  code_changes?: Record<string, any>;
+  tokens_used?: number;
+  cost_usd?: number;
+  execution_time_ms?: number;
+  success?: boolean;
+  error_message?: string;
+  metadata?: Record<string, any>;
+}
