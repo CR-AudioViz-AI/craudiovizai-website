@@ -12,7 +12,7 @@ import { getChatSession, createChatSession, updateChatSession, listWorkLogs } fr
 import { generateContextSummary } from '@/lib/javari-ai';
 import type { ContinueChatRequest, ContinueChatResponse, JavariChatSession } from '@/lib/javari-types';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 /**
  * POST /api/javari/chats/continue
