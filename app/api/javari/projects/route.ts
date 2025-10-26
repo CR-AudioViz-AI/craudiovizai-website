@@ -12,7 +12,7 @@ import type {
   UpdateProjectRequest 
 } from '@/lib/javari-types';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 /**
  * GET /api/javari/projects
