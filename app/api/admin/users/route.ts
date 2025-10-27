@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
       .eq('status', 'succeeded');
 
     // Calculate total spent per user
-    const totalSpentByUser = (payments || []).reduce((acc, payment) => {
+    const totalSpentByUser = (payments || []).reduce((acc: number, payment) => {
       acc[payment.user_id] = (acc[payment.user_id] || 0) + payment.amount;
       return acc;
     }, {} as Record<string, number>);
