@@ -83,7 +83,7 @@ export async function PATCH(
     // Validate partial updates (allow partial data)
     const validation = subscriptionSchema.partial().safeParse(body)
     if (!validation.success) {
-      return errorResponse('Validation failed', 400, validation.error.errors)
+      return errorResponse('Validation failed', 400)
     }
 
     // Update subscription
