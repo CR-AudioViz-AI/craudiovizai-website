@@ -126,7 +126,7 @@ export async function PATCH(
     // Audit log
     await auditLog({
       org_id: orgId,
-      user_id: (await supabase.auth.getUser()).data.user?.id || '',
+      actor: (await supabase.auth.getUser()).data.user?.id || '',
       action: 'update',
       entity: 'category',
       entity_id: params.id,
@@ -190,7 +190,7 @@ export async function DELETE(
     // Audit log
     await auditLog({
       org_id: orgId,
-      user_id: (await supabase.auth.getUser()).data.user?.id || '',
+      actor: (await supabase.auth.getUser()).data.user?.id || '',
       action: 'delete',
       entity: 'category',
       entity_id: params.id,
