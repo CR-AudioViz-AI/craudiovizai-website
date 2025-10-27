@@ -43,11 +43,11 @@ export default async function HomePage() {
 
               {/* Two CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-3">
-                <Link href="/javari">
+                <a href="https://javari-ai.vercel.app" target="_blank" rel="noopener noreferrer">
                   <Button size="lg" className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white px-6 py-5 text-base font-semibold">
                     Start Building
                   </Button>
-                </Link>
+                </a>
                 <Link href="/about">
                   <Button 
                     size="lg" 
@@ -444,4 +444,5 @@ export default async function HomePage() {
     </div>
   );
 }
+
 
