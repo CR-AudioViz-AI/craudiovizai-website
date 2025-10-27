@@ -180,7 +180,7 @@ export async function GET(request: Request) {
           .eq('transaction_type', 'purchase');
         
         healthCheck.metrics.totalCreditsIssued = 
-          creditData?.reduce((sum, t) => sum + (t.credits || 0), 0) || 0;
+          creditData?.reduce((sum: number, t) => sum + (t.credits || 0), 0) || 0;
 
       } catch (error) {
         console.error('Error fetching detailed metrics:', error);
