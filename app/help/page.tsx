@@ -218,27 +218,27 @@ export default function HelpPage() {
                 <CardContent>
                   <ul className="space-y-3 text-sm">
                     <li>
-                      <Link href="/help/javari-intro" className="text-blue-600 hover:text-blue-700 hover:underline">
+                      <Link href="https://javari-ai.vercel.app" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 hover:underline">
                         Introduction to Javari
                       </Link>
                     </li>
                     <li>
-                      <Link href="/help/javari-prompts" className="text-blue-600 hover:text-blue-700 hover:underline">
+                      <Link href="https://javari-ai.vercel.app" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 hover:underline">
                         Writing Effective Prompts
                       </Link>
                     </li>
                     <li>
-                      <Link href="/help/javari-website" className="text-blue-600 hover:text-blue-700 hover:underline">
+                      <Link href="https://javari-ai.vercel.app" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 hover:underline">
                         Building Websites with Javari
                       </Link>
                     </li>
                     <li>
-                      <Link href="/help/javari-apps" className="text-blue-600 hover:text-blue-700 hover:underline">
+                      <Link href="https://javari-ai.vercel.app" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 hover:underline">
                         Creating Apps with Javari
                       </Link>
                     </li>
                     <li>
-                      <Link href="/help/javari-tips" className="text-blue-600 hover:text-blue-700 hover:underline">
+                      <Link href="https://javari-ai.vercel.app" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 hover:underline">
                         Tips & Best Practices
                       </Link>
                     </li>
