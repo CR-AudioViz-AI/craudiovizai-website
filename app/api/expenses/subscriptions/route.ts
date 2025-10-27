@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Calculate summary
-    const monthlyTotal = data.reduce((sum, sub) => {
+    const monthlyTotal = data.reduce((sum: number, sub) => {
       if (!sub.active) return sum
       const amount = parseFloat(sub.amount)
       switch (sub.billing_interval) {
