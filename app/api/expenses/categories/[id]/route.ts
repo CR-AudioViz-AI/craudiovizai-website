@@ -47,8 +47,8 @@ export async function GET(
     const usageStats = {
       expense_count: data.expenses?.length || 0,
       subscription_count: data.subscriptions?.length || 0,
-      total_expense_amount: data.expenses?.reduce((sum: number, e) => sum + parseFloat(e.amount || 0), 0) || 0,
-      total_subscription_amount: data.subscriptions?.reduce((sum: number, s) => {
+      total_expense_amount: data.expenses?.reduce((sum: number, e: any) => sum + parseFloat(e.amount || 0), 0) || 0,
+      total_subscription_amount: data.subscriptions?.reduce((sum: number, s: any) => {
         const amount = parseFloat(s.amount || 0)
         // Normalize to monthly for comparison
         if (s.billing_cycle === 'monthly') return sum + amount
