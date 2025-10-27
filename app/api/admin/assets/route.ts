@@ -69,7 +69,7 @@ export async function GET(request: Request) {
 
     const statistics = {
       totalAssets: count || 0,
-      totalSize: stats?.reduce((sum, asset) => sum + (asset.file_size || 0), 0) || 0,
+      totalSize: stats?.reduce((sum: number, asset) => sum + (asset.file_size || 0), 0) || 0,
       byType: {
         image: stats?.filter(a => a.asset_type === 'image').length || 0,
         video: stats?.filter(a => a.asset_type === 'video').length || 0,
