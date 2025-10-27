@@ -72,9 +72,9 @@ export async function GET(request: Request) {
         const usage = transactions?.filter(t => t.transaction_type === 'usage') || [];
         
         response.statistics = {
-          totalPurchased: purchases.reduce((sum, t) => sum + (t.credits || 0), 0),
-          totalUsed: Math.abs(usage.reduce((sum, t) => sum + (t.credits || 0), 0)),
-          totalSpent: purchases.reduce((sum, t) => sum + (t.amount || 0), 0) / 100 // Convert cents to dollars
+          totalPurchased: purchases.reduce((sum: number, t) => sum + (t.credits || 0), 0),
+          totalUsed: Math.abs(usage.reduce((sum: number, t) => sum + (t.credits || 0), 0)),
+          totalSpent: purchases.reduce((sum: number, t) => sum + (t.amount || 0), 0) / 100 // Convert cents to dollars
         };
       }
     }
