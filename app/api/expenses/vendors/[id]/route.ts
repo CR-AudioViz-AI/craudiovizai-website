@@ -126,9 +126,9 @@ export async function PATCH(
     if (error) throw error
 
     // Audit log
-    await auditLog(supabase, {
+    await auditLog({
       org_id: orgId,
-      user_id: (await supabase.auth.getUser()).data.user?.id || '',
+      actor: (await supabase.auth.getUser()).data.user?.id || '',
       action: 'update',
       entity: 'vendor',
       entity_id: params.id,
@@ -190,9 +190,9 @@ export async function DELETE(
     if (error) throw error
 
     // Audit log
-    await auditLog(supabase, {
+    await auditLog({
       org_id: orgId,
-      user_id: (await supabase.auth.getUser()).data.user?.id || '',
+      actor: (await supabase.auth.getUser()).data.user?.id || '',
       action: 'delete',
       entity: 'vendor',
       entity_id: params.id,
