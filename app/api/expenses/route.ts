@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Calculate summary
-    const total = data.reduce((sum, expense) => sum + parseFloat(expense.amount), 0)
+    const total = data.reduce((sum: number, expense) => sum + parseFloat(expense.amount), 0)
     const count = data.length
 
     return successResponse({ 
