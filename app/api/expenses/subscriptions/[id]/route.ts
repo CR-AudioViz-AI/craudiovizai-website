@@ -39,11 +39,11 @@ export async function GET(
 
     // Calculate expense history summary
     const expenseSummary = {
-      total_paid: data.expenses?.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0) || 0,
+      total_paid: data.expenses?.reduce((sum: number, e) => sum + parseFloat(e.amount || 0), 0) || 0,
       payment_count: data.expenses?.length || 0,
       last_payment_date: data.expenses?.[0]?.date || null,
       average_payment: data.expenses?.length 
-        ? (data.expenses.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0) / data.expenses.length)
+        ? (data.expenses.reduce((sum: number, e) => sum + parseFloat(e.amount || 0), 0) / data.expenses.length)
         : 0
     }
 
