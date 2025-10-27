@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
       draft_projects: allProjects?.filter(p => p.status === 'draft').length || 0,
       published_projects: allProjects?.filter(p => p.status === 'published').length || 0,
       archived_projects: allProjects?.filter(p => p.status === 'archived').length || 0,
-      projects_by_type: (allProjects || []).reduce((acc, p) => {
+      projects_by_type: (allProjects || []).reduce((acc: number, p) => {
         acc[p.type] = (acc[p.type] || 0) + 1;
         return acc;
       }, {} as Record<string, number>),
