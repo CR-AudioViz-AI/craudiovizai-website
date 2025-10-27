@@ -18,6 +18,10 @@ interface ResizeOptions {
   format: 'jpeg' | 'png' | 'webp';
 }
 
+
+// Force dynamic rendering (don't prerender at build time)
+export const dynamic = "force-dynamic";
+
 export default function ImageResizerTool() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>('');
