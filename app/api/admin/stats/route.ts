@@ -174,22 +174,22 @@ export async function GET(request: NextRequest) {
       : 0;
 
     // Calculate revenue stats
-    const revenueTotal = totalRevenue.data?.reduce((sum, payment) => sum + payment.amount, 0) || 0;
-    const revenueMonthly = monthlyRevenue.data?.reduce((sum, payment) => sum + payment.amount, 0) || 0;
-    const revenueDaily = dailyRevenue.data?.reduce((sum, payment) => sum + payment.amount, 0) || 0;
-    const previousRevenue = previousMonthRevenue.data?.reduce((sum, payment) => sum + payment.amount, 0) || 0;
+    const revenueTotal = totalRevenue.data?.reduce((sum: number, payment) => sum + payment.amount, 0) || 0;
+    const revenueMonthly = monthlyRevenue.data?.reduce((sum: number, payment) => sum + payment.amount, 0) || 0;
+    const revenueDaily = dailyRevenue.data?.reduce((sum: number, payment) => sum + payment.amount, 0) || 0;
+    const previousRevenue = previousMonthRevenue.data?.reduce((sum: number, payment) => sum + payment.amount, 0) || 0;
     const revenueGrowth = previousRevenue > 0 
       ? ((revenueMonthly - previousRevenue) / previousRevenue) * 100 
       : 0;
 
     // Calculate credits stats
-    const creditsPurchased = creditsData.data?.filter(t => t.type === 'purchase').reduce((sum, t) => sum + t.amount, 0) || 0;
-    const creditsUsed = Math.abs(creditsData.data?.filter(t => t.type === 'deduction').reduce((sum, t) => sum + t.amount, 0) || 0);
+    const creditsPurchased = creditsData.data?.filter(t => t.type === 'purchase').reduce((sum: number, t) => sum + t.amount, 0) || 0;
+    const creditsUsed = Math.abs(creditsData.data?.filter(t => t.type === 'deduction').reduce((sum: number, t) => sum + t.amount, 0) || 0);
     const creditsRemaining = creditsPurchased - creditsUsed;
     const conversionRate = creditsPurchased > 0 ? (creditsUsed / creditsPurchased) * 100 : 0;
 
     // Calculate apps stats
-    const appsByType = (appsData.data || []).reduce((acc, project) => {
+    const appsByType = (appsData.data || []).reduce((acc: number, project) => {
       acc[project.type] = (acc[project.type] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
