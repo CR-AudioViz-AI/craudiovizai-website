@@ -68,7 +68,7 @@ export async function GET(request: Request) {
 
     // Calculate summary statistics
     const totalGenerations = transactions?.length || 0
-    const totalCreditsUsed = transactions?.reduce((sum, t) => sum + Math.abs(t.amount), 0) || 0
+    const totalCreditsUsed = transactions?.reduce((sum: number, t) => sum + Math.abs(t.amount), 0) || 0
 
     // Group by app to find most used
     const appUsage = new Map<string, number>()
