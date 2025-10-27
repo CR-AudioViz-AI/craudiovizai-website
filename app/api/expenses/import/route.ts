@@ -267,9 +267,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Audit log
-    await auditLog(supabase, {
+    await auditLog({
       org_id: orgId,
-      user_id: (await supabase.auth.getUser()).data.user?.id || '',
+      actor: (await supabase.auth.getUser()).data.user?.id || '',
       action: 'import',
       entity: type,
       entity_id: 'bulk',
