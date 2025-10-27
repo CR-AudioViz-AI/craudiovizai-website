@@ -11,7 +11,7 @@ export async function GET(
 ) {
   try {
     const supabase = createClient()
-    const orgId = await getOrgId(supabase)
+    const orgId = await getOrgId(request)
 
     const { data, error } = await supabase
       .from('subscriptions')
@@ -64,7 +64,7 @@ export async function PATCH(
 ) {
   try {
     const supabase = createClient()
-    const orgId = await getOrgId(supabase)
+    const orgId = await getOrgId(request)
 
     // Check if subscription exists and belongs to org
     const { data: existing } = await supabase
@@ -162,7 +162,7 @@ export async function DELETE(
 ) {
   try {
     const supabase = createClient()
-    const orgId = await getOrgId(supabase)
+    const orgId = await getOrgId(request)
 
     // Check if subscription exists and belongs to org
     const { data: existing } = await supabase
