@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
     })).sort((a: any, b: any) => b.total - a.total)
 
     const summary = {
-      total: report.reduce((sum, g: any) => sum + g.total, 0),
+      total: report.reduce((sum: number, g: any) => sum + g.total, 0),
       count: data.length,
       group_by: groupBy,
       groups: report.length
