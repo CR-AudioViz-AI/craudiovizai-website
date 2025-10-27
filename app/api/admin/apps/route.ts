@@ -46,7 +46,7 @@ export async function GET(request: Request) {
 
       // Calculate statistics
       const totalGenerations = appUsage?.length || 0;
-      const totalCreditsUsed = appUsage?.reduce((sum, usage) => sum + (usage.credits_used || 0), 0) || 0;
+      const totalCreditsUsed = appUsage?.reduce((sum: number, usage) => sum + (usage.credits_used || 0), 0) || 0;
       const avgCreditsPerGeneration = totalGenerations > 0 ? totalCreditsUsed / totalGenerations : 0;
 
       return NextResponse.json({
