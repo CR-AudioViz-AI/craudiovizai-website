@@ -48,7 +48,7 @@ export default function DashboardPage() {
         <div className="bg-white rounded-xl shadow p-8 mb-8">
           <h2 className="text-2xl font-bold mb-6">Quick Actions</h2>
           <div className="grid md:grid-cols-3 gap-4">
-            <a href="/javari" className="p-6 border-2 border-gray-200 rounded-lg hover:border-blue-400 transition text-center">
+            <a href="https://javari-ai.vercel.app" target="_blank" rel="noopener noreferrer" className="p-6 border-2 border-gray-200 rounded-lg hover:border-blue-400 transition text-center">
               <div className="text-4xl mb-3">🤖</div>
               <div className="font-bold">Chat with JavariAI</div>
               <div className="text-sm text-gray-600 mt-1">Start building something new</div>
@@ -72,7 +72,7 @@ export default function DashboardPage() {
           <div className="text-center py-12 text-gray-500">
             <div className="text-5xl mb-4">📭</div>
             <p>No activity yet. Start building something!</p>
-            <a href="/javari" className="inline-block mt-4 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+            <a href="https://javari-ai.vercel.app" target="_blank" rel="noopener noreferrer" className="inline-block mt-4 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
               Chat with JavariAI
             </a>
           </div>
