@@ -7,7 +7,7 @@ import { getOrgId, errorResponse, successResponse, auditLog } from '@/lib/expens
 export async function POST(request: NextRequest) {
   try {
     const supabase = createClient()
-    const orgId = await getOrgId(supabase)
+    const orgId = await getOrgId(request)
 
     const formData = await request.formData()
     const file = formData.get('file') as File
