@@ -48,10 +48,10 @@ export async function GET(
       subscription_count: data.subscriptions?.length || 0,
       active_subscription_count: data.subscriptions?.filter(s => s.status === 'active').length || 0,
       expense_count: data.expenses?.length || 0,
-      total_spent: data.expenses?.reduce((sum, e) => sum + parseFloat(e.amount || 0), 0) || 0,
+      total_spent: data.expenses?.reduce((sum: number, e) => sum + parseFloat(e.amount || 0), 0) || 0,
       monthly_recurring: data.subscriptions
         ?.filter(s => s.status === 'active')
-        .reduce((sum, s) => {
+        .reduce((sum: number, s) => {
           const amount = parseFloat(s.amount || 0)
           if (s.billing_cycle === 'monthly') return sum + amount
           if (s.billing_cycle === 'annual') return sum + (amount / 12)
