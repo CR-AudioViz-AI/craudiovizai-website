@@ -143,12 +143,12 @@ export async function GET(request: NextRequest) {
     // Calculate overview metrics
     const totalUsers = allUsers.data?.length || 0;
     const activeUsers30d = activeUsers.data?.length || 0;
-    const totalRevenue = (allPayments.data?.reduce((sum, p) => sum + p.amount, 0) || 0) / 100;
-    const revenue30d = (recentPayments.data?.reduce((sum, p) => sum + p.amount, 0) || 0) / 100;
+    const totalRevenue = (allPayments.data?.reduce((sum: number, p) => sum + p.amount, 0) || 0) / 100;
+    const revenue30d = (recentPayments.data?.reduce((sum: number, p) => sum + p.amount, 0) || 0) / 100;
     const totalProjects = allProjects.data?.length || 0;
     const projects30d = recentProjects.data?.length || 0;
 
-    const totalCredits = allCredits.data?.reduce((sum, c) => sum + Math.abs(c.amount), 0) || 0;
+    const totalCredits = allCredits.data?.reduce((sum: number, c) => sum + Math.abs(c.amount), 0) || 0;
     const avgCreditsPerUser = totalUsers > 0 ? totalCredits / totalUsers : 0;
 
     const paidUsers = new Set(allPayments.data?.map(p => p.payment_method) || []).size;
@@ -177,12 +177,12 @@ export async function GET(request: NextRequest) {
     const retentionRate = totalUsers > 0 ? (activeUsers30d / totalUsers) * 100 : 0;
 
     // Calculate app usage
-    const appUsage = (allProjects.data || []).reduce((acc, p) => {
+    const appUsage = (allProjects.data || []).reduce((acc: number, p) => {
       acc[p.type] = (acc[p.type] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
-    const totalAppUsage = Object.values(appUsage).reduce((sum, count) => sum + count, 0);
+    const totalAppUsage = Object.values(appUsage).reduce((sum: number, count) => sum + count, 0);
     const usageByApp = Object.entries(appUsage).map(([app, count]) => ({
       app,
       count,
@@ -197,7 +197,7 @@ export async function GET(request: NextRequest) {
     }));
 
     // Calculate user distribution
-    const subscriptionDistribution = (subscriptions.data || []).reduce((acc, s) => {
+    const subscriptionDistribution = (subscriptions.data || []).reduce((acc: number, s) => {
       acc[s.tier] = (acc[s.tier] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
@@ -208,7 +208,7 @@ export async function GET(request: NextRequest) {
       percentage: totalUsers > 0 ? (count / totalUsers) * 100 : 0
     }));
 
-    const statusDistribution = (allUsers.data || []).reduce((acc, u) => {
+    const statusDistribution = (allUsers.data || []).reduce((acc: number, u) => {
       acc[u.status || 'active'] = (acc[u.status || 'active'] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
@@ -352,7 +352,7 @@ function calculateAmountGrowth(
       return itemDate === dateStr;
     });
 
-    const amount = dayData.reduce((sum, item) => sum + (item[amountField] || 0), 0) / 100;
+    const amount = dayData.reduce((sum: number, item) => sum + (item[amountField] || 0), 0) / 100;
     result.push({ date: dateStr, amount: Math.round(amount * 100) / 100 });
   }
   
