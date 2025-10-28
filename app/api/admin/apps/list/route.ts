@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 
 // Define available apps - this could later be moved to a database
+
+// Force dynamic rendering - required for using dynamic Next.js features
+export const dynamic = 'force-dynamic';
+
 const AVAILABLE_APPS = [
   {
     id: 'logo-creator',
