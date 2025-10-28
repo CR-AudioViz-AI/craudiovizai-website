@@ -8,6 +8,21 @@ import { useState } from 'react';
 import { Upload, Download, Image as ImageIcon, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAnalytics } from '@/lib/analytics';
 import { useNotificationHelpers } from '@/components/NotificationSystem';
+
+// Safe notification helper that works during SSR
+function useSafeNotificationHelpers() {
+  try {
+    return useNotificationHelpers();
+  } catch (error) {
+    // Return no-op functions during SSR
+    return {
+      showSuccess: () => {},
+      showError: () => {},
+      showInfo: () => {},
+      showWarning: () => {}
+    };
+  }
+}
 import { LoadingOverlay, ButtonLoading } from '@/components/LoadingComponents';
 
 interface ResizeOptions {
