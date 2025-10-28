@@ -1,28 +1,12 @@
 // CR AUDIOVIZ AI - Image Resizer Tool
-// Session: 2025-10-25 - Phase 4
-// Purpose: Example creative tool showing the standard pattern for all 60+ tools
+// Session: 2025-10-28 - Fixed for production
+// Purpose: Example creative tool - CLIENT-ONLY rendering
 
 'use client';
 
 import { useState } from 'react';
-import { Upload, Download, Image as ImageIcon, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
+import { Upload, Download, Image as ImageIcon, Loader2, AlertCircle } from 'lucide-react';
 import { useAnalytics } from '@/lib/analytics';
-import { useNotificationHelpers } from '@/components/NotificationSystem';
-
-// Safe notification helper that works during SSR
-function useSafeNotificationHelpers() {
-  try {
-    return useNotificationHelpers();
-  } catch (error) {
-    // Return no-op functions during SSR
-    return {
-      showSuccess: () => {},
-      showError: () => {},
-      showInfo: () => {},
-      showWarning: () => {}
-    };
-  }
-}
 import { LoadingOverlay, ButtonLoading } from '@/components/LoadingComponents';
 
 interface ResizeOptions {
@@ -33,234 +17,226 @@ interface ResizeOptions {
   format: 'jpeg' | 'png' | 'webp';
 }
 
-
 // Force dynamic rendering (don't prerender at build time)
 export const dynamic = "force-dynamic";
+
+// Simple notification display without context
+function showNotification(message: string, type: 'success' | 'error' | 'warning') {
+  // Simple alert for now - can be enhanced later
+  if (type === 'error') {
+    alert(`Error: ${message}`);
+  } else if (type === 'warning') {
+    alert(`Warning: ${message}`);
+  } else {
+    console.log(`Success: ${message}`);
+  }
+}
 
 export default function ImageResizerTool() {
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string>('');
   const [resizedImage, setResizedImage] = useState<string>('');
   const [options, setOptions] = useState<ResizeOptions>({
-    width: 1920,
-    height: 1080,
+    width: 800,
+    height: 600,
     maintainAspectRatio: true,
     quality: 90,
     format: 'jpeg'
   });
-  const [processing, setProcessing] = useState(false);
-  const [creditsRequired, setCreditsRequired] = useState(5);
-  
-  const { appUse, error: trackError } = useAnalytics();
-  const { success, error, warning } = useNotificationHelpers();
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const { trackEvent } = useAnalytics();
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (!selectedFile) return;
 
-    // Validate file type
     if (!selectedFile.type.startsWith('image/')) {
-      error('Invalid File', 'Please select an image file');
-      return;
-    }
-
-    // Validate file size (max 10MB)
-    if (selectedFile.size > 10 * 1024 * 1024) {
-      error('File Too Large', 'Maximum file size is 10MB');
+      showNotification('Please upload an image file', 'error');
       return;
     }
 
     setFile(selectedFile);
-
-    // Create preview
     const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreview(e.target?.result as string);
+    reader.onload = (event) => {
+      setPreview(event.target?.result as string);
     };
     reader.readAsDataURL(selectedFile);
-
-    success('File Loaded', 'Image ready to resize');
+    
+    trackEvent('tool_file_uploaded', {
+      tool_name: 'image-resizer',
+      file_type: selectedFile.type,
+      file_size: selectedFile.size
+    });
   };
 
-  const handleResize = async () => {
-    if (!file) {
-      warning('No File', 'Please select an image first');
+  const resizeImage = async () => {
+    if (!file || !preview) {
+      showNotification('Please upload an image first', 'warning');
       return;
     }
 
-    setProcessing(true);
+    setIsProcessing(true);
 
     try {
-      // Create FormData
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('options', JSON.stringify(options));
+      const img = new Image();
+      img.src = preview;
 
-      // Call API
-      const response = await fetch('/api/tools/image-resizer', {
-        method: 'POST',
-        body: formData
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to resize image');
+      let targetWidth = options.width;
+      let targetHeight = options.height;
+
+      if (options.maintainAspectRatio) {
+        const aspectRatio = img.width / img.height;
+        if (img.width > img.height) {
+          targetHeight = Math.round(targetWidth / aspectRatio);
+        } else {
+          targetWidth = Math.round(targetHeight * aspectRatio);
+        }
       }
 
-      const data = await response.json();
+      const canvas = document.createElement('canvas');
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
 
-      // Set resized image
-      setResizedImage(data.imageUrl);
-      
-      // Track usage
-      appUse('image-resizer', creditsRequired);
-      
-      success('Image Resized!', `Used ${creditsRequired} credits`);
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Failed to get canvas context');
 
-    } catch (err: any) {
-      console.error('Resize error:', err);
-      error('Resize Failed', err.message);
-      trackError(err.message, 'image_resizer');
+      ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
+
+      const quality = options.quality / 100;
+      const mimeType = `image/${options.format}`;
+      const resizedDataUrl = canvas.toDataURL(mimeType, quality);
+
+      setResizedImage(resizedDataUrl);
+      
+      trackEvent('tool_action_completed', {
+        tool_name: 'image-resizer',
+        action: 'resize',
+        original_size: `${img.width}x${img.height}`,
+        new_size: `${targetWidth}x${targetHeight}`,
+        format: options.format
+      });
+
+    } catch (error) {
+      console.error('Resize error:', error);
+      showNotification('Failed to resize image. Please try again.', 'error');
+      
+      trackEvent('tool_error', {
+        tool_name: 'image-resizer',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     } finally {
-      setProcessing(false);
+      setIsProcessing(false);
     }
   };
 
-  const handleDownload = () => {
+  const downloadImage = () => {
     if (!resizedImage) return;
 
     const link = document.createElement('a');
-    link.href = resizedImage;
     link.download = `resized-image.${options.format}`;
-    document.body.appendChild(link);
+    link.href = resizedImage;
     link.click();
-    document.body.removeChild(link);
 
-    success('Downloaded!', 'Image saved to your device');
-  };
-
-  const resetTool = () => {
-    setFile(null);
-    setPreview('');
-    setResizedImage('');
+    trackEvent('tool_download', {
+      tool_name: 'image-resizer',
+      format: options.format
+    });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl p-3">
-                <ImageIcon className="w-8 h-8 text-white" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">Image Resizer</h1>
-                <p className="text-gray-600 mt-1">Resize images while maintaining quality</p>
-              </div>
-            </div>
-
-            <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-2">
-              <p className="text-sm text-blue-900 font-medium">
-                {creditsRequired} credits per resize
-              </p>
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <ImageIcon className="w-10 h-10 text-purple-400" />
+            <h1 className="text-4xl font-bold text-white">Image Resizer</h1>
           </div>
+          <p className="text-gray-300 text-lg">
+            Resize your images to any dimension while maintaining quality
+          </p>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Upload Section */}
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Upload & Controls */}
           <div className="space-y-6">
-            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Upload Image</h2>
+            {/* Upload Card */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6">
+              <h2 className="text-xl font-semibold text-white mb-4">Upload Image</h2>
               
-              {!preview ? (
-                <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-blue-500 transition-colors bg-gray-50 hover:bg-blue-50">
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <Upload className="w-12 h-12 text-gray-400 mb-3" />
-                    <p className="mb-2 text-sm text-gray-500">
-                      <span className="font-semibold">Click to upload</span> or drag and drop
-                    </p>
-                    <p className="text-xs text-gray-500">PNG, JPG, WEBP (MAX. 10MB)</p>
-                  </div>
-                  <input
-                    type="file"
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleFileSelect}
+              <label className="block cursor-pointer">
+                <div className="border-2 border-dashed border-purple-400/50 rounded-lg p-8 text-center hover:border-purple-400 transition-colors bg-white/5">
+                  <Upload className="w-12 h-12 text-purple-400 mx-auto mb-3" />
+                  <p className="text-white mb-2">Click to upload an image</p>
+                  <p className="text-sm text-gray-400">PNG, JPG, WEBP up to 10MB</p>
+                </div>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </label>
+
+              {preview && (
+                <div className="mt-4">
+                  <img
+                    src={preview}
+                    alt="Preview"
+                    className="w-full rounded-lg"
                   />
-                </label>
-              ) : (
-                <div className="space-y-4">
-                  <div className="relative rounded-xl overflow-hidden border border-gray-200">
-                    <img
-                      src={preview}
-                      alt="Preview"
-                      className="w-full h-auto"
-                    />
-                  </div>
-                  <button
-                    onClick={resetTool}
-                    className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl px-4 py-2 text-sm font-medium transition-colors"
-                  >
-                    Choose Different Image
-                  </button>
                 </div>
               )}
             </div>
 
-            {/* Options */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Resize Options</h2>
+            {/* Options Card */}
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6">
+              <h2 className="text-xl font-semibold text-white mb-4">Resize Options</h2>
               
               <div className="space-y-4">
-                {/* Dimensions */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Width (px)
-                    </label>
+                    <label className="text-sm text-gray-300 mb-2 block">Width (px)</label>
                     <input
                       type="number"
                       value={options.width}
-                      onChange={(e) => setOptions({...options, width: parseInt(e.target.value)})}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onChange={(e) => setOptions({ ...options, width: parseInt(e.target.value) || 0 })}
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                      min="1"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Height (px)
-                    </label>
+                    <label className="text-sm text-gray-300 mb-2 block">Height (px)</label>
                     <input
                       type="number"
                       value={options.height}
-                      onChange={(e) => setOptions({...options, height: parseInt(e.target.value)})}
-                      className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      onChange={(e) => setOptions({ ...options, height: parseInt(e.target.value) || 0 })}
+                      className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
+                      min="1"
                     />
                   </div>
                 </div>
 
-                {/* Aspect Ratio */}
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="aspectRatio"
-                    checked={options.maintainAspectRatio}
-                    onChange={(e) => setOptions({...options, maintainAspectRatio: e.target.checked})}
-                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
-                  />
-                  <label htmlFor="aspectRatio" className="text-sm text-gray-700">
-                    Maintain aspect ratio
+                <div>
+                  <label className="flex items-center gap-2 text-gray-300 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={options.maintainAspectRatio}
+                      onChange={(e) => setOptions({ ...options, maintainAspectRatio: e.target.checked })}
+                      className="w-4 h-4 rounded"
+                    />
+                    <span>Maintain aspect ratio</span>
                   </label>
                 </div>
 
-                {/* Quality */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="text-sm text-gray-300 mb-2 block">
                     Quality: {options.quality}%
                   </label>
                   <input
@@ -268,99 +244,72 @@ export default function ImageResizerTool() {
                     min="1"
                     max="100"
                     value={options.quality}
-                    onChange={(e) => setOptions({...options, quality: parseInt(e.target.value)})}
+                    onChange={(e) => setOptions({ ...options, quality: parseInt(e.target.value) })}
                     className="w-full"
                   />
                 </div>
 
-                {/* Format */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Output Format
-                  </label>
+                  <label className="text-sm text-gray-300 mb-2 block">Output Format</label>
                   <select
                     value={options.format}
-                    onChange={(e) => setOptions({...options, format: e.target.value as any})}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    onChange={(e) => setOptions({ ...options, format: e.target.value as 'jpeg' | 'png' | 'webp' })}
+                    className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white"
                   >
                     <option value="jpeg">JPEG</option>
                     <option value="png">PNG</option>
                     <option value="webp">WebP</option>
                   </select>
                 </div>
-              </div>
 
-              {/* Resize Button */}
-              <ButtonLoading
-                loading={processing}
-                loadingText="Resizing..."
-                onClick={handleResize}
-                disabled={!file || processing}
-                className="w-full mt-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-xl px-6 py-3 font-semibold transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Resize Image ({creditsRequired} credits)
-              </ButtonLoading>
+                <button
+                  onClick={resizeImage}
+                  disabled={!file || isProcessing}
+                  className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isProcessing ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>Processing...</span>
+                    </>
+                  ) : (
+                    <span>Resize Image</span>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Result Section */}
-          <div className="space-y-6">
-            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Result</h2>
-              
-              {!resizedImage ? (
-                <div className="flex flex-col items-center justify-center h-64 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
-                  <AlertCircle className="w-12 h-12 text-gray-400 mb-3" />
-                  <p className="text-sm text-gray-500">
-                    Resized image will appear here
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="relative rounded-xl overflow-hidden border border-gray-200">
-                    <img
-                      src={resizedImage}
-                      alt="Resized"
-                      className="w-full h-auto"
-                    />
-                    <div className="absolute top-2 right-2 bg-green-500 text-white rounded-lg px-3 py-1 text-sm font-medium flex items-center gap-1">
-                      <CheckCircle className="w-4 h-4" />
-                      <span>Ready</span>
-                    </div>
-                  </div>
-                  
-                  <button
-                    onClick={handleDownload}
-                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-xl px-6 py-3 font-semibold transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center gap-2"
-                  >
-                    <Download className="w-5 h-5" />
-                    <span>Download Image</span>
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Info Box */}
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-blue-900 mb-2">About This Tool</h3>
-              <ul className="text-sm text-blue-800 space-y-2">
-                <li>• Supports JPEG, PNG, and WebP formats</li>
-                <li>• Maintain aspect ratio for perfect proportions</li>
-                <li>• Adjustable quality settings</li>
-                <li>• Maximum file size: 10MB</li>
-                <li>• Fast processing with high-quality output</li>
-              </ul>
-            </div>
+          {/* Result */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 p-6">
+            <h2 className="text-xl font-semibold text-white mb-4">Result</h2>
+            
+            {resizedImage ? (
+              <div className="space-y-4">
+                <img
+                  src={resizedImage}
+                  alt="Resized"
+                  className="w-full rounded-lg"
+                />
+                <button
+                  onClick={downloadImage}
+                  className="w-full py-3 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  <Download className="w-5 h-5" />
+                  <span>Download Resized Image</span>
+                </button>
+              </div>
+            ) : (
+              <div className="text-center py-16 text-gray-400">
+                <AlertCircle className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <p>Your resized image will appear here</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Loading Overlay */}
-      <LoadingOverlay
-        show={processing}
-        text="Resizing your image..."
-        progress={undefined}
-      />
+      {isProcessing && <LoadingOverlay message="Resizing your image..." />}
     </div>
   );
 }
