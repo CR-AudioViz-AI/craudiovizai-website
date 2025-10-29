@@ -1,0 +1,34 @@
+# JavariAI Multi-Provider Environment Variables
+# Add these to your Vercel project settings
+
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key_here
+
+# Anthropic/Claude Configuration
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+
+# Google AI Configuration (for Gemini)
+GOOGLE_AI_API_KEY=your_google_ai_api_key_here
+
+# Mistral AI Configuration
+MISTRAL_API_KEY=your_mistral_api_key_here
+
+# Supabase Configuration (already set)
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+# Vercel Configuration (already set)
+VERCEL_API_TOKEN=your_vercel_token
+
+# Instructions:
+# 1. Get OpenAI API key from: https://platform.openai.com/api-keys
+# 2. Get Anthropic API key from: https://console.anthropic.com/
+# 3. Get Google AI API key from: https://makersuite.google.com/app/apikey
+# 4. Get Mistral API key from: https://console.mistral.ai/
+
+# Add these variables in Vercel:
+# vercel env add OPENAI_API_KEY production
+# vercel env add ANTHROPIC_API_KEY production
+# vercel env add GOOGLE_AI_API_KEY production
+# vercel env add MISTRAL_API_KEY production
