@@ -1,26 +1,29 @@
 /**
  * UNIVERSAL MARKETING DISTRIBUTION API
  * Handles posting content to all selected social platforms
- * Created: Saturday, November 01, 2025 - 2:48 PM ET
+ * Created: Saturday, November 01, 2025 - 3:02 PM ET
+ * FIXED: Import paths corrected
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 
-// Platform-specific posting functions
-import { postToTwitter } from '@/lib/platforms/twitter';
-import { postToLinkedIn } from '@/lib/platforms/linkedin';
-import { postToFacebook } from '@/lib/platforms/facebook';
-import { postToInstagram } from '@/lib/platforms/instagram';
-import { postToTikTok } from '@/lib/platforms/tiktok';
-import { postToYouTube } from '@/lib/platforms/youtube';
-import { postToPinterest } from '@/lib/platforms/pinterest';
-import { postToReddit } from '@/lib/platforms/reddit';
-import { postToDiscord } from '@/lib/platforms/discord';
-import { postToTelegram } from '@/lib/platforms/telegram';
-import { postToMastodon } from '@/lib/platforms/mastodon';
-import { postToThreads } from '@/lib/platforms/threads';
+// Platform-specific posting functions - ALL FROM SINGLE INDEX FILE
+import {
+  postToTwitter,
+  postToLinkedIn,
+  postToFacebook,
+  postToInstagram,
+  postToTikTok,
+  postToYouTube,
+  postToPinterest,
+  postToReddit,
+  postToDiscord,
+  postToTelegram,
+  postToMastodon,
+  postToThreads,
+} from '@/lib/platforms';
 
 interface DistributionRequest {
   content: string;
