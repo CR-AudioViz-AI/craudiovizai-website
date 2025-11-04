@@ -1,3 +1,6 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -22,18 +25,150 @@ import {
   Star,
   Clock,
   Target,
-  Lightbulb
+  Lightbulb,
+  Maximize2,
+  Minimize2,
+  ExternalLink
 } from 'lucide-react';
 import Link from 'next/link';
+import { useUser } from '@/lib/hooks/useUser'; // Assuming this exists
 
 /**
- * Javari AI Page  
- * Showcasing the autonomous AI assistant with pause/play functionality
+ * Javari AI Page - Integrated Application
+ * Embeds the full Javari AI application with seamless auth and UX
  * 
- * Created: October 31, 2025
+ * Created: November 3, 2025
+ * Updated: November 3, 2025
  */
 
+// Get Javari URL from environment or default to production
+const JAVARI_APP_URL = process.env.NEXT_PUBLIC_JAVARI_URL || 'https://crav-javari.vercel.app';
+
 export default function JavariAIPage() {
+  const { user, loading } = useUser();
+  const [showApp, setShowApp] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Send auth token to Javari iframe when user loads
+  useEffect(() => {
+    if (user && iframeRef.current) {
+      // Wait for iframe to load
+      const sendAuth = () => {
+        iframeRef.current?.contentWindow?.postMessage(
+          {
+            type: 'AUTH_TOKEN',
+            token: user.accessToken, // Adjust based on your auth structure
+            user: {
+              id: user.id,
+              email: user.email,
+              name: user.user_metadata?.name || user.email,
+            },
+          },
+          JAVARI_APP_URL
+        );
+      };
+
+      // Try sending immediately and after delay
+      sendAuth();
+      const timer = setTimeout(sendAuth, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [user]);
+
+  // Toggle fullscreen mode
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
+
+  // If user is logged in, show app immediately
+  useEffect(() => {
+    if (user && !loading) {
+      setShowApp(true);
+    }
+  }, [user, loading]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Sparkles className="w-16 h-16 text-purple-600 animate-pulse mx-auto mb-4" />
+          <p className="text-xl text-gray-600">Loading Javari AI...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show embedded app if user is authenticated and showApp is true
+  if (showApp && user) {
+    return (
+      <div className={`${isFullscreen ? 'fixed inset-0 z-50' : 'min-h-screen'} bg-white`}>
+        {/* Header bar with controls */}
+        <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Sparkles className="w-6 h-6" />
+            <h1 className="text-xl font-bold">Javari AI</h1>
+            <Badge className="bg-white/20 text-white border-white/30">
+              Active Session
+            </Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white hover:bg-white/10"
+              onClick={() => setShowApp(false)}
+            >
+              <MessageSquare className="w-4 h-4 mr-2" />
+              About Javari
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white hover:bg-white/10"
+              onClick={toggleFullscreen}
+            >
+              {isFullscreen ? (
+                <>
+                  <Minimize2 className="w-4 h-4 mr-2" />
+                  Exit Fullscreen
+                </>
+              ) : (
+                <>
+                  <Maximize2 className="w-4 h-4 mr-2" />
+                  Fullscreen
+                </>
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-white hover:bg-white/10"
+              asChild
+            >
+              <a href={JAVARI_APP_URL} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Open in New Tab
+              </a>
+            </Button>
+          </div>
+        </div>
+
+        {/* Embedded Javari Application */}
+        <iframe
+          ref={iframeRef}
+          src={JAVARI_APP_URL}
+          className="w-full border-0"
+          style={{ height: isFullscreen ? 'calc(100vh - 56px)' : 'calc(100vh - 56px)' }}
+          title="Javari AI Application"
+          allow="clipboard-read; clipboard-write; microphone; camera"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
+        />
+      </div>
+    );
+  }
+
+  // Marketing/Landing page for non-authenticated users
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
@@ -57,17 +192,30 @@ export default function JavariAIPage() {
               seamlessly.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100" asChild>
-                <Link href="/dashboard">
+              {user ? (
+                <Button 
+                  size="lg" 
+                  className="bg-white text-purple-600 hover:bg-gray-100"
+                  onClick={() => setShowApp(true)}
+                >
                   <PlayCircle className="w-5 h-5 mr-2" />
-                  Start Creating with Javari
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10" asChild>
-                <Link href="#features">
-                  Learn More
-                </Link>
-              </Button>
+                  Launch Javari AI
+                </Button>
+              ) : (
+                <>
+                  <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100" asChild>
+                    <Link href="/signin">
+                      <PlayCircle className="w-5 h-5 mr-2" />
+                      Start Creating with Javari
+                    </Link>
+                  </Button>
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10" asChild>
+                    <Link href="#features">
+                      Learn More
+                    </Link>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -360,17 +508,30 @@ export default function JavariAIPage() {
             Join thousands of creators who are accelerating their work with AI assistance
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100" asChild>
-              <Link href="/signin">
-                Get Started Free
+            {user ? (
+              <Button 
+                size="lg" 
+                className="bg-white text-purple-600 hover:bg-gray-100"
+                onClick={() => setShowApp(true)}
+              >
+                Launch Javari AI
                 <ArrowRight className="w-5 h-5 ml-2" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10" asChild>
-              <Link href="/pricing">
-                View Pricing
-              </Link>
-            </Button>
+              </Button>
+            ) : (
+              <>
+                <Button size="lg" className="bg-white text-purple-600 hover:bg-gray-100" asChild>
+                  <Link href="/signin">
+                    Get Started Free
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Link>
+                </Button>
+                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10" asChild>
+                  <Link href="/pricing">
+                    View Pricing
+                  </Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </section>
