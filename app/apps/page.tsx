@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
-import { Sparkles, Code2, Music, Mail, Zap, Download, Share2, CheckCircle } from 'lucide-react';
+import { Sparkles, Code2, Music, Mail, Zap, Download, Share2, CheckCircle , FileText } from 'lucide-react';
 
 const embeddedApps = [
   {
@@ -51,7 +51,23 @@ const embeddedApps = [
     status: 'live',
     href: '/apps/newsletter',
     color: 'green',
+  },  {
+    id: 'legalease',
+    icon: '⚖️',
+    iconComponent: FileText,
+    name: 'LegalEase AI',
+    description: 'Transform legal documents into plain English and vice versa with AI-powered translation.',
+    features: [
+      'Bidirectional legal translation',
+      'Extract key terms & obligations',
+      '15+ professional legal templates',
+      'Export to PDF/DOCX'
+    ],
+    status: 'live',
+    href: '/apps/legalease',
+    color: 'amber',
   },
+
 ];
 
 const comingSoonApps = [
