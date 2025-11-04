@@ -6,9 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { 
   Sparkles, 
-  Brain, 
-  Zap,
-  MessageSquare,
   PauseCircle,
   PlayCircle,
   CheckCircle2,
@@ -19,19 +16,17 @@ import {
   Image as ImageIcon,
   FileText,
   Wrench,
+  Brain,
   Shield,
-  TrendingUp,
+  MessageSquare,
   ArrowRight,
-  Star,
-  Clock,
-  Target,
-  Lightbulb,
   Maximize2,
   Minimize2,
-  ExternalLink
+  ExternalLink,
+  Lightbulb
 } from 'lucide-react';
 import Link from 'next/link';
-import { useUser } from '@/lib/hooks/useUser'; // Assuming this exists
+import { createClient } from '@/lib/supabase/client';
 
 /**
  * Javari AI Page - Integrated Application
@@ -41,52 +36,77 @@ import { useUser } from '@/lib/hooks/useUser'; // Assuming this exists
  * Updated: November 3, 2025
  */
 
-// Get Javari URL from environment or default to production
 const JAVARI_APP_URL = process.env.NEXT_PUBLIC_JAVARI_URL || 'https://crav-javari.vercel.app';
 
 export default function JavariAIPage() {
-  const { user, loading } = useUser();
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [showApp, setShowApp] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const supabase = createClient();
+
+  // Check auth on mount
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setUser(session?.user || null);
+        setLoading(false);
+        
+        if (session?.user) {
+          setShowApp(true);
+        }
+      } catch (error) {
+        console.error('Auth check error:', error);
+        setLoading(false);
+      }
+    };
+
+    checkUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+      if (session?.user) {
+        setShowApp(true);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Send auth token to Javari iframe when user loads
   useEffect(() => {
     if (user && iframeRef.current) {
-      // Wait for iframe to load
-      const sendAuth = () => {
-        iframeRef.current?.contentWindow?.postMessage(
-          {
-            type: 'AUTH_TOKEN',
-            token: user.accessToken, // Adjust based on your auth structure
-            user: {
-              id: user.id,
-              email: user.email,
-              name: user.user_metadata?.name || user.email,
+      const sendAuth = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.access_token) {
+          iframeRef.current?.contentWindow?.postMessage(
+            {
+              type: 'AUTH_TOKEN',
+              token: session.access_token,
+              user: {
+                id: user.id,
+                email: user.email,
+                name: user.user_metadata?.name || user.email,
+              },
             },
-          },
-          JAVARI_APP_URL
-        );
+            JAVARI_APP_URL
+          );
+        }
       };
 
-      // Try sending immediately and after delay
       sendAuth();
       const timer = setTimeout(sendAuth, 1000);
       return () => clearTimeout(timer);
     }
   }, [user]);
 
-  // Toggle fullscreen mode
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
   };
-
-  // If user is logged in, show app immediately
-  useEffect(() => {
-    if (user && !loading) {
-      setShowApp(true);
-    }
-  }, [user, loading]);
 
   if (loading) {
     return (
@@ -103,7 +123,6 @@ export default function JavariAIPage() {
   if (showApp && user) {
     return (
       <div className={`${isFullscreen ? 'fixed inset-0 z-50' : 'min-h-screen'} bg-white`}>
-        {/* Header bar with controls */}
         <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Sparkles className="w-6 h-6" />
@@ -154,7 +173,6 @@ export default function JavariAIPage() {
           </div>
         </div>
 
-        {/* Embedded Javari Application */}
         <iframe
           ref={iframeRef}
           src={JAVARI_APP_URL}
@@ -325,171 +343,56 @@ export default function JavariAIPage() {
               {
                 icon: <Code className="w-8 h-8" />,
                 title: 'Code Generation',
-                description: 'Write, debug, and optimize code across multiple languages with intelligent suggestions',
-                color: 'blue'
+                description: 'Write, debug, and optimize code across multiple languages with intelligent suggestions'
               },
               {
                 icon: <Palette className="w-8 h-8" />,
                 title: 'Design & Graphics',
-                description: 'Create stunning visuals, illustrations, and UI designs with AI-powered tools',
-                color: 'purple'
+                description: 'Create stunning visuals, illustrations, and UI designs with AI-powered tools'
               },
               {
                 icon: <Film className="w-8 h-8" />,
                 title: 'Video Production',
-                description: 'Edit, enhance, and produce professional videos with automated workflows',
-                color: 'red'
+                description: 'Edit, enhance, and produce professional videos with automated workflows'
               },
               {
                 icon: <Music className="w-8 h-8" />,
                 title: 'Audio Creation',
-                description: 'Compose music, generate sound effects, and produce podcasts effortlessly',
-                color: 'green'
+                description: 'Compose music, generate sound effects, and produce podcasts effortlessly'
               },
               {
                 icon: <ImageIcon className="w-8 h-8" />,
                 title: 'Image Generation',
-                description: 'Create custom images, enhance photos, and generate AI art on demand',
-                color: 'yellow'
+                description: 'Create custom images, enhance photos, and generate AI art on demand'
               },
               {
                 icon: <FileText className="w-8 h-8" />,
                 title: 'Content Writing',
-                description: 'Draft articles, scripts, and marketing copy with contextual awareness',
-                color: 'indigo'
+                description: 'Draft articles, scripts, and marketing copy with contextual awareness'
               },
               {
                 icon: <Wrench className="w-8 h-8" />,
                 title: 'Tool Integration',
-                description: 'Seamlessly connect and orchestrate all 60+ platform tools',
-                color: 'orange'
+                description: 'Seamlessly connect and orchestrate all 60+ platform tools'
               },
               {
                 icon: <Brain className="w-8 h-8" />,
                 title: 'Continuous Learning',
-                description: 'Adapts to your style, preferences, and workflow over time',
-                color: 'pink'
+                description: 'Adapts to your style, preferences, and workflow over time'
               },
               {
                 icon: <Shield className="w-8 h-8" />,
                 title: 'Self-Healing',
-                description: 'Automatically detects and fixes errors without manual intervention',
-                color: 'teal'
+                description: 'Automatically detects and fixes errors without manual intervention'
               }
             ].map((capability, index) => (
               <Card key={index} className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
-                  <div className={`text-${capability.color}-600 mb-4`}>
+                  <div className="text-blue-600 mb-4">
                     {capability.icon}
                   </div>
                   <h3 className="text-lg font-semibold mb-2">{capability.title}</h3>
                   <p className="text-sm text-gray-600">{capability.description}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">How Javari Works</h2>
-            <p className="text-xl text-gray-600">
-              Simple workflow, powerful results
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-4 gap-8">
-            {[
-              {
-                step: 1,
-                icon: <MessageSquare className="w-10 h-10" />,
-                title: 'Describe Your Vision',
-                description: 'Tell Javari what you want to create in natural language'
-              },
-              {
-                step: 2,
-                icon: <PlayCircle className="w-10 h-10" />,
-                title: 'Watch Javari Work',
-                description: 'Real-time progress updates as Javari brings your idea to life'
-              },
-              {
-                step: 3,
-                icon: <PauseCircle className="w-10 h-10" />,
-                title: 'Pause & Refine',
-                description: 'Hit pause anytime to add feedback or clarify requirements'
-              },
-              {
-                step: 4,
-                icon: <CheckCircle2 className="w-10 h-10" />,
-                title: 'Get Results',
-                description: 'Receive production-ready output that matches your vision'
-              }
-            ].map((item, index) => (
-              <div key={index} className="text-center">
-                <div className="bg-gradient-to-br from-purple-100 to-blue-100 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center text-purple-600">
-                  {item.icon}
-                </div>
-                <div className="bg-purple-600 text-white rounded-full w-8 h-8 mx-auto mb-3 flex items-center justify-center font-bold">
-                  {item.step}
-                </div>
-                <h4 className="font-semibold text-lg mb-2">{item.title}</h4>
-                <p className="text-sm text-gray-600">{item.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Use Cases */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Built For Creators</h2>
-            <p className="text-xl text-gray-600">
-              Whatever you create, Javari accelerates it
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {[
-              {
-                title: 'Solo Creators & Freelancers',
-                description: 'Handle client projects faster with an AI partner that never sleeps',
-                benefits: ['Faster turnaround times', 'Professional quality output', 'Compete with larger teams']
-              },
-              {
-                title: 'Small Business Owners',
-                description: 'Create marketing materials, websites, and content without hiring specialists',
-                benefits: ['Save on agency costs', 'Maintain brand consistency', 'Scale content production']
-              },
-              {
-                title: 'Developers & Engineers',
-                description: 'Accelerate development with intelligent code generation and debugging',
-                benefits: ['Write code faster', 'Fewer bugs', 'Focus on architecture']
-              },
-              {
-                title: 'Marketing Teams',
-                description: 'Produce campaigns, content, and creative assets at scale',
-                benefits: ['Consistent messaging', 'Rapid iteration', 'Data-driven optimization']
-              }
-            ].map((useCase, index) => (
-              <Card key={index} className="border-2 border-gray-200 hover:border-purple-300 transition-colors">
-                <CardHeader>
-                  <CardTitle className="text-xl">{useCase.title}</CardTitle>
-                  <p className="text-gray-600">{useCase.description}</p>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    {useCase.benefits.map((benefit, idx) => (
-                      <li key={idx} className="flex gap-2 text-sm text-gray-700">
-                        <CheckCircle2 className="w-4 h-4 text-purple-600 flex-shrink-0 mt-0.5" />
-                        <span>{benefit}</span>
-                      </li>
-                    ))}
-                  </ul>
                 </CardContent>
               </Card>
             ))}
