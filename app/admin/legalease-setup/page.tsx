@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react'
 import { CheckCircle, XCircle, AlertCircle, Database, Copy, Check } from 'lucide-react'
 
