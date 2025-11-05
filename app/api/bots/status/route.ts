@@ -15,9 +15,10 @@ export async function GET(request: NextRequest) {
     );
 
     // Fetch bot status (read-only, safe to expose)
+    // FIXED: Removed display_name which doesn't exist in database
     const { data: bots, error } = await supabase
       .from('bots')
-      .select('name, display_name, status, last_run_at, total_runs, successful_runs, failed_runs, avg_execution_time_ms')
+      .select('name, status, last_run_at, total_runs, successful_runs, failed_runs, avg_execution_time_ms')
       .order('name');
 
     if (error) {
