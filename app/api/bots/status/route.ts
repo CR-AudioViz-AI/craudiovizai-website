@@ -1,6 +1,7 @@
 // ================================================================================
 // CR AUDIOVIZ AI - PUBLIC BOT STATUS API
 // Returns bot status without authentication (read-only)
+// MINIMAL VERSION: Only queries columns that definitely exist
 // ================================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -14,11 +15,11 @@ export async function GET(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // Fetch bot status (read-only, safe to expose)
-    // FIXED: Removed display_name which doesn't exist in database
+    // Fetch bot status - using * to get all available columns
+    // This avoids errors from missing columns
     const { data: bots, error } = await supabase
       .from('bots')
-      .select('name, status, last_run_at, total_runs, successful_runs, failed_runs, avg_execution_time_ms')
+      .select('*')
       .order('name');
 
     if (error) {
