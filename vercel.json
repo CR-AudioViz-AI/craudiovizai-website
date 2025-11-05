@@ -1,4 +1,9 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "github": {
+    "autoAlias": false,
+    "silent": true
+  },
   "crons": [
     {
       "path": "/api/bots/conductor",
