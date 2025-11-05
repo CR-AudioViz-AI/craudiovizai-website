@@ -1,37 +1,28 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "github": {
-    "autoAlias": false,
-    "silent": true
-  },
   "crons": [
     {
-      "path": "/api/bots/conductor",
-      "schedule": "*/5 * * * *"
+      "path": "/api/bots/sentinel-mobile",
+      "schedule": "*/30 * * * *"
     },
     {
-      "path": "/api/bots/sentinel",
-      "schedule": "*/2 * * * *"
+      "path": "/api/bots/harmony-bot",
+      "schedule": "0 */2 * * *"
     },
     {
-      "path": "/api/bots/guardian",
-      "schedule": "*/5 * * * *"
+      "path": "/api/bots/nexus",
+      "schedule": "0 */6 * * *"
     },
     {
-      "path": "/api/bots/sentinel-api",
-      "schedule": "*/3 * * * *"
+      "path": "/api/bots/maven",
+      "schedule": "0 */12 * * *"
     },
     {
-      "path": "/api/bots/sentinel-db",
-      "schedule": "*/10 * * * *"
+      "path": "/api/bots/sage-bot",
+      "schedule": "0 2 * * *"
     },
     {
-      "path": "/api/bots/architect",
-      "schedule": "*/15 * * * *"
-    },
-    {
-      "path": "/api/bots/oracle",
-      "schedule": "0 * * * *"
+      "path": "/api/bots/thrift",
+      "schedule": "0 3 * * *"
     }
   ]
 }
