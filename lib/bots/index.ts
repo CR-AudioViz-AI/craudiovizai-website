@@ -1,18 +1,15 @@
-// ================================================================================
-// CR AUDIOVIZ AI - AUTONOMOUS BOT SYSTEM
-// Bot Exports - Phase 1
-// ================================================================================
+// ============================================================================
+// CR AUDIOVIZ AI - BOT SYSTEM EXPORTS
+// ============================================================================
+// Central export point for all bot implementations
+// ============================================================================
 
 export * from './types';
-export * from './BaseBot';
-export * from './ConductorBot';
-
-// Phase 2 bots will be added here:
-// export * from './SentinelBot';
-// export * from './GuardianBot';
-// export * from './ArchitectBot';
-
-// Phase 3 bots will be added here:
-// export * from './SentinelDBBot';
-// export * from './OracleBot';
-// export * from './SentinelAPIBot';
+export { BaseBot } from './BaseBot';
+export { ConductorBot } from './ConductorBot';
+export { SentinelBot } from './SentinelBot';
+export { GuardianBot } from './GuardianBot';
+export { ArchitectBot } from './ArchitectBot';
+export { SentinelDBBot } from './SentinelDBBot';
+export { OracleBot } from './OracleBot';
+export { SentinelAPIBot } from './SentinelAPIBot';
