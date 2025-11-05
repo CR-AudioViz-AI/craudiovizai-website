@@ -13,3 +13,5 @@ export { ArchitectBot } from './ArchitectBot';
 export { SentinelDBBot } from './SentinelDBBot';
 export { OracleBot } from './OracleBot';
 export { SentinelAPIBot } from './SentinelAPIBot';
+export { ScoutBot } from './ScoutBot';
+export { PulseBot } from './PulseBot';
