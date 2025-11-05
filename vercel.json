@@ -6,27 +6,27 @@
     },
     {
       "path": "/api/bots/sentinel",
-      "schedule": "*/10 * * * *"
+      "schedule": "*/2 * * * *"
     },
     {
       "path": "/api/bots/guardian",
-      "schedule": "*/15 * * * *"
+      "schedule": "*/5 * * * *"
     },
     {
-      "path": "/api/bots/architect",
-      "schedule": "*/5 * * * *"
+      "path": "/api/bots/sentinel-api",
+      "schedule": "*/3 * * * *"
     },
     {
       "path": "/api/bots/sentinel-db",
       "schedule": "*/10 * * * *"
     },
     {
-      "path": "/api/bots/oracle",
-      "schedule": "*/30 * * * *"
+      "path": "/api/bots/architect",
+      "schedule": "*/15 * * * *"
     },
     {
-      "path": "/api/bots/sentinel-api",
-      "schedule": "*/5 * * * *"
+      "path": "/api/bots/oracle",
+      "schedule": "0 * * * *"
     }
   ]
 }
