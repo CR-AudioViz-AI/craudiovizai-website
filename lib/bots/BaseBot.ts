@@ -1,6 +1,7 @@
 // ================================================================================
 // CR AUDIOVIZ AI - AUTONOMOUS BOT SYSTEM
 // Base Bot Class - Core Functionality
+// FIXED: Now properly updates bots table with execution stats
 // ================================================================================
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
@@ -61,6 +62,9 @@ export abstract class BaseBot {
       // Mark execution as successful
       const result = await this.completeExecution('success');
       
+      // ✅ FIX: Update bots table with execution stats
+      await this.updateBotStats(true, result.executionTimeMs);
+      
       this.log('info', `Execution completed successfully`, {
         checksPerformed: this.checksPerformed,
         issuesFound: this.issuesFound,
@@ -72,7 +76,63 @@ export abstract class BaseBot {
       
     } catch (error) {
       this.log('error', `Execution failed: ${(error as Error).message}`, { error });
-      return await this.completeExecution('failure', (error as Error).message);
+      const result = await this.completeExecution('failure', (error as Error).message);
+      
+      // ✅ FIX: Update bots table even on failure
+      await this.updateBotStats(false, result.executionTimeMs);
+      
+      return result;
+    }
+  }
+
+  /**
+   * ✅ NEW METHOD: Update bots table with execution statistics
+   */
+  private async updateBotStats(success: boolean, executionTimeMs: number): Promise<void> {
+    try {
+      const botRecord = await this.getBotRecord();
+      
+      // Calculate new average execution time
+      const totalRuns = (botRecord.total_runs || 0) + 1;
+      const oldAvg = botRecord.avg_execution_time_ms || 0;
+      const newAvg = Math.round(
+        ((oldAvg * (totalRuns - 1)) + executionTimeMs) / totalRuns
+      );
+      
+      // Calculate next run time based on frequency
+      const now = new Date();
+      const runFrequencyMinutes = botRecord.run_frequency_minutes || 5;
+      const nextRunAt = new Date(now.getTime() + (runFrequencyMinutes * 60 * 1000));
+      
+      // Update bots table
+      const { error } = await this.supabase
+        .from('bots')
+        .update({
+          last_execution_at: now.toISOString(),
+          total_runs: totalRuns,
+          successful_runs: success 
+            ? (botRecord.successful_runs || 0) + 1 
+            : (botRecord.successful_runs || 0),
+          failed_runs: success 
+            ? (botRecord.failed_runs || 0) 
+            : (botRecord.failed_runs || 0) + 1,
+          avg_execution_time_ms: newAvg,
+          next_run_at: nextRunAt.toISOString(),
+          status: success ? 'active' : 'error',
+          updated_at: now.toISOString()
+        })
+        .eq('id', botRecord.id);
+      
+      if (error) {
+        this.log('error', `Failed to update bot stats: ${error.message}`);
+      } else {
+        this.log('info', `Bot stats updated: ${totalRuns} total runs, avg ${newAvg}ms`, {
+          success,
+          nextRunAt: nextRunAt.toISOString()
+        });
+      }
+    } catch (error) {
+      this.log('error', `Error updating bot stats: ${(error as Error).message}`);
     }
   }
 
@@ -682,3 +742,4 @@ Please analyze this issue and suggest a specific, actionable fix.
     console.log(JSON.stringify(logEntry));
   }
 }
+
