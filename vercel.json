@@ -6,7 +6,6 @@
     "autoAlias": false,
     "silent": false
   },
-  "productionDeploymentsFastLane": false,
   "crons": [
     {
       "path": "/api/bots/conductor",
