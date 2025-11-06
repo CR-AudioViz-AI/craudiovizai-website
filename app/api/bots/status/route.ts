@@ -1,5 +1,5 @@
 // ================================================================================
-// CR AUDIOVIZ AI - PUBLIC BOT STATUS API
+// CR AUDIOVIZ AI - PUBLIC BOT STATUS API  
 // Returns bot status without authentication (read-only)
 // ================================================================================
 
@@ -14,10 +14,10 @@ export async function GET(request: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // Fetch bot status
+    // Fetch bot status - only select columns that exist
     const { data: bots, error } = await supabase
       .from('bots')
-      .select('id, name, display_name, description, type, status, schedule, last_execution_at, next_execution_at, total_runs, successful_runs, failed_runs, avg_execution_time_ms')
+      .select('id, name, description, type, status, schedule, last_execution_at, next_execution_at, created_at, updated_at')
       .order('name');
 
     if (error) {
@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       bots: bots || [],
+      count: bots?.length || 0,
       timestamp: new Date().toISOString()
     });
 
