@@ -1,1 +1,35 @@
-{"$schema":"https://openapi.vercel.sh/vercel.json","github":{"autoAlias":false}}
+{
+  "buildCommand": "npm run build",
+  "framework": "nextjs",
+  "autoAlias": false,
+  "crons": [
+    {
+      "path": "/api/bots/conductor",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/bots/sentinel",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/bots/guardian",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/bots/architect",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/bots/sentinel-db",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/bots/oracle",
+      "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/bots/sentinel-api",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}
