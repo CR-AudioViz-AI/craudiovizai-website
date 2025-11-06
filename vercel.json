@@ -1,40 +1,7 @@
 {
-  "crons": [
-    {
-      "path": "/api/bots/pulse",
-      "schedule": "*/15 * * * *"
-    },
-    {
-      "path": "/api/bots/sentinel",
-      "schedule": "*/30 * * * *"
-    },
-    {
-      "path": "/api/bots/sentinel-api",
-      "schedule": "*/30 * * * *"
-    },
-    {
-      "path": "/api/bots/guardian",
-      "schedule": "*/30 * * * *"
-    },
-    {
-      "path": "/api/bots/sentinel-db",
-      "schedule": "0 * * * *"
-    },
-    {
-      "path": "/api/bots/conductor",
-      "schedule": "0 */4 * * *"
-    },
-    {
-      "path": "/api/bots/architect",
-      "schedule": "0 */6 * * *"
-    },
-    {
-      "path": "/api/bots/oracle",
-      "schedule": "0 */8 * * *"
-    },
-    {
-      "path": "/api/bots/scout",
-      "schedule": "0 */12 * * *"
+  "git": {
+    "deploymentEnabled": {
+      "main": false
     }
-  ]
+  }
 }
