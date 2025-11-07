@@ -5,6 +5,7 @@
 
 import paypal from '@paypal/checkout-server-sdk'
 import { createClient } from '@supabase/supabase-js'
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 // Initialize Supabase
 const supabase = createClient(
@@ -128,7 +129,7 @@ export class PayPalClient {
         approvalUrl,
       }
     } catch (error: any) {
-      console.error('PayPal order creation failed:', error)
+      logError(\'PayPal order creation failed:\', error)
       throw new Error(`PayPal order creation failed: ${error.message}`)
     }
   }
@@ -175,7 +176,7 @@ export class PayPalClient {
         }
       }
     } catch (error: any) {
-      console.error('PayPal capture failed:', error)
+      logError(\'PayPal capture failed:\', error)
       return {
         success: false,
         error: error.message,
@@ -235,7 +236,7 @@ export class PayPalClient {
         approvalUrl,
       }
     } catch (error: any) {
-      console.error('PayPal subscription creation failed:', error)
+      logError(\'PayPal subscription creation failed:\', error)
       throw new Error(`PayPal subscription creation failed: ${error.message}`)
     }
   }
@@ -263,7 +264,7 @@ export class PayPalClient {
 
       return true
     } catch (error: any) {
-      console.error('PayPal subscription cancellation failed:', error)
+      logError(\'PayPal subscription cancellation failed:\', error)
       return false
     }
   }
@@ -302,8 +303,8 @@ export class PayPalClient {
       const result = await response.json()
 
       return result.verification_status === 'SUCCESS'
-    } catch (error) {
-      console.error('PayPal webhook verification failed:', error)
+    } catch (error: unknown) {
+      logError(\'PayPal webhook verification failed:\', error)
       return false
     }
   }
@@ -317,7 +318,7 @@ export class PayPalClient {
       const response = await paypalClient.execute(request)
       return response.result
     } catch (error: any) {
-      console.error('Failed to get PayPal order:', error)
+      logError(\'Failed to get PayPal order:\', error)
       throw error
     }
   }
@@ -346,7 +347,7 @@ export class PayPalClient {
       await paypalClient.execute(request)
       return true
     } catch (error: any) {
-      console.error('PayPal refund failed:', error)
+      logError(\'PayPal refund failed:\', error)
       return false
     }
   }
