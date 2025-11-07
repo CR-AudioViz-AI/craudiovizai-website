@@ -5,6 +5,7 @@
 
 import { BaseBot } from './BaseBot';
 import type { BotConfig, BotExecutionResult } from './types';
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 export class ScoutBot extends BaseBot {
   constructor() {
@@ -65,7 +66,7 @@ export class ScoutBot extends BaseBot {
         }
       };
 
-    } catch (error) {
+    } catch (error: unknown) {
       return this.handleError(error as Error);
     }
   }
@@ -102,7 +103,7 @@ export class ScoutBot extends BaseBot {
           } else {
             findings.push(`⚠ ${competitor.name}: Status ${response.status}`);
           }
-        } catch (error) {
+        } catch (error: unknown) {
           findings.push(`✗ ${competitor.name}: Unreachable`);
         }
       }
@@ -116,7 +117,7 @@ export class ScoutBot extends BaseBot {
         critical
       };
 
-    } catch (error) {
+    } catch (error: unknown) {
       findings.push(`Error monitoring competitors: ${(error as Error).message}`);
       return { findings, count: 0, critical: false };
     }
@@ -150,7 +151,7 @@ Format as bullet points with source.`;
         count: newsCount
       };
 
-    } catch (error) {
+    } catch (error: unknown) {
       findings.push(`Error aggregating news: ${(error as Error).message}`);
       return { findings, count: 0 };
     }
@@ -193,7 +194,7 @@ List their basic tier pricing and any recent price changes.`;
         critical
       };
 
-    } catch (error) {
+    } catch (error: unknown) {
       findings.push(`Error tracking pricing: ${(error as Error).message}`);
       return { findings, updates: 0, critical: false };
     }
@@ -224,7 +225,7 @@ Be specific and data-driven.`;
         count: trendCount
       };
 
-    } catch (error) {
+    } catch (error: unknown) {
       findings.push(`Error analyzing trends: ${(error as Error).message}`);
       return { findings, count: 0 };
     }
