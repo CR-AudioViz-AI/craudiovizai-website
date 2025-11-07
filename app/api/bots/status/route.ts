@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,7 +22,7 @@ export async function GET(request: NextRequest) {
       .order('name');
 
     if (error) {
-      console.error('Error fetching bot status:', error);
+      logError(\'Error fetching bot status:\', error);
       return NextResponse.json(
         { 
           error: 'Failed to fetch bot status',
@@ -39,8 +40,8 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString()
     });
 
-  } catch (error) {
-    console.error('Unexpected error in bot status API:', error);
+  } catch (error: unknown) {
+    logError(\'Unexpected error in bot status API:\', error);
     return NextResponse.json(
       { 
         error: 'System error',
