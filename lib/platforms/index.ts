@@ -60,8 +60,8 @@ export async function postToTwitter(params: {
       url: `https://twitter.com/i/web/status/${data.data.id}`,
     };
     
-  } catch (error) {
-    console.error('Twitter posting error:', error);
+  } catch (error: unknown) {
+    logError(\'Twitter posting error:\', error);
     throw error;
   }
 }
@@ -93,8 +93,8 @@ async function uploadTwitterMedia(urls: string[], accessToken: string): Promise<
         const uploadData = await uploadResponse.json();
         mediaIds.push(uploadData.media_id_string);
       }
-    } catch (error) {
-      console.error('Error uploading Twitter media:', error);
+    } catch (error: unknown) {
+      logError(\'Error uploading Twitter media:\', error);
     }
   }
   
@@ -168,8 +168,8 @@ export async function postToLinkedIn(params: {
       url: `https://www.linkedin.com/feed/update/${postId}`,
     };
     
-  } catch (error) {
-    console.error('LinkedIn posting error:', error);
+  } catch (error: unknown) {
+    logError(\'LinkedIn posting error:\', error);
     throw error;
   }
 }
@@ -234,8 +234,8 @@ async function uploadLinkedInMedia(
         },
       });
       
-    } catch (error) {
-      console.error('Error uploading LinkedIn media:', error);
+    } catch (error: unknown) {
+      logError(\'Error uploading LinkedIn media:\', error);
     }
   }
   
@@ -310,8 +310,8 @@ export async function postToFacebook(params: {
       url: `https://facebook.com/${data.id || data.post_id}`,
     };
     
-  } catch (error) {
-    console.error('Facebook posting error:', error);
+  } catch (error: unknown) {
+    logError(\'Facebook posting error:\', error);
     throw error;
   }
 }
@@ -342,8 +342,8 @@ async function uploadFacebookPhotos(
         const data = await response.json();
         photoIds.push(data.id);
       }
-    } catch (error) {
-      console.error('Error uploading Facebook photo:', error);
+    } catch (error: unknown) {
+      logError(\'Error uploading Facebook photo:\', error);
     }
   }
   
@@ -421,8 +421,8 @@ export async function postToInstagram(params: {
       url: `https://instagram.com/p/${publishData.id}`,
     };
     
-  } catch (error) {
-    console.error('Instagram posting error:', error);
+  } catch (error: unknown) {
+    logError(\'Instagram posting error:\', error);
     throw error;
   }
 }
@@ -488,8 +488,8 @@ export async function postToDiscord(params: any) {
       url: webhookUrl,
     };
     
-  } catch (error) {
-    console.error('Discord posting error:', error);
+  } catch (error: unknown) {
+    logError(\'Discord posting error:\', error);
     throw error;
   }
 }
@@ -540,8 +540,8 @@ export async function postToTelegram(params: any) {
       url: `https://t.me/${chatId}/${data.result.message_id}`,
     };
     
-  } catch (error) {
-    console.error('Telegram posting error:', error);
+  } catch (error: unknown) {
+    logError(\'Telegram posting error:\', error);
     throw error;
   }
 }
@@ -589,8 +589,8 @@ export async function postToMastodon(params: any) {
       url: data.url,
     };
     
-  } catch (error) {
-    console.error('Mastodon posting error:', error);
+  } catch (error: unknown) {
+    logError(\'Mastodon posting error:\', error);
     throw error;
   }
 }
@@ -623,8 +623,8 @@ async function uploadMastodonMedia(
         const uploadData = await uploadResponse.json();
         mediaIds.push(uploadData.id);
       }
-    } catch (error) {
-      console.error('Error uploading Mastodon media:', error);
+    } catch (error: unknown) {
+      logError(\'Error uploading Mastodon media:\', error);
     }
   }
   
