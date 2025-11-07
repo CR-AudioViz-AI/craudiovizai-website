@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 
 // Force dynamic rendering - required for using dynamic Next.js features
@@ -47,8 +48,8 @@ export async function GET() {
       }
     })
 
-  } catch (error) {
-    console.error('Settings profile GET API error:', error)
+  } catch (error: unknown) {
+    logError(\'Settings profile GET API error:\', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -114,8 +115,8 @@ export async function PUT(request: Request) {
       message: 'Profile updated successfully'
     })
 
-  } catch (error) {
-    console.error('Settings profile PUT API error:', error)
+  } catch (error: unknown) {
+    logError(\'Settings profile PUT API error:\', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
