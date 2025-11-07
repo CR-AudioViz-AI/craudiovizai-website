@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { PulseBot } from '@/lib/bots/PulseBot';
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 export const runtime = 'edge';
 export const maxDuration = 30; // 30 seconds - must be fast
@@ -33,8 +34,8 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString()
     });
 
-  } catch (error) {
-    console.error('Pulse bot execution error:', error);
+  } catch (error: unknown) {
+    logError(\'Pulse bot execution error:\', error);
     return NextResponse.json(
       {
         error: 'Execution failed',
