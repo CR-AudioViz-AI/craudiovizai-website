@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 // Define available apps - this could later be moved to a database
 
@@ -106,8 +107,8 @@ export async function GET(request: Request) {
       total: apps.length
     })
 
-  } catch (error) {
-    console.error('Apps list API error:', error)
+  } catch (error: unknown) {
+    logError(\'Apps list API error:\', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
