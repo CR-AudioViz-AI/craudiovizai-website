@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 export async function GET(
   request: Request,
@@ -94,8 +95,8 @@ export async function GET(
       { status: 400 }
     )
 
-  } catch (error) {
-    console.error('Asset download API error:', error)
+  } catch (error: unknown) {
+    logError(\'Asset download API error:\', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
