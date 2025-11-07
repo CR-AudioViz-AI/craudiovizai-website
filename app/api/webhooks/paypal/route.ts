@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { PayPalClient } from '@/lib/payments/paypal-client'
 import { PaymentService } from '@/lib/payments/payment-service'
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 // Initialize Supabase
 const supabase = createClient(
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true, status: 'success' })
   } catch (error: any) {
-    console.error('[PayPal Webhook] Processing error:', error)
+    logError(\'[PayPal Webhook] Processing error:\', error)
 
     // Log failure
     try {
@@ -319,13 +320,13 @@ async function checkIdempotency(eventId: string): Promise<boolean> {
       .single()
 
     if (error && error.code !== 'PGRST116') {
-      console.error('Idempotency check error:', error)
+      logError(\'Idempotency check error:\', error)
       return false
     }
 
     return !!data
-  } catch (error) {
-    console.error('Idempotency check failed:', error)
+  } catch (error: unknown) {
+    logError(\'Idempotency check failed:\', error)
     return false
   }
 }
@@ -345,7 +346,7 @@ async function logWebhookEvent(log: {
       .upsert(log, {
         onConflict: 'event_id',
       })
-  } catch (error) {
-    console.error('Failed to log webhook event:', error)
+  } catch (error: unknown) {
+    logError(\'Failed to log webhook event:\', error)
   }
 }
