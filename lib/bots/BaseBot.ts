@@ -5,6 +5,7 @@
 // ================================================================================
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 import {
   BotConfig,
   BotExecutionResult,
@@ -74,7 +75,7 @@ export abstract class BaseBot {
       
       return result;
       
-    } catch (error) {
+    } catch (error: unknown) {
       this.log('error', `Execution failed: ${(error as Error).message}`, { error });
       const result = await this.completeExecution('failure', (error as Error).message);
       
@@ -131,7 +132,7 @@ export abstract class BaseBot {
           nextRunAt: nextRunAt.toISOString()
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       this.log('error', `Error updating bot stats: ${(error as Error).message}`);
     }
   }
@@ -412,7 +413,7 @@ export abstract class BaseBot {
         .eq('id', solution.id!);
 
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       this.log('error', `Failed to apply known solution: ${(error as Error).message}`);
       return false;
     }
@@ -467,7 +468,7 @@ Please analyze this issue and suggest a specific, actionable fix.
       }
 
       return false;
-    } catch (error) {
+    } catch (error: unknown) {
       this.log('error', `AI fix attempt failed: ${(error as Error).message}`);
       return false;
     }
@@ -648,7 +649,7 @@ Please analyze this issue and suggest a specific, actionable fix.
         costEstimate: response.costEstimate || 0,
         executionTimeMs: Date.now() - startTime
       };
-    } catch (error) {
+    } catch (error: unknown) {
       this.log('error', `AI query failed: ${(error as Error).message}`);
       throw error;
     }
