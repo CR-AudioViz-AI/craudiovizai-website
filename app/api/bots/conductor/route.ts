@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { ConductorBot } from '@/lib/bots/ConductorBot';
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 /**
  * GET handler for Conductor bot cron job
@@ -67,7 +68,7 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString()
     });
 
-  } catch (error) {
+  } catch (error: unknown) {
     const executionTime = Date.now() - startTime;
     
     console.error('❌ CONDUCTOR BOT: Execution failed', {
@@ -118,7 +119,7 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString()
     });
 
-  } catch (error) {
+  } catch (error: unknown) {
     const executionTime = Date.now() - startTime;
     
     return NextResponse.json({
