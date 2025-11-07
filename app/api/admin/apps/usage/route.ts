@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 
 // Force dynamic rendering - required for using dynamic Next.js features
@@ -105,8 +106,8 @@ export async function GET(request: Request) {
       }
     })
 
-  } catch (error) {
-    console.error('Apps usage API error:', error)
+  } catch (error: unknown) {
+    logError(\'Apps usage API error:\', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
