@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -155,8 +156,8 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString()
     });
 
-  } catch (error) {
-    console.error('Users management error:', error);
+  } catch (error: unknown) {
+    logError(\'Users management error:\', error);
     return NextResponse.json(
       { 
         error: 'Failed to fetch users',
@@ -251,8 +252,8 @@ export async function POST(request: NextRequest) {
       message: 'User created successfully'
     }, { status: 201 });
 
-  } catch (error) {
-    console.error('Create user error:', error);
+  } catch (error: unknown) {
+    logError(\'Create user error:\', error);
     return NextResponse.json(
       { 
         error: 'Failed to create user',
@@ -330,8 +331,8 @@ export async function PUT(request: NextRequest) {
       message: 'User updated successfully'
     });
 
-  } catch (error) {
-    console.error('Update user error:', error);
+  } catch (error: unknown) {
+    logError(\'Update user error:\', error);
     return NextResponse.json(
       { 
         error: 'Failed to update user',
@@ -405,8 +406,8 @@ export async function DELETE(request: NextRequest) {
       message: `User ${action === 'ban' ? 'banned' : 'suspended'} successfully`
     });
 
-  } catch (error) {
-    console.error('User action error:', error);
+  } catch (error: unknown) {
+    logError(\'User action error:\', error);
     return NextResponse.json(
       { 
         error: 'Failed to perform user action',
