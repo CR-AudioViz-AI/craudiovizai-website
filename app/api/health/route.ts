@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 export async function GET() {
   try {
@@ -39,7 +40,7 @@ export async function GET() {
         checks.services.supabase = true
         checks.database.connection = true
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('Supabase connection check failed:', err)
     }
 
@@ -69,7 +70,7 @@ export async function GET() {
       if (!error || error.message.includes('session')) {
         checks.services.authentication = true
       }
-    } catch (err) {
+    } catch (err: unknown) {
       // Auth check from server may fail, that's OK
       checks.services.authentication = true
     }
