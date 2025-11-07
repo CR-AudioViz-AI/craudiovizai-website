@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 export async function PUT(request: Request) {
   try {
@@ -64,8 +65,8 @@ export async function PUT(request: Request) {
       message: 'Password updated successfully'
     })
 
-  } catch (error) {
-    console.error('Settings security API error:', error)
+  } catch (error: unknown) {
+    logError(\'Settings security API error:\', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -131,8 +132,8 @@ export async function POST(request: Request) {
       { status: 400 }
     )
 
-  } catch (error) {
-    console.error('Settings security POST API error:', error)
+  } catch (error: unknown) {
+    logError(\'Settings security POST API error:\', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
