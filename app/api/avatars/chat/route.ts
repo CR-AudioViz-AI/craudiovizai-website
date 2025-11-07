@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 export async function POST(request: NextRequest) {
   try {
@@ -106,8 +107,8 @@ export async function POST(request: NextRequest) {
       creditsRemaining: credits.balance - 1
     });
 
-  } catch (error) {
-    console.error('Avatar chat error:', error);
+  } catch (error: unknown) {
+    logError(\'Avatar chat error:\', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
