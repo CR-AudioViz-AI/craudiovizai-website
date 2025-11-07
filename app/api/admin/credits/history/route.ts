@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 
 // Force dynamic rendering - required for using dynamic Next.js features
@@ -61,8 +62,8 @@ export async function GET(request: Request) {
       offset
     })
 
-  } catch (error) {
-    console.error('Credits history API error:', error)
+  } catch (error: unknown) {
+    logError(\'Credits history API error:\', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
