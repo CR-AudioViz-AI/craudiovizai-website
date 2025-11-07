@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -295,8 +296,8 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString()
     });
 
-  } catch (error) {
-    console.error('Analytics error:', error);
+  } catch (error: unknown) {
+    logError(\'Analytics error:\', error);
     return NextResponse.json(
       { 
         error: 'Failed to fetch analytics',
