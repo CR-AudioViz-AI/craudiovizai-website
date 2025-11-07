@@ -7,6 +7,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -108,8 +109,8 @@ Respond ONLY with valid JSON:
       recommended_action: analysis.recommended_action,
       reasoning: analysis.reasoning,
     };
-  } catch (error) {
-    console.error('Error analyzing threat with AI:', error);
+  } catch (error: unknown) {
+    logError(\'Error analyzing threat with AI:\', error);
     
     // Fallback to rule-based analysis
     return {
@@ -142,7 +143,7 @@ async function createSecurityTicket(
     });
 
   if (error) {
-    console.error('Error creating security ticket:', error);
+    logError(\'Error creating security ticket:\', error);
     throw error;
   }
 
@@ -430,7 +431,7 @@ export async function javariHandleThreat(threatId: string): Promise<{
       message: `Threat handled successfully. Confidence: ${(analysis.confidence_score * 100).toFixed(0)}%`,
     };
   } catch (error: any) {
-    console.error('❌ Error handling threat:', error);
+    logError(\'❌ Error handling threat:\', error);
     return {
       success: false,
       message: `Error: ${error.message}`,
