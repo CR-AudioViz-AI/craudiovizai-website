@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 // GET - Fetch all groups with account counts
 export async function GET(request: NextRequest) {
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest) {
       .order('display_order', { ascending: true });
     
     if (error) {
-      console.error('Error fetching groups:', error);
+      logError(\'Error fetching groups:\', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch groups' },
         { status: 500 }
@@ -53,8 +54,8 @@ export async function GET(request: NextRequest) {
       total: formattedGroups.length,
     });
     
-  } catch (error) {
-    console.error('Error in groups API:', error);
+  } catch (error: unknown) {
+    logError(\'Error in groups API:\', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
@@ -98,7 +99,7 @@ export async function POST(request: NextRequest) {
       .single();
     
     if (error) {
-      console.error('Error creating group:', error);
+      logError(\'Error creating group:\', error);
       return NextResponse.json(
         { success: false, error: 'Failed to create group' },
         { status: 500 }
@@ -110,8 +111,8 @@ export async function POST(request: NextRequest) {
       group,
     });
     
-  } catch (error) {
-    console.error('Error in groups POST:', error);
+  } catch (error: unknown) {
+    logError(\'Error in groups POST:\', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
