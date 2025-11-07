@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false });
     
     if (error) {
-      console.error('Error fetching accounts:', error);
+      logError(\'Error fetching accounts:\', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch accounts' },
         { status: 500 }
@@ -43,8 +44,8 @@ export async function GET(request: NextRequest) {
       total: accounts?.length || 0,
     });
     
-  } catch (error) {
-    console.error('Error in accounts API:', error);
+  } catch (error: unknown) {
+    logError(\'Error in accounts API:\', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
