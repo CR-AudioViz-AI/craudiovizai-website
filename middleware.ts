@@ -7,6 +7,7 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 // Configuration
 const CONFIG = {
@@ -55,8 +56,8 @@ async function refreshBlockedIPs(): Promise<void> {
       blockedIPs.forEach((entry: any) => blockedIPsCache.add(entry.ip_address));
       lastBlockedIPRefresh = now;
     }
-  } catch (error) {
-    console.error('[Security] Failed to refresh blocked IPs:', error);
+  } catch (error: unknown) {
+    logError(\'[Security] Failed to refresh blocked IPs:\', error);
   }
 }
 
@@ -106,8 +107,8 @@ async function logThreat(data: any): Promise<void> {
       },
       body: JSON.stringify({ ...data, app_name: CONFIG.APP_NAME }),
     });
-  } catch (error) {
-    console.error('[Security] Failed to log threat:', error);
+  } catch (error: unknown) {
+    logError(\'[Security] Failed to log threat:\', error);
   }
 }
 
