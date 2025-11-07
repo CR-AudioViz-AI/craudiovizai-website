@@ -7,6 +7,7 @@
 
 import { BaseBot } from './BaseBot';
 import { BotConfig, BotFinding } from './types';
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 export class ArchitectBot extends BaseBot {
   constructor() {
@@ -50,7 +51,7 @@ export class ArchitectBot extends BaseBot {
       try {
         await fetch(url, { signal: AbortSignal.timeout(10000) });
         measurements.push(Date.now() - start);
-      } catch (error) {
+      } catch (error: unknown) {
         // Skip failed requests
       }
     }
