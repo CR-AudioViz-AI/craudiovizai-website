@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 // GET - Fetch all presets
 export async function GET(request: NextRequest) {
@@ -29,7 +30,7 @@ export async function GET(request: NextRequest) {
       .order('use_count', { ascending: false });
     
     if (error) {
-      console.error('Error fetching presets:', error);
+      logError(\'Error fetching presets:\', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch presets' },
         { status: 500 }
@@ -59,8 +60,8 @@ export async function GET(request: NextRequest) {
       total: presetsWithCounts.length,
     });
     
-  } catch (error) {
-    console.error('Error in presets API:', error);
+  } catch (error: unknown) {
+    logError(\'Error in presets API:\', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
@@ -124,7 +125,7 @@ export async function POST(request: NextRequest) {
       .single();
     
     if (error) {
-      console.error('Error creating preset:', error);
+      logError(\'Error creating preset:\', error);
       return NextResponse.json(
         { success: false, error: 'Failed to create preset' },
         { status: 500 }
@@ -136,8 +137,8 @@ export async function POST(request: NextRequest) {
       preset,
     });
     
-  } catch (error) {
-    console.error('Error in presets POST:', error);
+  } catch (error: unknown) {
+    logError(\'Error in presets POST:\', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
