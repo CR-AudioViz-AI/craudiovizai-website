@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 // Platform-specific posting functions - ALL FROM SINGLE INDEX FILE
 import {
@@ -198,8 +199,8 @@ export async function POST(request: NextRequest) {
       status: body.schedule_mode === 'now' ? 'posting' : 'scheduled',
     });
     
-  } catch (error) {
-    console.error('Distribution error:', error);
+  } catch (error: unknown) {
+    logError(\'Distribution error:\', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
@@ -349,7 +350,7 @@ async function processDistribution(distributionPlanId: string, userId: string) {
         
         successCount++;
         
-      } catch (error) {
+      } catch (error: unknown) {
         console.error(`Error posting to ${post.connected_account_id}:`, error);
         
         // Update post with failure
@@ -377,8 +378,8 @@ async function processDistribution(distributionPlanId: string, userId: string) {
     
     console.log(`Distribution complete: ${successCount} succeeded, ${failCount} failed`);
     
-  } catch (error) {
-    console.error('Error processing distribution:', error);
+  } catch (error: unknown) {
+    logError(\'Error processing distribution:\', error);
     
     // Update plan status to failed
     await supabase
