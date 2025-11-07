@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { headers } from 'next/headers'
 import { createClient } from '@supabase/supabase-js'
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 // Initialize Stripe
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -48,8 +49,8 @@ async function logWebhookEvent(log: WebhookLog): Promise<void> {
         ...log,
         created_at: new Date().toISOString()
       })
-  } catch (error) {
-    console.error('Failed to log webhook event:', error)
+  } catch (error: unknown) {
+    logError(\'Failed to log webhook event:\', error)
   }
 }
 
@@ -67,13 +68,13 @@ async function checkIdempotency(eventId: string): Promise<boolean> {
       .single()
 
     if (error && error.code !== 'PGRST116') {
-      console.error('Idempotency check error:', error)
+      logError(\'Idempotency check error:\', error)
       return false
     }
 
     return !!data
-  } catch (error) {
-    console.error('Idempotency check failed:', error)
+  } catch (error: unknown) {
+    logError(\'Idempotency check failed:\', error)
     return false
   }
 }
@@ -133,8 +134,8 @@ async function addCreditsToUser(userId: string, credits: number, source: string)
       })
 
     console.log(`✅ Added ${credits} credits to user ${userId}. New balance: ${newCredits}`)
-  } catch (error) {
-    console.error('Failed to add credits:', error)
+  } catch (error: unknown) {
+    logError(\'Failed to add credits:\', error)
     throw error
   }
 }
@@ -174,8 +175,8 @@ async function deductCreditsFromUser(userId: string, credits: number, reason: st
       })
 
     console.log(`⚠️ Deducted ${credits} credits from user ${userId}. New balance: ${newCredits}`)
-  } catch (error) {
-    console.error('Failed to deduct credits:', error)
+  } catch (error: unknown) {
+    logError(\'Failed to deduct credits:\', error)
     throw error
   }
 }
@@ -240,8 +241,8 @@ async function updateUserSubscription(
     }
 
     console.log(`✅ Updated subscription for user ${userId}: ${status}`)
-  } catch (error) {
-    console.error('Failed to update subscription:', error)
+  } catch (error: unknown) {
+    logError(\'Failed to update subscription:\', error)
     throw error
   }
 }
@@ -690,7 +691,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error: any) {
-    console.error('❌ Webhook processing error:', error)
+    logError(\'❌ Webhook processing error:\', error)
 
     const processingTime = Date.now() - startTime
 
