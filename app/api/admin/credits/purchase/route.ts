@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2023-10-16'
@@ -82,8 +83,8 @@ export async function POST(request: Request) {
       url: session.url
     })
 
-  } catch (error) {
-    console.error('Credits purchase API error:', error)
+  } catch (error: unknown) {
+    logError(\'Credits purchase API error:\', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
