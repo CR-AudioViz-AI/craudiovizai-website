@@ -6,6 +6,7 @@
 
 import { BaseBot } from './BaseBot';
 import type { BotConfig, BotExecutionResult } from './types';
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 export class PulseBot extends BaseBot {
   constructor() {
@@ -89,7 +90,7 @@ export class PulseBot extends BaseBot {
         }
       };
 
-    } catch (error) {
+    } catch (error: unknown) {
       return this.handleError(error as Error);
     }
   }
@@ -134,7 +135,7 @@ export class PulseBot extends BaseBot {
         }
       }
 
-    } catch (error) {
+    } catch (error: unknown) {
       findings.push(`✗ Auth: ${(error as Error).message.substring(0, 50)}`);
       critical = true;
     }
@@ -188,7 +189,7 @@ export class PulseBot extends BaseBot {
         critical = true;
       }
 
-    } catch (error) {
+    } catch (error: unknown) {
       findings.push(`✗ DB: ${(error as Error).message.substring(0, 50)}`);
       critical = true;
     }
@@ -230,7 +231,7 @@ export class PulseBot extends BaseBot {
         critical = true;
       }
 
-    } catch (error) {
+    } catch (error: unknown) {
       findings.push(`✗ Payments: ${(error as Error).message.substring(0, 50)}`);
       warning = true;
     }
@@ -269,7 +270,7 @@ export class PulseBot extends BaseBot {
             findings.push(`⚠ API: ${endpoint} (${response.status})`);
             warning = true;
           }
-        } catch (error) {
+        } catch (error: unknown) {
           findings.push(`✗ API: ${endpoint} unreachable`);
           if (endpoint === '/api/health') {
             critical = true;
@@ -279,7 +280,7 @@ export class PulseBot extends BaseBot {
         }
       }
 
-    } catch (error) {
+    } catch (error: unknown) {
       findings.push(`✗ API: ${(error as Error).message.substring(0, 50)}`);
       warning = true;
     }
@@ -309,7 +310,7 @@ export class PulseBot extends BaseBot {
       // This is a quick check - actual implementation may vary based on your schema
       findings.push('ℹ Sessions: Session tracking available');
 
-    } catch (error) {
+    } catch (error: unknown) {
       findings.push(`ℹ Sessions: ${(error as Error).message.substring(0, 50)}`);
     }
 
