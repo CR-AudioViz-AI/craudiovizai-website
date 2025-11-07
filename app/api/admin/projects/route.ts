@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -149,8 +150,8 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString()
     });
 
-  } catch (error) {
-    console.error('Projects management error:', error);
+  } catch (error: unknown) {
+    logError(\'Projects management error:\', error);
     return NextResponse.json(
       { 
         error: 'Failed to fetch projects',
@@ -228,8 +229,8 @@ export async function PUT(request: NextRequest) {
       message: 'Project updated successfully'
     });
 
-  } catch (error) {
-    console.error('Update project error:', error);
+  } catch (error: unknown) {
+    logError(\'Update project error:\', error);
     return NextResponse.json(
       { 
         error: 'Failed to update project',
@@ -299,8 +300,8 @@ export async function DELETE(request: NextRequest) {
       message: 'Project deleted successfully'
     });
 
-  } catch (error) {
-    console.error('Delete project error:', error);
+  } catch (error: unknown) {
+    logError(\'Delete project error:\', error);
     return NextResponse.json(
       { 
         error: 'Failed to delete project',
