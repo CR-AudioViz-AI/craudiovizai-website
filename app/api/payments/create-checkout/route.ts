@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 export async function POST(request: Request) {
   try {
     const supabase = createClient()
@@ -63,8 +64,8 @@ export async function POST(request: Request) {
     const approvalUrl = orderData.links.find((link: any) => link.rel === 'approve')?.href
 
     return NextResponse.json({ approvalUrl })
-  } catch (error) {
-    console.error('PayPal Checkout Error:', error)
+  } catch (error: unknown) {
+    logError(\'PayPal Checkout Error:\', error)
     return NextResponse.json(
       { error: 'Failed to create PayPal checkout' },
       { status: 500 }
