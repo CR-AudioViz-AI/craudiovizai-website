@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { ScoutBot } from '@/lib/bots/ScoutBot';
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 export const runtime = 'edge';
 export const maxDuration = 300; // 5 minutes for web crawling
@@ -33,8 +34,8 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString()
     });
 
-  } catch (error) {
-    console.error('Scout bot execution error:', error);
+  } catch (error: unknown) {
+    logError(\'Scout bot execution error:\', error);
     return NextResponse.json(
       {
         error: 'Execution failed',
