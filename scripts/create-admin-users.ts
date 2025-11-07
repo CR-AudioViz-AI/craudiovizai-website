@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -63,7 +64,7 @@ async function createUsers() {
       }
 
       console.log(`✅ Created ${user.role}: ${user.email}`);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(`❌ Error with ${user.email}:`, error);
     }
   }
