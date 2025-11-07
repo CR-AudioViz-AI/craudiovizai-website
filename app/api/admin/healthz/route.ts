@@ -4,6 +4,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 export const dynamic = 'force-dynamic'
 
@@ -41,8 +42,8 @@ export async function GET(request: Request) {
       status: isHealthy ? 200 : 503
     })
 
-  } catch (error) {
-    console.error('Health check error:', error)
+  } catch (error: unknown) {
+    logError(\'Health check error:\', error)
     return NextResponse.json({
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
