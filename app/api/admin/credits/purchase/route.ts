@@ -84,7 +84,7 @@ export async function POST(request: Request) {
     })
 
   } catch (error: unknown) {
-    logError('Credits purchase API error:\', error)
+    logError('Credits purchase API error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
