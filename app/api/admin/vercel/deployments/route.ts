@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error: unknown) {
-    logError(\'Vercel monitoring error:\', error);
+    logError('Vercel monitoring error:\', error);
     return NextResponse.json(
       { 
         error: 'Failed to fetch deployments',
