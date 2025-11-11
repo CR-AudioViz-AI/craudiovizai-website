@@ -64,7 +64,7 @@ export default async function HomePage() {
             <div className="flex justify-center lg:justify-end">
               <div className="relative w-48 h-48">
                 <Image
-                  src="/avatars/JavariAvatar.png"
+                  src="/avatars/javariavatar.png"
                   alt="Javari AI - Your AI Assistant"
                   width={192}
                   height={192}
@@ -86,7 +86,7 @@ export default async function HomePage() {
             <div className="flex justify-center lg:justify-start order-2 lg:order-1">
               <div className="relative w-48 h-48">
                 <Image
-                  src="/avatars/CRAIAvatar.png"
+                  src="/avatars/craiavatar.png"
                   alt="CRAI - Your CRAIverse Guide"
                   width={192}
                   height={192}
