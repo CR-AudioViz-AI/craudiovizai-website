@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
     });
     
   } catch (error: unknown) {
-    logError(\'Distribution error:\', error);
+    logError('Distribution error:\', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
@@ -379,7 +379,7 @@ async function processDistribution(distributionPlanId: string, userId: string) {
     console.log(`Distribution complete: ${successCount} succeeded, ${failCount} failed`);
     
   } catch (error: unknown) {
-    logError(\'Error processing distribution:\', error);
+    logError('Error processing distribution:\', error);
     
     // Update plan status to failed
     await supabase
