@@ -134,7 +134,7 @@ export default function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <Image 
-              src="/logo.png" 
+              src="/craudiovizailogo.png" 
               alt="CR AudioViz AI - Your Story. Our Design." 
               width={480}
               height={160}
