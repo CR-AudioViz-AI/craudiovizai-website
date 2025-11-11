@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import CRBar from "@/components/layout/CRBar";
+import CreditsBar from "@/components/layout/CreditsBar";
 import Footer from "@/components/layout/Footer";
 import JavariWidget from '@/components/JavariWidget';
 
@@ -24,6 +25,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <Header />
         <CRBar />
+        <CreditsBar />
         <main className="min-h-screen">
           {children}
         </main>
