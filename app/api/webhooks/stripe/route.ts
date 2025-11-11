@@ -50,7 +50,7 @@ async function logWebhookEvent(log: WebhookLog): Promise<void> {
         created_at: new Date().toISOString()
       })
   } catch (error: unknown) {
-    logError(\'Failed to log webhook event:\', error)
+    logError('Failed to log webhook event:\', error)
   }
 }
 
@@ -68,13 +68,13 @@ async function checkIdempotency(eventId: string): Promise<boolean> {
       .single()
 
     if (error && error.code !== 'PGRST116') {
-      logError(\'Idempotency check error:\', error)
+      logError('Idempotency check error:\', error)
       return false
     }
 
     return !!data
   } catch (error: unknown) {
-    logError(\'Idempotency check failed:\', error)
+    logError('Idempotency check failed:\', error)
     return false
   }
 }
@@ -135,7 +135,7 @@ async function addCreditsToUser(userId: string, credits: number, source: string)
 
     console.log(`✅ Added ${credits} credits to user ${userId}. New balance: ${newCredits}`)
   } catch (error: unknown) {
-    logError(\'Failed to add credits:\', error)
+    logError('Failed to add credits:\', error)
     throw error
   }
 }
@@ -176,7 +176,7 @@ async function deductCreditsFromUser(userId: string, credits: number, reason: st
 
     console.log(`⚠️ Deducted ${credits} credits from user ${userId}. New balance: ${newCredits}`)
   } catch (error: unknown) {
-    logError(\'Failed to deduct credits:\', error)
+    logError('Failed to deduct credits:\', error)
     throw error
   }
 }
@@ -242,7 +242,7 @@ async function updateUserSubscription(
 
     console.log(`✅ Updated subscription for user ${userId}: ${status}`)
   } catch (error: unknown) {
-    logError(\'Failed to update subscription:\', error)
+    logError('Failed to update subscription:\', error)
     throw error
   }
 }
@@ -691,7 +691,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error: any) {
-    logError(\'❌ Webhook processing error:\', error)
+    logError('❌ Webhook processing error:\', error)
 
     const processingTime = Date.now() - startTime
 
