@@ -53,7 +53,7 @@ const avatarData: Avatar[] = [
     tier: 'Tier 1',
     description: 'Emergency response for code. When systems break, Pulse fixes it.',
     imageUrl: '/avatars/PulseAvatar.png',
-    hasImage: true,
+    hasImage: false,
     primaryColor: 'red',
     icon: Zap
   },
@@ -213,7 +213,7 @@ const avatarData: Avatar[] = [
     tier: 'Tier 3',
     description: 'Pattern recognition genius. Three steps ahead of competition.',
     imageUrl: '/avatars/ScoutAvatar.png',
-    hasImage: true,
+    hasImage: false,
     primaryColor: 'teal',
     icon: Search
   },
