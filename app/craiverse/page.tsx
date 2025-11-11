@@ -23,7 +23,7 @@ export default function CRAIversePage() {
                   <div className="relative bg-white/10 backdrop-blur rounded-3xl overflow-hidden border-4 border-white/20 shadow-2xl">
                     {/* TODO: Add actual Crai image - blonde woman */}
                     <Image
-                      src="/images/crai-avatar.png"
+                      src="/avatars/craiavatar.png"
                       alt="Crai - Your CRAIverse Guide"
                       fill
                       className="object-cover"
