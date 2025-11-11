@@ -136,10 +136,10 @@ export default function Header() {
             <Image 
               src="/craudiovizailogo.png" 
               alt="CR AudioViz AI - Your Story. Our Design." 
-              width={480}
-              height={160}
+              width={1440}
+              height={480}
               priority
-              className="h-20 w-auto"
+              className="h-60 w-auto"
             />
           </Link>
 
