@@ -108,7 +108,7 @@ export async function GET(request: Request) {
     })
 
   } catch (error: unknown) {
-    logError('Apps list API error:\', error)
+    logError('Apps list API error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
