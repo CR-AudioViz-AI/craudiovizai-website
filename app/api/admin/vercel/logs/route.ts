@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error: unknown) {
-    logError(\'Vercel logs error:\', error);
+    logError('Vercel logs error:\', error);
     return NextResponse.json(
       { 
         error: 'Failed to fetch build logs',
