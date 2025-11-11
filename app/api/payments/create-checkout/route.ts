@@ -65,7 +65,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ approvalUrl })
   } catch (error: unknown) {
-    logError('PayPal Checkout Error:\', error)
+    logError('PayPal Checkout Error:', error)
     return NextResponse.json(
       { error: 'Failed to create PayPal checkout' },
       { status: 500 }
