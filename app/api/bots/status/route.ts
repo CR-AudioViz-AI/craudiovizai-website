@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       .order('name');
 
     if (error) {
-      logError(\'Error fetching bot status:\', error);
+      logError('Error fetching bot status:\', error);
       return NextResponse.json(
         { 
           error: 'Failed to fetch bot status',
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error: unknown) {
-    logError(\'Unexpected error in bot status API:\', error);
+    logError('Unexpected error in bot status API:\', error);
     return NextResponse.json(
       { 
         error: 'System error',
