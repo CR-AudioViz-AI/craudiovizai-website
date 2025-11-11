@@ -297,7 +297,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error: unknown) {
-    logError('Analytics error:\', error);
+    logError('Analytics error:', error);
     return NextResponse.json(
       { 
         error: 'Failed to fetch analytics',
