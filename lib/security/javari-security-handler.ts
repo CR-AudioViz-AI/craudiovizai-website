@@ -110,7 +110,7 @@ Respond ONLY with valid JSON:
       reasoning: analysis.reasoning,
     };
   } catch (error: unknown) {
-    logError('Error analyzing threat with AI:\', error);
+    logError('Error analyzing threat with AI:', error);
     
     // Fallback to rule-based analysis
     return {
@@ -143,7 +143,7 @@ async function createSecurityTicket(
     });
 
   if (error) {
-    logError('Error creating security ticket:\', error);
+    logError('Error creating security ticket:', error);
     throw error;
   }
 
@@ -431,7 +431,7 @@ export async function javariHandleThreat(threatId: string): Promise<{
       message: `Threat handled successfully. Confidence: ${(analysis.confidence_score * 100).toFixed(0)}%`,
     };
   } catch (error: any) {
-    logError('❌ Error handling threat:\', error);
+    logError('❌ Error handling threat:', error);
     return {
       success: false,
       message: `Error: ${error.message}`,
