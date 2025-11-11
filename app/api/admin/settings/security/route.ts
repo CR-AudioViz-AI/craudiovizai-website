@@ -66,7 +66,7 @@ export async function PUT(request: Request) {
     })
 
   } catch (error: unknown) {
-    logError('Settings security API error:\', error)
+    logError('Settings security API error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -133,7 +133,7 @@ export async function POST(request: Request) {
     )
 
   } catch (error: unknown) {
-    logError('Settings security POST API error:\', error)
+    logError('Settings security POST API error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
