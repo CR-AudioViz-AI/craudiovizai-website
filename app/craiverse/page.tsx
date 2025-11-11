@@ -21,12 +21,14 @@ export default function CRAIversePage() {
                 <div className="relative aspect-square max-w-md mx-auto">
                   <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-blue-400 rounded-full blur-3xl opacity-30"></div>
                   <div className="relative bg-white/10 backdrop-blur rounded-3xl overflow-hidden border-4 border-white/20 shadow-2xl">
-                    {/* TODO: Add actual Crai image - blonde woman */}
+                    {/* CRAI Avatar - Your CRAIverse Guide */}
                     <Image
                       src="/avatars/craiavatar.png"
-                      alt="Crai - Your CRAIverse Guide"
-                      fill
-                      className="object-cover"
+                      alt="CRAI - Your CRAIverse Guide"
+                      width={500}
+                      height={500}
+                      className="object-cover w-full h-full"
+                      priority
                     />
                   </div>
                 </div>
