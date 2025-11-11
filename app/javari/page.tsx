@@ -36,7 +36,7 @@ import { createClient } from '@/lib/supabase/client';
  * Updated: November 3, 2025
  */
 
-const JAVARI_APP_URL = process.env.NEXT_PUBLIC_JAVARI_URL || 'https://crav-javari.vercel.app';
+const JAVARI_APP_URL = process.env.NEXT_PUBLIC_JAVARI_URL || 'https://crav-javari-o7ygm0t5n-roy-hendersons-projects-1d3d5e94.vercel.app/javari';
 
 export default function JavariAIPage() {
   const [user, setUser] = useState<any>(null);
