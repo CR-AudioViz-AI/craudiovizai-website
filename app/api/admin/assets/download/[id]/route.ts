@@ -96,7 +96,7 @@ export async function GET(
     )
 
   } catch (error: unknown) {
-    logError(\'Asset download API error:\', error)
+    logError('Asset download API error:\', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
