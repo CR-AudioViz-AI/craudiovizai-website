@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       .order('use_count', { ascending: false });
     
     if (error) {
-      logError('Error fetching presets:\', error);
+      logError('Error fetching presets:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch presets' },
         { status: 500 }
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
     });
     
   } catch (error: unknown) {
-    logError('Error in presets API:\', error);
+    logError('Error in presets API:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
       .single();
     
     if (error) {
-      logError('Error creating preset:\', error);
+      logError('Error creating preset:', error);
       return NextResponse.json(
         { success: false, error: 'Failed to create preset' },
         { status: 500 }
@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
     });
     
   } catch (error: unknown) {
-    logError('Error in presets POST:\', error);
+    logError('Error in presets POST:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
