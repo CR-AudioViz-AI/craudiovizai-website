@@ -61,7 +61,7 @@ export async function postToTwitter(params: {
     };
     
   } catch (error: unknown) {
-    logError('Twitter posting error:\', error);
+    logError('Twitter posting error:', error);
     throw error;
   }
 }
@@ -94,7 +94,7 @@ async function uploadTwitterMedia(urls: string[], accessToken: string): Promise<
         mediaIds.push(uploadData.media_id_string);
       }
     } catch (error: unknown) {
-      logError('Error uploading Twitter media:\', error);
+      logError('Error uploading Twitter media:', error);
     }
   }
   
@@ -169,7 +169,7 @@ export async function postToLinkedIn(params: {
     };
     
   } catch (error: unknown) {
-    logError('LinkedIn posting error:\', error);
+    logError('LinkedIn posting error:', error);
     throw error;
   }
 }
@@ -235,7 +235,7 @@ async function uploadLinkedInMedia(
       });
       
     } catch (error: unknown) {
-      logError('Error uploading LinkedIn media:\', error);
+      logError('Error uploading LinkedIn media:', error);
     }
   }
   
@@ -311,7 +311,7 @@ export async function postToFacebook(params: {
     };
     
   } catch (error: unknown) {
-    logError('Facebook posting error:\', error);
+    logError('Facebook posting error:', error);
     throw error;
   }
 }
@@ -343,7 +343,7 @@ async function uploadFacebookPhotos(
         photoIds.push(data.id);
       }
     } catch (error: unknown) {
-      logError('Error uploading Facebook photo:\', error);
+      logError('Error uploading Facebook photo:', error);
     }
   }
   
@@ -422,7 +422,7 @@ export async function postToInstagram(params: {
     };
     
   } catch (error: unknown) {
-    logError('Instagram posting error:\', error);
+    logError('Instagram posting error:', error);
     throw error;
   }
 }
@@ -489,7 +489,7 @@ export async function postToDiscord(params: any) {
     };
     
   } catch (error: unknown) {
-    logError('Discord posting error:\', error);
+    logError('Discord posting error:', error);
     throw error;
   }
 }
@@ -541,7 +541,7 @@ export async function postToTelegram(params: any) {
     };
     
   } catch (error: unknown) {
-    logError('Telegram posting error:\', error);
+    logError('Telegram posting error:', error);
     throw error;
   }
 }
@@ -590,7 +590,7 @@ export async function postToMastodon(params: any) {
     };
     
   } catch (error: unknown) {
-    logError('Mastodon posting error:\', error);
+    logError('Mastodon posting error:', error);
     throw error;
   }
 }
@@ -624,7 +624,7 @@ async function uploadMastodonMedia(
         mediaIds.push(uploadData.id);
       }
     } catch (error: unknown) {
-      logError('Error uploading Mastodon media:\', error);
+      logError('Error uploading Mastodon media:', error);
     }
   }
   
