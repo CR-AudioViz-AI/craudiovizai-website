@@ -49,7 +49,7 @@ export async function GET() {
     })
 
   } catch (error: unknown) {
-    logError('Settings profile GET API error:\', error)
+    logError('Settings profile GET API error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -116,7 +116,7 @@ export async function PUT(request: Request) {
     })
 
   } catch (error: unknown) {
-    logError('Settings profile PUT API error:\', error)
+    logError('Settings profile PUT API error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
