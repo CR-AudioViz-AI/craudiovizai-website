@@ -43,7 +43,7 @@ export async function GET(request: Request) {
     })
 
   } catch (error: unknown) {
-    logError('Health check error:\', error)
+    logError('Health check error:', error)
     return NextResponse.json({
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
