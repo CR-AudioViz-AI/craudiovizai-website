@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       .order('created_at', { ascending: false });
     
     if (error) {
-      logError(\'Error fetching accounts:\', error);
+      logError('Error fetching accounts:\', error);
       return NextResponse.json(
         { success: false, error: 'Failed to fetch accounts' },
         { status: 500 }
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     });
     
   } catch (error: unknown) {
-    logError(\'Error in accounts API:\', error);
+    logError('Error in accounts API:\', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }
