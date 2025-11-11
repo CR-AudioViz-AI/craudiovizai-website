@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error: unknown) {
-    logError(\'Pulse bot execution error:\', error);
+    logError('Pulse bot execution error:\', error);
     return NextResponse.json(
       {
         error: 'Execution failed',
