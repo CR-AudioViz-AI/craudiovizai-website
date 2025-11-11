@@ -151,7 +151,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error: unknown) {
-    logError(\'Projects management error:\', error);
+    logError('Projects management error:\', error);
     return NextResponse.json(
       { 
         error: 'Failed to fetch projects',
@@ -230,7 +230,7 @@ export async function PUT(request: NextRequest) {
     });
 
   } catch (error: unknown) {
-    logError(\'Update project error:\', error);
+    logError('Update project error:\', error);
     return NextResponse.json(
       { 
         error: 'Failed to update project',
@@ -301,7 +301,7 @@ export async function DELETE(request: NextRequest) {
     });
 
   } catch (error: unknown) {
-    logError(\'Delete project error:\', error);
+    logError('Delete project error:\', error);
     return NextResponse.json(
       { 
         error: 'Failed to delete project',
