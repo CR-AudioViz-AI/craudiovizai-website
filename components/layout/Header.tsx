@@ -161,6 +161,21 @@ export default function Header() {
                 )}
               </Link>
             ))}
+            
+            {/* Meet the Team Link */}
+            <Link
+              href="/team"
+              className={`transition-colors relative ${
+                isActive('/team')
+                  ? 'text-purple-600 font-semibold'
+                  : 'text-gray-700 hover:text-gray-900'
+              }`}
+            >
+              Meet the Team
+              {isActive('/team') && (
+                <span className="absolute -bottom-6 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 to-pink-600" />
+              )}
+            </Link>
           </div>
 
           {/* CTA Buttons */}
@@ -235,6 +250,17 @@ export default function Header() {
                   {link.label}
                 </Link>
               ))}
+              
+              <Link
+                href="/team"
+                className={`block transition-colors ${
+                  isActive('/team')
+                    ? 'text-purple-600 font-semibold'
+                    : 'text-gray-700 hover:text-gray-900'
+                }`}
+              >
+                Meet the Team
+              </Link>
               <div className="pt-4 border-t border-gray-200 space-y-2">
                 {!loading && (
                   <>
