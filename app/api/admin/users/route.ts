@@ -157,7 +157,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error: unknown) {
-    logError(\'Users management error:\', error);
+    logError('Users management error:\', error);
     return NextResponse.json(
       { 
         error: 'Failed to fetch users',
@@ -253,7 +253,7 @@ export async function POST(request: NextRequest) {
     }, { status: 201 });
 
   } catch (error: unknown) {
-    logError(\'Create user error:\', error);
+    logError('Create user error:\', error);
     return NextResponse.json(
       { 
         error: 'Failed to create user',
@@ -332,7 +332,7 @@ export async function PUT(request: NextRequest) {
     });
 
   } catch (error: unknown) {
-    logError(\'Update user error:\', error);
+    logError('Update user error:\', error);
     return NextResponse.json(
       { 
         error: 'Failed to update user',
@@ -407,7 +407,7 @@ export async function DELETE(request: NextRequest) {
     });
 
   } catch (error: unknown) {
-    logError(\'User action error:\', error);
+    logError('User action error:\', error);
     return NextResponse.json(
       { 
         error: 'Failed to perform user action',
