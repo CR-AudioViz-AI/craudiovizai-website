@@ -57,7 +57,7 @@ async function refreshBlockedIPs(): Promise<void> {
       lastBlockedIPRefresh = now;
     }
   } catch (error: unknown) {
-    logError(\'[Security] Failed to refresh blocked IPs:\', error);
+    logError('[Security] Failed to refresh blocked IPs:\', error);
   }
 }
 
@@ -108,7 +108,7 @@ async function logThreat(data: any): Promise<void> {
       body: JSON.stringify({ ...data, app_name: CONFIG.APP_NAME }),
     });
   } catch (error: unknown) {
-    logError(\'[Security] Failed to log threat:\', error);
+    logError('[Security] Failed to log threat:\', error);
   }
 }
 
