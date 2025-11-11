@@ -129,7 +129,7 @@ export class PayPalClient {
         approvalUrl,
       }
     } catch (error: any) {
-      logError(\'PayPal order creation failed:\', error)
+      logError('PayPal order creation failed:\', error)
       throw new Error(`PayPal order creation failed: ${error.message}`)
     }
   }
@@ -176,7 +176,7 @@ export class PayPalClient {
         }
       }
     } catch (error: any) {
-      logError(\'PayPal capture failed:\', error)
+      logError('PayPal capture failed:\', error)
       return {
         success: false,
         error: error.message,
@@ -236,7 +236,7 @@ export class PayPalClient {
         approvalUrl,
       }
     } catch (error: any) {
-      logError(\'PayPal subscription creation failed:\', error)
+      logError('PayPal subscription creation failed:\', error)
       throw new Error(`PayPal subscription creation failed: ${error.message}`)
     }
   }
@@ -264,7 +264,7 @@ export class PayPalClient {
 
       return true
     } catch (error: any) {
-      logError(\'PayPal subscription cancellation failed:\', error)
+      logError('PayPal subscription cancellation failed:\', error)
       return false
     }
   }
@@ -304,7 +304,7 @@ export class PayPalClient {
 
       return result.verification_status === 'SUCCESS'
     } catch (error: unknown) {
-      logError(\'PayPal webhook verification failed:\', error)
+      logError('PayPal webhook verification failed:\', error)
       return false
     }
   }
@@ -318,7 +318,7 @@ export class PayPalClient {
       const response = await paypalClient.execute(request)
       return response.result
     } catch (error: any) {
-      logError(\'Failed to get PayPal order:\', error)
+      logError('Failed to get PayPal order:\', error)
       throw error
     }
   }
@@ -347,7 +347,7 @@ export class PayPalClient {
       await paypalClient.execute(request)
       return true
     } catch (error: any) {
-      logError(\'PayPal refund failed:\', error)
+      logError('PayPal refund failed:\', error)
       return false
     }
   }
