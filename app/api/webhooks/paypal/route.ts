@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true, status: 'success' })
   } catch (error: any) {
-    logError(\'[PayPal Webhook] Processing error:\', error)
+    logError('[PayPal Webhook] Processing error:\', error)
 
     // Log failure
     try {
@@ -320,13 +320,13 @@ async function checkIdempotency(eventId: string): Promise<boolean> {
       .single()
 
     if (error && error.code !== 'PGRST116') {
-      logError(\'Idempotency check error:\', error)
+      logError('Idempotency check error:\', error)
       return false
     }
 
     return !!data
   } catch (error: unknown) {
-    logError(\'Idempotency check failed:\', error)
+    logError('Idempotency check failed:\', error)
     return false
   }
 }
@@ -347,6 +347,6 @@ async function logWebhookEvent(log: {
         onConflict: 'event_id',
       })
   } catch (error: unknown) {
-    logError(\'Failed to log webhook event:\', error)
+    logError('Failed to log webhook event:\', error)
   }
 }
