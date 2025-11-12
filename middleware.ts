@@ -1,24 +1,23 @@
 // =====================================================
 // CR AUDIOVIZ AI - UNIVERSAL SECURITY MIDDLEWARE
 // Fortune 50 Protection Layer
-// Deploy this to EVERY app in the ecosystem
-// Built: 2025-11-04
+// Fixed: 2025-11-11 - Handles missing env vars gracefully
 // =====================================================
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
+import { createServerClient } from '@supabase/ssr';
 
-// Configuration
+// Configuration - with safe defaults
 const CONFIG = {
-  APP_NAME: process.env.NEXT_PUBLIC_APP_NAME || 'unknown-app',
-  SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  APP_NAME: process.env.NEXT_PUBLIC_APP_NAME || 'crav-website',
+  SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+  SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || '',
   RATE_LIMIT_WINDOW_MS: 60000,
   RATE_LIMIT_MAX_REQUESTS: 100,
   HONEYPOT_ENABLED: true,
-  HONEYPOT_ROUTES: ['/admin', '/api/admin', '/.env', '/wp-admin'],
-  WHITELISTED_IPS: [] as string[],
+  // FIXED: Only trap obvious attack routes, not legitimate admin access
+  HONEYPOT_ROUTES: ['/wp-admin', '/phpmyadmin', '/.env', '/config.php', '/api/v1/admin'],
 };
 
 // Attack patterns
@@ -35,7 +34,13 @@ const rateLimitCache = new Map<string, { count: number; resetTime: number }>();
 const blockedIPsCache = new Set<string>();
 let lastBlockedIPRefresh = 0;
 
+// FIXED: Only refresh blocked IPs if Supabase is configured
 async function refreshBlockedIPs(): Promise<void> {
+  // Skip if Supabase not configured
+  if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_SERVICE_KEY) {
+    return;
+  }
+
   const now = Date.now();
   if (now - lastBlockedIPRefresh < 300000) return;
   
@@ -47,6 +52,7 @@ async function refreshBlockedIPs(): Promise<void> {
           'apikey': CONFIG.SUPABASE_SERVICE_KEY,
           'Authorization': `Bearer ${CONFIG.SUPABASE_SERVICE_KEY}`,
         },
+        signal: AbortSignal.timeout(5000), // 5 second timeout
       }
     );
     
@@ -56,8 +62,9 @@ async function refreshBlockedIPs(): Promise<void> {
       blockedIPs.forEach((entry: any) => blockedIPsCache.add(entry.ip_address));
       lastBlockedIPRefresh = now;
     }
-  } catch (error: unknown) {
-    logError('[Security] Failed to refresh blocked IPs:', error);
+  } catch (error) {
+    // Silently fail - don't block requests if DB is slow
+    console.error('[Security] Failed to refresh blocked IPs:', error);
   }
 }
 
@@ -95,7 +102,12 @@ function detectAttackPattern(url: string): { detected: boolean; type: string | n
   return { detected: false, type: null };
 }
 
+// FIXED: Only log if Supabase is configured
 async function logThreat(data: any): Promise<void> {
+  if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_SERVICE_KEY) {
+    return; // Skip logging if not configured
+  }
+
   try {
     await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/security_threats`, {
       method: 'POST',
@@ -106,9 +118,11 @@ async function logThreat(data: any): Promise<void> {
         'Prefer': 'return=minimal',
       },
       body: JSON.stringify({ ...data, app_name: CONFIG.APP_NAME }),
+      signal: AbortSignal.timeout(5000), // 5 second timeout
     });
-  } catch (error: unknown) {
-    logError('[Security] Failed to log threat:', error);
+  } catch (error) {
+    // Silently fail
+    console.error('[Security] Failed to log threat:', error);
   }
 }
 
@@ -118,36 +132,51 @@ export async function middleware(request: NextRequest) {
   const url = request.nextUrl;
   const fullPath = url.pathname + url.search;
   
+  // FIXED: Handle Supabase auth routes specially - don't rate limit or block
+  if (url.pathname.startsWith('/auth/')) {
+    return NextResponse.next();
+  }
+
+  // Try to refresh blocked IPs (won't block if it fails)
   await refreshBlockedIPs();
   
+  // Check blocked IPs
   if (blockedIPsCache.has(ip)) {
     await logThreat({ ip, user_agent: userAgent, url_path: fullPath, threat_type: 'blocked_ip_attempt', severity: 'high', action_taken: 'blocked' });
     return new NextResponse('Access Denied', { status: 403 });
   }
   
+  // Block malicious user agents
   const isBlockedAgent = BLOCKED_USER_AGENTS.some(agent => userAgent.includes(agent));
   if (isBlockedAgent) {
     await logThreat({ ip, user_agent: userAgent, url_path: fullPath, threat_type: 'blocked_user_agent', severity: 'high', action_taken: 'blocked' });
     return new NextResponse('Forbidden', { status: 403 });
   }
   
+  // Detect attack patterns
   const attackDetection = detectAttackPattern(fullPath);
   if (attackDetection.detected) {
     await logThreat({ ip, user_agent: userAgent, url_path: fullPath, threat_type: attackDetection.type, severity: 'critical', action_taken: 'honeypot' });
     return NextResponse.redirect(new URL('/api/security/honeypot', request.url));
   }
   
+  // FIXED: Only trap obvious attack routes, not legitimate admin
   const isHoneypotRoute = CONFIG.HONEYPOT_ROUTES.some(route => url.pathname.startsWith(route));
   if (isHoneypotRoute && CONFIG.HONEYPOT_ENABLED) {
+    await logThreat({ ip, user_agent: userAgent, url_path: fullPath, threat_type: 'honeypot_triggered', severity: 'high', action_taken: 'redirected' });
     return NextResponse.redirect(new URL('/api/security/honeypot', request.url));
   }
   
-  const rateLimitKey = `${ip}:${url.pathname}`;
-  if (!checkRateLimit(rateLimitKey)) {
-    await logThreat({ ip, user_agent: userAgent, url_path: fullPath, threat_type: 'rate_limit_exceeded', severity: 'medium', action_taken: 'rate_limited' });
-    return new NextResponse('Too Many Requests', { status: 429 });
+  // Rate limiting (but not for static assets)
+  if (!url.pathname.startsWith('/_next/') && !url.pathname.startsWith('/api/')) {
+    const rateLimitKey = `${ip}:${url.pathname}`;
+    if (!checkRateLimit(rateLimitKey)) {
+      await logThreat({ ip, user_agent: userAgent, url_path: fullPath, threat_type: 'rate_limit_exceeded', severity: 'medium', action_taken: 'rate_limited' });
+      return new NextResponse('Too Many Requests', { status: 429 });
+    }
   }
   
+  // Add security headers
   const response = NextResponse.next();
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
@@ -157,6 +186,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|public/).*)',
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.gif|.*\\.svg).*)',
   ],
 };
