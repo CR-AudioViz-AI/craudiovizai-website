@@ -192,16 +192,16 @@ export default function Header() {
                         </Button>
                       </Link>
                     )}
-                    <Button variant="ghost" className="flex items-center gap-2">
-                      <User className="w-4 h-4" />
-                      <span>{user.email}</span>
-                    </Button>
-                    <Button 
-                      onClick={handleLogout}
-                      variant="outline"
-                    >
-                      Log Out
-                    </Button>
+                    <div className="flex flex-col items-end gap-1">
+                      <Button 
+                        onClick={handleLogout}
+                        variant="outline"
+                        className="h-9"
+                      >
+                        Log Out
+                      </Button>
+                      <span className="text-xs text-gray-600">{user.email}</span>
+                    </div>
                   </>
                 ) : (
                   <>
