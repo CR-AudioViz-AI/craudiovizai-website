@@ -16,21 +16,17 @@ export default function CRAIversePage() {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              {/* Left - Crai Image */}
-              <div className="order-2 lg:order-1">
-                <div className="relative aspect-square max-w-md mx-auto">
-                  <div className="absolute inset-0 bg-gradient-to-br from-purple-400 to-blue-400 rounded-full blur-3xl opacity-30"></div>
-                  <div className="relative bg-white/10 backdrop-blur rounded-3xl overflow-hidden border-4 border-white/20 shadow-2xl">
-                    {/* CRAI Avatar - Your CRAIverse Guide */}
-                    <Image
-                      src="/avatars/craiavatar.png"
-                      alt="CRAI - Your CRAIverse Guide"
-                      width={500}
-                      height={500}
-                      className="object-cover w-full h-full"
-                      priority
-                    />
-                  </div>
+              {/* Left - CRAI Avatar (matches homepage style) */}
+              <div className="order-2 lg:order-1 flex justify-center lg:justify-start">
+                <div className="relative w-48 h-48">
+                  <Image
+                    src="/avatars/craiavatar.png"
+                    alt="CRAI - Your CRAIverse Guide"
+                    width={192}
+                    height={192}
+                    className="rounded-full shadow-xl"
+                    priority
+                  />
                 </div>
               </div>
 
