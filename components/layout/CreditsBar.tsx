@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Coins, ArrowUp, Plus } from 'lucide-react';
+import { Coins, ArrowUp, Plus, Infinity } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface UserPlan {
@@ -15,6 +15,7 @@ interface UserPlan {
 export default function CreditsBar() {
   const [userPlan, setUserPlan] = useState<UserPlan | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
@@ -25,25 +26,55 @@ export default function CreditsBar() {
         
         if (!user) {
           setLoading(false);
+          setIsLoggedIn(false);
           return;
         }
 
-        // Get user plan from profiles or subscriptions table
+        setIsLoggedIn(true);
+
+        // Get user plan from profiles table
         const { data: profile, error } = await supabase
           .from('profiles')
           .select('plan_name, credits, is_admin')
           .eq('id', user.id)
           .single();
 
-        if (error) {
-          console.error('Error loading user plan:', error);
-          setLoading(false);
-          return;
-        }
+        if (error || !profile) {
+          // User doesn't have a profile yet - create default
+          console.log('No profile found, creating default...');
+          
+          const { data: newProfile, error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              id: user.id,
+              plan_name: 'Free',
+              credits: 100,
+              is_admin: false
+            })
+            .select()
+            .single();
 
-        setUserPlan(profile);
+          if (!insertError && newProfile) {
+            setUserPlan(newProfile);
+          } else {
+            // Even if insert fails, show a default
+            setUserPlan({
+              plan_name: 'Free',
+              credits: 100,
+              is_admin: false
+            });
+          }
+        } else {
+          setUserPlan(profile);
+        }
       } catch (error) {
         console.error('Error in loadUserPlan:', error);
+        // Show default rather than nothing
+        setUserPlan({
+          plan_name: 'Free',
+          credits: 100,
+          is_admin: false
+        });
       } finally {
         setLoading(false);
       }
@@ -57,6 +88,7 @@ export default function CreditsBar() {
         loadUserPlan();
       } else if (event === 'SIGNED_OUT') {
         setUserPlan(null);
+        setIsLoggedIn(false);
       }
     });
 
@@ -65,20 +97,23 @@ export default function CreditsBar() {
     };
   }, []);
 
-  // Don't show anything if not logged in or still loading
-  if (loading || !userPlan) {
+  // Don't show if not logged in
+  if (!isLoggedIn || loading) {
     return null;
   }
 
-  // Admin view
-  if (userPlan.is_admin) {
+  // Show even if userPlan is null (shouldn't happen now, but safe fallback)
+  const plan = userPlan || { plan_name: 'Free', credits: 100, is_admin: false };
+
+  // Admin view - UNLIMITED
+  if (plan.is_admin) {
     return (
       <div className="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 text-white">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-12">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <Coins className="w-5 h-5 text-yellow-300" />
+                <Infinity className="w-5 h-5 text-yellow-300" />
                 <span className="font-semibold text-sm">Admin - Unlimited Access</span>
               </div>
               <div className="hidden md:flex items-center space-x-1 text-xs text-white/80">
@@ -110,7 +145,7 @@ export default function CreditsBar() {
     'Starter': 'from-blue-500 to-blue-600',
     'Pro': 'from-purple-500 to-purple-600',
     'Enterprise': 'from-indigo-600 to-purple-600',
-  }[userPlan.plan_name] || 'from-gray-500 to-gray-600';
+  }[plan.plan_name] || 'from-gray-500 to-gray-600';
 
   return (
     <div className={`bg-gradient-to-r ${planColors} text-white`}>
@@ -119,11 +154,11 @@ export default function CreditsBar() {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <Coins className="w-5 h-5 text-yellow-300" />
-              <span className="font-semibold text-sm">{userPlan.plan_name} Plan</span>
+              <span className="font-semibold text-sm">{plan.plan_name} Plan</span>
             </div>
             <div className="flex items-center space-x-2 text-sm">
               <span className="hidden sm:inline text-white/90">Credits:</span>
-              <span className="font-bold">{userPlan.credits.toLocaleString()}</span>
+              <span className="font-bold">{plan.credits.toLocaleString()}</span>
             </div>
           </div>
           <div className="flex items-center space-x-2">
@@ -136,7 +171,7 @@ export default function CreditsBar() {
                 <span className="hidden sm:inline">Top Up</span>
               </Button>
             </Link>
-            {userPlan.plan_name === 'Free' && (
+            {plan.plan_name === 'Free' && (
               <Link href="/pricing">
                 <Button 
                   size="sm" 
