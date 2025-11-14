@@ -184,28 +184,23 @@ export default function Header() {
               <>
                 {user ? (
                   <>
-                    <div className="flex items-center gap-3">
-                      {/* Email and Admin Link */}
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600">{user.email}</span>
-                        {isAdmin && (
-                          <>
-                            <span className="text-gray-300">|</span>
-                            <Link href="/admin" className="text-sm text-purple-600 hover:text-purple-700 font-medium flex items-center gap-1">
-                              <Shield className="w-3.5 h-3.5" />
-                              Admin
-                            </Link>
-                          </>
-                        )}
-                      </div>
-                      {/* Logout Button */}
+                    {isAdmin && (
+                      <Link href="/admin">
+                        <Button variant="outline" className="flex items-center gap-2">
+                          <Shield className="w-4 h-4" />
+                          Admin Dashboard
+                        </Button>
+                      </Link>
+                    )}
+                    <div className="flex flex-col items-end gap-1">
                       <Button 
                         onClick={handleLogout}
                         variant="outline"
-                        size="sm"
+                        className="h-9"
                       >
                         Log Out
                       </Button>
+                      <span className="text-xs text-gray-600">{user.email}</span>
                     </div>
                   </>
                 ) : (
@@ -271,15 +266,17 @@ export default function Header() {
                   <>
                     {user ? (
                       <>
-                        <div className="px-4 py-2 space-y-2">
-                          <div className="text-sm text-gray-600">{user.email}</div>
-                          {isAdmin && (
-                            <Link href="/admin" className="text-sm text-purple-600 hover:text-purple-700 font-medium flex items-center gap-2">
+                        <div className="px-4 py-2 text-sm text-gray-600">
+                          {user.email}
+                        </div>
+                        {isAdmin && (
+                          <Link href="/admin" className="block">
+                            <Button variant="outline" className="w-full flex items-center justify-center gap-2">
                               <Shield className="w-4 h-4" />
                               Admin Dashboard
-                            </Link>
-                          )}
-                        </div>
+                            </Button>
+                          </Link>
+                        )}
                         <Button 
                           onClick={handleLogout}
                           variant="outline"
