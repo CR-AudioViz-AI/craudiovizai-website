@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { CreditCard, Package, TrendingUp, Users } from 'lucide-react'
+import { CreditCard, Package, TrendingUp, Users, Upload, Brain } from 'lucide-react'
 import ExpenseTrackerCard from '@/components/admin/ExpenseTrackerCard'
+import Link from 'next/link'
 
 interface DashboardStats {
   credits: number
@@ -159,6 +160,31 @@ export default function AdminDashboard() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <ExpenseTrackerCard />
           
+          {/* Javari Document Upload */}
+          <Link href="https://crav-javari.vercel.app/admin/javari/upload-document" target="_blank">
+            <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer border-blue-200">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Upload className="h-5 w-5 text-blue-600" />
+                    Javari Document Upload
+                  </CardTitle>
+                  <span className="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full font-semibold">NEW</span>
+                </div>
+                <CardDescription>Teach Javari new knowledge</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Upload documents for Javari AI to learn from. She processes them automatically every 4 hours.
+                </p>
+                <div className="flex items-center gap-2 text-sm text-blue-600">
+                  <Brain className="h-4 w-4" />
+                  <span className="font-medium">Forever Learning Enabled</span>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
           {/* Placeholder for future management tools */}
           <Card className="cursor-not-allowed opacity-50">
             <CardHeader>
