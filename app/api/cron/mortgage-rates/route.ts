@@ -4,7 +4,7 @@
  * Automated cron job to scrape mortgage rates every hour
  * Integrated with crav-website cron system
  * 
- * @timestamp 2025-11-13T03:37:00Z
+ * @timestamp 2025-11-13T22:45:00Z
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -12,9 +12,12 @@ import { MortgageScraper } from '@/lib/mortgage/scraper';
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify cron secret
+    // Verify cron secret (uses MORTGAGE_CRON_SECRET or CRON_SECRET)
     const authHeader = request.headers.get('authorization');
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    const expectedSecret = process.env.MORTGAGE_CRON_SECRET || process.env.CRON_SECRET;
+    
+    if (authHeader !== `Bearer ${expectedSecret}`) {
+      console.log('[CRON] Unauthorized attempt - invalid secret');
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
