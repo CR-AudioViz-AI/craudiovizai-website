@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { CreditCard, Package, TrendingUp, Users, Upload, Brain } from 'lucide-react'
 import ExpenseTrackerCard from '@/components/admin/ExpenseTrackerCard'
-import Link from 'next/link'
 
 interface DashboardStats {
   credits: number
@@ -160,9 +159,14 @@ export default function AdminDashboard() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <ExpenseTrackerCard />
           
-          {/* Javari Document Upload */}
-          <Link href="https://crav-javari.vercel.app/admin/javari/upload-document" target="_blank">
-            <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer border-blue-200">
+          {/* Javari Document Upload - CLICKABLE */}
+          <a 
+            href="https://crav-javari.vercel.app/admin/javari/upload-document" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block h-full"
+          >
+            <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer border-blue-200 hover:border-blue-300">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-2">
@@ -183,28 +187,56 @@ export default function AdminDashboard() {
                 </div>
               </CardContent>
             </Card>
-          </Link>
+          </a>
 
-          {/* Placeholder for future management tools */}
-          <Card className="cursor-not-allowed opacity-50">
-            <CardHeader>
-              <CardTitle>Asset Manager</CardTitle>
-              <CardDescription>Coming soon</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">Manage your generated assets</p>
-            </CardContent>
-          </Card>
+          {/* Market Oracle - CLICKABLE */}
+          <a 
+            href="/apps/market-oracle" 
+            className="block h-full"
+          >
+            <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer border-green-200 hover:border-green-300">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-green-600" />
+                    Market Oracle
+                  </CardTitle>
+                  <span className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full font-semibold">LIVE</span>
+                </div>
+                <CardDescription>AI Stock Predictions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-3">
+                  5 AI models compete with 106 active picks. Real-time portfolio tracking and performance analytics.
+                </p>
+                <div className="flex items-center gap-2 text-sm text-green-600">
+                  <Package className="h-4 w-4" />
+                  <span className="font-medium">$707K Portfolio Value</span>
+                </div>
+              </CardContent>
+            </Card>
+          </a>
 
-          <Card className="cursor-not-allowed opacity-50">
-            <CardHeader>
-              <CardTitle>Analytics</CardTitle>
-              <CardDescription>Coming soon</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">Detailed usage analytics</p>
-            </CardContent>
-          </Card>
+          {/* Apps Directory - CLICKABLE */}
+          <a 
+            href="/apps" 
+            className="block h-full"
+          >
+            <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer border-purple-200 hover:border-purple-300">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5 text-purple-600" />
+                  All Apps
+                </CardTitle>
+                <CardDescription>Browse all tools</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Access 60+ AI-powered creative tools and applications
+                </p>
+              </CardContent>
+            </Card>
+          </a>
         </div>
       </div>
 
