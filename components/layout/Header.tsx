@@ -191,6 +191,10 @@ export default function Header() {
           <div className="hidden lg:flex items-center space-x-4">
             {!loading && (
               <>
+                {(() => {
+                  console.log('🎨 RENDER STATE:', { user: !!user, isAdmin, loading, email: user?.email });
+                  return null;
+                })()}
                 {user ? (
                   <>
                     {isAdmin && (
