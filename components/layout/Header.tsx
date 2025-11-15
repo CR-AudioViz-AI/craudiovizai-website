@@ -46,15 +46,20 @@ export default function Header() {
     // Check current user and admin status
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('🔍 AUTH: Current user:', user?.email, 'ID:', user?.id);
       setUser(user);
 
       if (user) {
         // Check if user is admin
-        const { data: profile } = await supabase
+        const { data: profile, error } = await supabase
           .from('profiles')
           .select('is_admin')
           .eq('id', user.id)
           .single();
+        
+        console.log('🔍 PROFILE QUERY:', { profile, error, userId: user.id });
+        console.log('🔍 is_admin value:', profile?.is_admin);
+        console.log('🔍 Setting isAdmin state to:', profile?.is_admin || false);
         
         setIsAdmin(profile?.is_admin || false);
       } else {
@@ -68,14 +73,18 @@ export default function Header() {
 
     // Listen for auth changes
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      console.log('🔍 AUTH CHANGE EVENT:', _event, 'User:', session?.user?.email);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        const { data: profile } = await supabase
+        const { data: profile, error } = await supabase
           .from('profiles')
           .select('is_admin')
           .eq('id', session.user.id)
           .single();
+        
+        console.log('🔍 AUTH CHANGE - Profile query:', { profile, error });
+        console.log('🔍 AUTH CHANGE - Setting isAdmin to:', profile?.is_admin || false);
         
         setIsAdmin(profile?.is_admin || false);
       } else {
