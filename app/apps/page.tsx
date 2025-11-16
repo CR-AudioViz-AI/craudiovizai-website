@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
-import { Sparkles, Code2, Music, Mail, Zap, Download, Share2, CheckCircle , FileText, File } from 'lucide-react';
+import { Sparkles, Code2, Music, Mail, Zap, Download, Share2, CheckCircle, FileText, File, Image, FileSpreadsheet, BookOpen, Target } from 'lucide-react';
 
 const embeddedApps = [
   {
@@ -38,6 +38,91 @@ const embeddedApps = [
     creditCost: 5,
   },
   {
+    id: 'verifyforge',
+    icon: '🔍',
+    iconComponent: FileSpreadsheet,
+    name: 'VerifyForge AI',
+    description: 'Comprehensive testing platform with automated test generation and execution.',
+    features: [
+      'AI-powered test generation',
+      'Multi-platform testing',
+      'Detailed reports & analytics',
+      'CI/CD integration'
+    ],
+    status: 'live',
+    href: '/apps/verifyforge',
+    color: 'indigo',
+    creditCost: 10,
+  },
+  {
+    id: 'social-graphics',
+    icon: '🎨',
+    iconComponent: Image,
+    name: 'Social Graphics Creator',
+    description: 'Design stunning social media graphics optimized for all major platforms.',
+    features: [
+      'Platform-specific templates',
+      'AI-powered design suggestions',
+      'Brand consistency tools',
+      'One-click resizing'
+    ],
+    status: 'live',
+    href: '/apps/social-graphics',
+    color: 'pink',
+    creditCost: 3,
+  },
+  {
+    id: 'invoice-generator',
+    icon: '💼',
+    iconComponent: FileText,
+    name: 'Invoice Generator',
+    description: 'Create professional invoices with automated calculations and tax handling.',
+    features: [
+      'Automated calculations',
+      'Multiple currency support',
+      'Tax compliance',
+      'Client management'
+    ],
+    status: 'live',
+    href: '/apps/invoice-generator',
+    color: 'green',
+    creditCost: 2,
+  },
+  {
+    id: 'ebook-creator',
+    icon: '📚',
+    iconComponent: BookOpen,
+    name: 'eBook Creator',
+    description: 'Write and publish professional eBooks with AI-assisted content generation.',
+    features: [
+      'AI writing assistance',
+      'Multiple export formats',
+      'Cover design tools',
+      'ISBN generation support'
+    ],
+    status: 'live',
+    href: '/apps/ebook-creator',
+    color: 'purple',
+    creditCost: 8,
+  },
+  {
+    id: 'logo-studio',
+    icon: '🎯',
+    iconComponent: Target,
+    name: 'Logo Studio AI',
+    description: 'Generate professional logos with AI-powered design and instant variations.',
+    features: [
+      'AI logo generation',
+      'Unlimited variations',
+      'Vector export (SVG)',
+      'Brand kit integration'
+    ],
+    status: 'live',
+    href: '/apps/logo-studio',
+    color: 'orange',
+    creditCost: 6,
+  },
+  {
     id: 'music-builder',
     icon: '🎵',
     iconComponent: Music,
@@ -68,7 +153,8 @@ const embeddedApps = [
     status: 'live',
     href: '/apps/newsletter',
     color: 'green',
-  },  {
+  },
+  {
     id: 'legalease',
     icon: '⚖️',
     iconComponent: FileText,
@@ -84,7 +170,6 @@ const embeddedApps = [
     href: '/apps/legalease',
     color: 'amber',
   },
-
 ];
 
 const comingSoonApps = [
@@ -95,9 +180,9 @@ const comingSoonApps = [
     status: 'coming-soon',
   },
   {
-    icon: '🎨',
-    name: 'Design Studio',
-    description: 'Professional design tools for graphics, logos, and branding materials.',
+    icon: '🎬',
+    name: 'Video Editor',
+    description: 'Professional video editing suite with AI enhancements.',
     status: 'coming-soon',
   },
   {
@@ -119,9 +204,9 @@ const comingSoonApps = [
     status: 'coming-soon',
   },
   {
-    icon: '🎬',
-    name: 'Video Editor',
-    description: 'Professional video editing suite with AI enhancements.',
+    icon: '🖼️',
+    name: 'Image Editor',
+    description: 'Professional image editing with AI-powered enhancements.',
     status: 'coming-soon',
   },
 ];
@@ -183,6 +268,9 @@ export default function AppsPage() {
                 green: 'from-green-500 to-green-600 hover:from-green-600 hover:to-green-700',
                 red: 'from-red-500 to-red-600 hover:from-red-600 hover:to-red-700',
                 amber: 'from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700',
+                indigo: 'from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700',
+                pink: 'from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700',
+                orange: 'from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700',
               };
 
               return (
