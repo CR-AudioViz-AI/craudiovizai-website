@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
-import { Sparkles, Code2, Music, Mail, Zap, Download, Share2, CheckCircle , FileText } from 'lucide-react';
+import { Sparkles, Code2, Music, Mail, Zap, Download, Share2, CheckCircle , FileText, File } from 'lucide-react';
 
 const embeddedApps = [
   {
@@ -19,6 +19,23 @@ const embeddedApps = [
     status: 'live',
     href: '/apps/builder',
     color: 'blue',
+  },
+  {
+    id: 'pdf-builder',
+    icon: '📄',
+    iconComponent: File,
+    name: 'PDF Builder Pro',
+    description: 'Create professional PDFs with AI-powered content generation and templates.',
+    features: [
+      'AI content generation',
+      'Professional templates',
+      'Custom layouts & design',
+      'Export high-quality PDFs'
+    ],
+    status: 'live',
+    href: '/apps/pdf-builder',
+    color: 'red',
+    creditCost: 5,
   },
   {
     id: 'music-builder',
@@ -164,6 +181,8 @@ export default function AppsPage() {
                 blue: 'from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700',
                 purple: 'from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700',
                 green: 'from-green-500 to-green-600 hover:from-green-600 hover:to-green-700',
+                red: 'from-red-500 to-red-600 hover:from-red-600 hover:to-red-700',
+                amber: 'from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700',
               };
 
               return (
@@ -173,9 +192,16 @@ export default function AppsPage() {
                       <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-3xl shadow-sm">
                         {app.icon}
                       </div>
-                      <div className="flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold">
-                        <Zap className="w-3 h-3" />
-                        Live
+                      <div className="flex flex-col items-end gap-1">
+                        <div className="flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold">
+                          <Zap className="w-3 h-3" />
+                          Live
+                        </div>
+                        {app.creditCost && (
+                          <div className="text-xs text-gray-600 font-medium">
+                            {app.creditCost} credits/use
+                          </div>
+                        )}
                       </div>
                     </div>
                     <CardTitle className="text-2xl font-bold text-gray-900">
