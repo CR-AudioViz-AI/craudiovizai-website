@@ -1,13 +1,41 @@
 // ================================================================================
-// CR AUDIOVIZ AI - SCOUT BOT
-// Competitive intelligence and industry news aggregation
+// CR AUDIOVIZ AI - SCOUT BOT (REBUILT)
+// Competitive intelligence with real database integration and NewsAPI
 // ================================================================================
 
 import { BaseBot } from './BaseBot';
 import type { BotConfig, BotExecutionResult } from './types';
-import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
+import { getErrorMessage, logError } from '@/lib/utils/error-utils';
+import { createClient } from '@supabase/supabase-js';
+
+const NEWSAPI_KEY = process.env.NEWSAPI_KEY;
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+interface Competitor {
+  id: string;
+  name: string;
+  website: string;
+  category: string;
+  description: string;
+}
+
+interface NewsArticle {
+  title: string;
+  url: string;
+  published_date: string;
+  source: string;
+  summary: string | null;
+  category: string;
+  competitor_id: string;
+  competitor_name: string;
+  importance_score: number;
+  is_critical: boolean;
+}
 
 export class ScoutBot extends BaseBot {
+  private supabase;
+
   constructor() {
     const config: BotConfig = {
       name: 'scout',
@@ -18,11 +46,14 @@ export class ScoutBot extends BaseBot {
         'competitor_monitoring',
         'news_aggregation',
         'market_intelligence',
-        'trend_analysis',
-        'pricing_tracking'
+        'database_queries',
+        'newsapi_integration'
       ]
     };
     super(config);
+    
+    // Initialize Supabase client with service role
+    this.supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
   }
 
   async execute(): Promise<BotExecutionResult> {
@@ -31,26 +62,71 @@ export class ScoutBot extends BaseBot {
     let severity: 'info' | 'warning' | 'critical' = 'info';
 
     try {
-      // 1. Monitor competitor websites
-      const competitors = await this.monitorCompetitors();
-      findings.push(...competitors.findings);
+      findings.push('🔍 NEWS-SCOUT starting intelligence gathering...');
       
-      // 2. Aggregate industry news
-      const news = await this.aggregateIndustryNews();
-      findings.push(...news.findings);
+      // 1. Fetch competitors from database
+      const competitors = await this.fetchCompetitorsFromDB();
+      findings.push(`📊 Found ${competitors.length} competitors in database`);
       
-      // 3. Track pricing and features
-      const pricing = await this.trackCompetitorPricing();
-      findings.push(...pricing.findings);
+      if (competitors.length === 0) {
+        findings.push('⚠️  No competitors found - database may be empty');
+        return {
+          success: true,
+          findings,
+          actions: ['Seed competitors table with initial data'],
+          severity: 'warning',
+          metadata: {
+            competitorsFound: 0,
+            articlesFound: 0,
+            articlesStored: 0
+          }
+        };
+      }
+
+      // 2. Scan NewsAPI for each competitor
+      let totalArticles = 0;
+      let storedArticles = 0;
+      const criticalNews: string[] = [];
+
+      for (const competitor of competitors) {
+        findings.push(`\n🔎 Scanning news for: ${competitor.name}`);
+        
+        const articles = await this.scanNewsAPI(competitor);
+        totalArticles += articles.length;
+        
+        if (articles.length > 0) {
+          findings.push(`  ✓ Found ${articles.length} articles`);
+          
+          // Store articles in database
+          const stored = await this.storeArticles(articles);
+          storedArticles += stored;
+          findings.push(`  ✓ Stored ${stored} new articles`);
+          
+          // Check for critical news
+          const critical = articles.filter(a => a.is_critical);
+          if (critical.length > 0) {
+            severity = 'critical';
+            criticalNews.push(`${competitor.name}: ${critical.length} critical items`);
+          }
+        } else {
+          findings.push(`  ℹ️  No recent news found`);
+        }
+      }
+
+      // 3. Summary
+      findings.push('\n📈 INTELLIGENCE SUMMARY:');
+      findings.push(`  • Competitors monitored: ${competitors.length}`);
+      findings.push(`  • Articles found: ${totalArticles}`);
+      findings.push(`  • New articles stored: ${storedArticles}`);
       
-      // 4. Analyze market trends
-      const trends = await this.analyzeMarketTrends();
-      findings.push(...trends.findings);
-      
-      // Determine if any critical intelligence found
-      if (competitors.critical || pricing.critical) {
-        severity = 'critical';
-        actions.push('Create intelligence briefing for leadership');
+      if (criticalNews.length > 0) {
+        findings.push('\n🚨 CRITICAL NEWS DETECTED:');
+        findings.push(...criticalNews.map(n => `  • ${n}`));
+        actions.push('Review critical competitor news immediately');
+      }
+
+      if (storedArticles > 0) {
+        actions.push(`Process ${storedArticles} new articles for insights`);
       }
 
       return {
@@ -59,175 +135,167 @@ export class ScoutBot extends BaseBot {
         actions,
         severity,
         metadata: {
-          competitorsChecked: competitors.count,
-          newsArticles: news.count,
-          pricingUpdates: pricing.updates,
-          trendsIdentified: trends.count
+          competitorsMonitored: competitors.length,
+          articlesFound: totalArticles,
+          articlesStored: storedArticles,
+          criticalNews: criticalNews.length
         }
       };
 
     } catch (error: unknown) {
+      logError('ScoutBot execution error:', error);
       return this.handleError(error as Error);
     }
   }
 
-  private async monitorCompetitors(): Promise<{
-    findings: string[];
-    count: number;
-    critical: boolean;
-  }> {
-    const findings: string[] = [];
-    let critical = false;
+  /**
+   * Fetch active competitors from database
+   */
+  private async fetchCompetitorsFromDB(): Promise<Competitor[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from('competitors')
+        .select('id, name, website, category, description')
+        .eq('is_active', true)
+        .order('name');
+
+      if (error) {
+        logError('Error fetching competitors:', error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error: unknown) {
+      logError('Exception fetching competitors:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Scan NewsAPI for competitor mentions
+   */
+  private async scanNewsAPI(competitor: Competitor): Promise<NewsArticle[]> {
+    if (!NEWSAPI_KEY) {
+      console.log('⚠️  NewsAPI key not configured');
+      return [];
+    }
 
     try {
-      // Define competitor list
-      const competitors = [
-        { name: 'Bolt.new', url: 'https://bolt.new', category: 'AI Development' },
-        { name: 'Cursor', url: 'https://cursor.sh', category: 'AI IDE' },
-        { name: 'v0.dev', url: 'https://v0.dev', category: 'AI Design' },
-        { name: 'Replit', url: 'https://replit.com', category: 'Cloud IDE' }
+      // Build search query - use company name and category keywords
+      const searchTerms = [
+        competitor.name,
+        // Add category-specific terms
+        ...(competitor.category === 'AI Content' ? ['AI', 'artificial intelligence'] : []),
+        ...(competitor.category === 'Design Tools' ? ['design', 'creative'] : []),
+        ...(competitor.category === 'Video Editing' ? ['video', 'editing'] : [])
       ];
 
-      findings.push(`Monitoring ${competitors.length} competitors`);
+      const query = searchTerms.slice(0, 3).join(' OR '); // Limit to 3 terms for better results
 
-      // Check each competitor's status
-      for (const competitor of competitors) {
-        try {
-          const response = await fetch(competitor.url, {
-            method: 'HEAD',
-            signal: AbortSignal.timeout(5000)
-          });
+      const response = await fetch(
+        `https://newsapi.org/v2/everything?` +
+        `q=${encodeURIComponent(query)}&` +
+        `sortBy=publishedAt&` +
+        `pageSize=10&` +
+        `language=en&` +
+        `apiKey=${NEWSAPI_KEY}`,
+        { signal: AbortSignal.timeout(10000) }
+      );
 
-          if (response.ok) {
-            findings.push(`✓ ${competitor.name}: Online`);
-          } else {
-            findings.push(`⚠ ${competitor.name}: Status ${response.status}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`NewsAPI error for ${competitor.name}: ${response.status} - ${errorText}`);
+        return [];
+      }
+
+      const data = await response.json();
+
+      if (data.status !== 'ok' || !data.articles) {
+        console.error(`NewsAPI returned invalid data for ${competitor.name}`);
+        return [];
+      }
+
+      // Transform NewsAPI articles to our format
+      const articles: NewsArticle[] = data.articles
+        .filter((article: any) => article.title && article.url && article.publishedAt)
+        .map((article: any) => {
+          // Calculate importance based on title keywords
+          const titleLower = article.title.toLowerCase();
+          let importanceScore = 5; // Default
+          let isCritical = false;
+
+          // Boost importance for key terms
+          if (titleLower.includes('funding') || titleLower.includes('acquisition')) {
+            importanceScore = 9;
+            isCritical = true;
+          } else if (titleLower.includes('launch') || titleLower.includes('release')) {
+            importanceScore = 8;
+          } else if (titleLower.includes('partnership') || titleLower.includes('integration')) {
+            importanceScore = 7;
           }
-        } catch (error: unknown) {
-          findings.push(`✗ ${competitor.name}: Unreachable`);
+
+          return {
+            title: article.title,
+            url: article.url,
+            published_date: article.publishedAt,
+            source: article.source?.name || 'NewsAPI',
+            summary: article.description || article.content?.substring(0, 500) || null,
+            category: 'competitor_news',
+            competitor_id: competitor.id,
+            competitor_name: competitor.name,
+            importance_score: importanceScore,
+            is_critical: isCritical
+          };
+        });
+
+      return articles;
+
+    } catch (error: unknown) {
+      logError(`NewsAPI scan error for ${competitor.name}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Store articles in database (avoiding duplicates)
+   */
+  private async storeArticles(articles: NewsArticle[]): Promise<number> {
+    if (articles.length === 0) return 0;
+
+    try {
+      let storedCount = 0;
+
+      for (const article of articles) {
+        // Check if article already exists
+        const { data: existing } = await this.supabase
+          .from('news_articles')
+          .select('id')
+          .eq('url', article.url)
+          .single();
+
+        if (existing) {
+          // Article already exists, skip
+          continue;
         }
+
+        // Insert new article
+        const { error } = await this.supabase
+          .from('news_articles')
+          .insert([article]);
+
+        if (error) {
+          logError(`Error storing article: ${article.title}`, error);
+          continue;
+        }
+
+        storedCount++;
       }
 
-      // TODO: Add actual content scraping when needed
-      // For now, we're just checking availability
-
-      return {
-        findings,
-        count: competitors.length,
-        critical
-      };
+      return storedCount;
 
     } catch (error: unknown) {
-      findings.push(`Error monitoring competitors: ${(error as Error).message}`);
-      return { findings, count: 0, critical: false };
-    }
-  }
-
-  private async aggregateIndustryNews(): Promise<{
-    findings: string[];
-    count: number;
-  }> {
-    const findings: string[] = [];
-
-    try {
-      // Use AI to search for industry news
-      const newsPrompt = `Find the top 3 most important AI development and creative software industry news from the past 24 hours. Focus on:
-- New product launches
-- Major funding announcements
-- Technology breakthroughs
-- Market shifts
-Format as bullet points with source.`;
-
-      const newsResults = await this.queryAI(newsPrompt, 'perplexity');
-
-      findings.push('Industry News Summary:');
-      findings.push(newsResults);
-
-      // Count news items (rough estimate)
-      const newsCount = (newsResults.match(/\n-/g) || []).length;
-
-      return {
-        findings,
-        count: newsCount
-      };
-
-    } catch (error: unknown) {
-      findings.push(`Error aggregating news: ${(error as Error).message}`);
-      return { findings, count: 0 };
-    }
-  }
-
-  private async trackCompetitorPricing(): Promise<{
-    findings: string[];
-    updates: number;
-    critical: boolean;
-  }> {
-    const findings: string[] = [];
-    let updates = 0;
-    let critical = false;
-
-    try {
-      // Use AI to check competitor pricing
-      const pricingPrompt = `Check current pricing for these competitors:
-- Bolt.new
-- Cursor
-- v0.dev
-- Replit
-List their basic tier pricing and any recent price changes.`;
-
-      const pricingResults = await this.queryAI(pricingPrompt, 'perplexity');
-
-      findings.push('Competitor Pricing:');
-      findings.push(pricingResults);
-
-      // Check for price drops or major changes
-      if (pricingResults.toLowerCase().includes('reduced') || 
-          pricingResults.toLowerCase().includes('discount')) {
-        critical = true;
-        findings.push('⚠ Competitor pricing changes detected');
-        updates++;
-      }
-
-      return {
-        findings,
-        updates,
-        critical
-      };
-
-    } catch (error: unknown) {
-      findings.push(`Error tracking pricing: ${(error as Error).message}`);
-      return { findings, updates: 0, critical: false };
-    }
-  }
-
-  private async analyzeMarketTrends(): Promise<{
-    findings: string[];
-    count: number;
-  }> {
-    const findings: string[] = [];
-
-    try {
-      const trendsPrompt = `What are the top 3 emerging trends in AI-powered creative tools and development platforms? Focus on:
-- Technology adoption
-- User preferences
-- Market direction
-Be specific and data-driven.`;
-
-      const trendsResults = await this.queryAI(trendsPrompt, 'claude');
-
-      findings.push('Market Trends:');
-      findings.push(trendsResults);
-
-      const trendCount = (trendsResults.match(/\d\./g) || []).length;
-
-      return {
-        findings,
-        count: trendCount
-      };
-
-    } catch (error: unknown) {
-      findings.push(`Error analyzing trends: ${(error as Error).message}`);
-      return { findings, count: 0 };
+      logError('Exception storing articles:', error);
+      return 0;
     }
   }
 }
