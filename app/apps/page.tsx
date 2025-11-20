@@ -1,314 +1,388 @@
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import Link from 'next/link';
-import { Sparkles, Code2, Music, Mail, Zap, Download, Share2, CheckCircle, FileText, File, Image, FileSpreadsheet, BookOpen, Target, TrendingUp, Globe, Newspaper, Gamepad2 } from 'lucide-react';
+'use client';
 
-const embeddedApps = [
-  {
-    id: 'builder',
-    icon: '🏗️',
-    iconComponent: Code2,
-    name: 'App Builder',
-    description: 'Build production-ready applications with AI assistance. No coding required.',
-    features: ['AI-powered code generation','Export full source code','Host or sell your apps','Custom branding options'],
-    status: 'live',
-    href: '/apps/builder',
-    color: 'blue',
-  },
-  {
-    id: 'pdf-builder',
-    icon: '📄',
-    iconComponent: File,
-    name: 'PDF Builder Pro',
-    description: 'Create professional PDFs with AI-powered content generation and templates.',
-    features: ['AI content generation','Professional templates','Custom layouts & design','Export high-quality PDFs'],
-    status: 'live',
-    href: '/apps/pdf-builder',
-    color: 'red',
-    creditCost: 5,
-  },
-  {
-    id: 'verifyforge',
-    icon: '🔍',
-    iconComponent: FileSpreadsheet,
-    name: 'VerifyForge AI',
-    description: 'Comprehensive testing platform with automated test generation and execution.',
-    features: ['AI-powered test generation','Multi-platform testing','Detailed reports & analytics','CI/CD integration'],
-    status: 'live',
-    href: '/apps/verifyforge',
-    color: 'indigo',
-    creditCost: 10,
-  },
-  {
-    id: 'social-graphics',
-    icon: '🎨',
-    iconComponent: Image,
-    name: 'Social Graphics Creator',
-    description: 'Design stunning social media graphics optimized for all major platforms.',
-    features: ['Platform-specific templates','AI-powered design suggestions','Brand consistency tools','One-click resizing'],
-    status: 'live',
-    href: '/apps/social-graphics',
-    color: 'pink',
-    creditCost: 3,
-  },
-  {
-    id: 'invoice-generator',
-    icon: '💼',
-    iconComponent: FileText,
-    name: 'Invoice Generator',
-    description: 'Create professional invoices with automated calculations and tax handling.',
-    features: ['Automated calculations','Multiple currency support','Tax compliance','Client management'],
-    status: 'live',
-    href: '/apps/invoice-generator',
-    color: 'green',
-    creditCost: 2,
-  },
-  {
-    id: 'ebook-creator',
-    icon: '📚',
-    iconComponent: BookOpen,
-    name: 'eBook Creator',
-    description: 'Write and publish professional eBooks with AI-assisted content generation.',
-    features: ['AI writing assistance','Multiple export formats','Cover design tools','ISBN generation support'],
-    status: 'live',
-    href: '/apps/ebook-creator',
-    color: 'purple',
-    creditCost: 8,
-  },
-  {
-    id: 'logo-studio',
-    icon: '🎯',
-    iconComponent: Target,
-    name: 'Logo Studio AI',
-    description: 'Generate professional logos with AI-powered design and instant variations.',
-    features: ['AI logo generation','Unlimited variations','Vector export (SVG)','Brand kit integration'],
-    status: 'live',
-    href: '/apps/logo-studio',
-    color: 'orange',
-    creditCost: 6,
-  },
-  {
-    id: 'market-oracle',
-    icon: '📈',
-    iconComponent: TrendingUp,
-    name: 'Market Oracle AI',
-    description: 'AI-powered stock market predictions and analysis with real-time insights.',
-    features: ['Stock price predictions','Market trend analysis','Risk assessment','Portfolio recommendations'],
-    status: 'live',
-    href: '/apps/market-oracle',
-    color: 'emerald',
-    creditCost: 15,
-  },
-  {
-    id: 'market-forge',
-    icon: '🎯',
-    iconComponent: Target,
-    name: 'Market Forge',
-    description: 'Build and launch marketing campaigns with AI-powered strategy and content.',
-    features: ['Campaign strategy builder','AI content generation','Multi-channel support','Performance analytics'],
-    status: 'live',
-    href: '/apps/market-forge',
-    color: 'cyan',
-    creditCost: 7,
-  },
-  {
-    id: 'site-builder',
-    icon: '🌐',
-    iconComponent: Globe,
-    name: 'Site Builder',
-    description: 'Create professional websites and landing pages with drag-and-drop simplicity.',
-    features: ['Drag & drop editor','Mobile responsive','SEO optimization','Custom domain support'],
-    status: 'live',
-    href: '/apps/site-builder',
-    color: 'blue',
-    creditCost: 10,
-  },
-  {
-    id: 'news-compare',
-    icon: '📰',
-    iconComponent: Newspaper,
-    name: 'News Compare AI',
-    description: 'Compare and analyze news coverage across multiple sources with AI insights.',
-    features: ['Multi-source comparison','Bias detection','Key insights extraction','Fact-checking support'],
-    status: 'live',
-    href: '/apps/news-compare',
-    color: 'slate',
-    creditCost: 4,
-  },
-  {
-    id: 'games',
-    icon: '🎮',
-    iconComponent: Gamepad2,
-    name: 'Games Platform',
-    description: 'Access 1,200+ browser-based games across all genres. Play instantly!',
-    features: ['1,200+ games catalog','All genres included','No downloads required','Leaderboards & achievements'],
-    status: 'live',
-    href: '/apps/games',
-    color: 'violet',
-    creditCost: 1,
-  },
-  {
-    id: 'music-builder',
-    icon: '🎵',
-    iconComponent: Music,
-    name: 'Music Builder',
-    description: 'Create original music with AI-powered composition and production tools.',
-    features: ['AI music composition','Multiple genres & styles','Professional audio quality','Export & share tracks'],
-    status: 'live',
-    href: '/apps/music-builder',
-    color: 'purple',
-  },
-  {
-    id: 'newsletter',
-    icon: '📧',
-    iconComponent: Mail,
-    name: 'Newsletter Pro',
-    description: 'Enterprise email marketing platform for campaigns, audiences, and analytics.',
-    features: ['Campaign management','Audience segmentation','Performance analytics','Template designer'],
-    status: 'live',
-    href: '/apps/newsletter',
-    color: 'green',
-  },
-  {
-    id: 'legalease',
-    icon: '⚖️',
-    iconComponent: FileText,
-    name: 'LegalEase AI',
-    description: 'Transform legal documents into plain English and vice versa with AI-powered translation.',
-    features: ['Bidirectional legal translation','Extract key terms & obligations','15+ professional legal templates','Export to PDF/DOCX'],
-    status: 'live',
-    href: '/apps/legalease',
-    color: 'amber',
-  },
-];
+// ================================================================================
+// CR AUDIOVIZ AI - APPS DASHBOARD PAGE
+// Browse and launch 60+ professional applications
+// ================================================================================
 
-const comingSoonApps = [
-  {icon: '🔐',name: 'Javari AI',description: 'Autonomous AI assistant with secure credential management and automation.',status: 'coming-soon'},
-  {icon: '🎬',name: 'Video Editor',description: 'Professional video editing suite with AI enhancements.',status: 'coming-soon'},
-  {icon: '📊',name: 'Analytics Pro',description: 'Advanced data analytics and visualization platform.',status: 'coming-soon'},
-  {icon: '📝',name: 'Content Writer',description: 'AI-powered content creation for blogs, articles, and marketing copy.',status: 'coming-soon'},
-  {icon: '🖼️',name: 'Image Editor',description: 'Professional image editing with AI-powered enhancements.',status: 'coming-soon'},
-  {icon: '💬',name: 'Chatbot Builder',description: 'Create intelligent chatbots for customer service and engagement.',status: 'coming-soon'},
-];
+import { useState, useEffect } from 'react';
+import { createClient } from '@supabase/supabase-js';
+import { Search, Grid3x3, List, Sparkles, Zap } from 'lucide-react';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+interface App {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  category: string;
+  icon_url?: string;
+  credits_cost: number;
+  is_free: boolean;
+  is_beta: boolean;
+  is_premium: boolean;
+  rating: number;
+  usage_count: number;
+}
 
 export default function AppsPage() {
+  const [apps, setApps] = useState<App[]>([]);
+  const [filteredApps, setFilteredApps] = useState<App[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [selectedApp, setSelectedApp] = useState<App | null>(null);
+  const [credits, setCredits] = useState(0);
+
+  const categories = [
+    'All',
+    'Document Creation',
+    'Design & Creative',
+    'AI Content',
+    'Business Tools',
+    'Legal & Compliance',
+    'Marketing',
+    'Data & Analytics',
+    'Communication'
+  ];
+
+  // Fetch apps and user credits
+  useEffect(() => {
+    fetchApps();
+    fetchCredits();
+  }, []);
+
+  // Filter apps when search or category changes
+  useEffect(() => {
+    filterApps();
+  }, [searchTerm, selectedCategory, apps]);
+
+  async function fetchApps() {
+    try {
+      const { data, error } = await supabase
+        .from('apps')
+        .select('*')
+        .eq('is_active', true)
+        .order('usage_count', { ascending: false });
+
+      if (error) throw error;
+      
+      setApps(data || []);
+      setFilteredApps(data || []);
+    } catch (error) {
+      console.error('Error fetching apps:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function fetchCredits() {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch('/api/credits/balance', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      });
+
+      const data = await response.json();
+      if (data.credits) {
+        setCredits(data.credits.balance);
+      }
+    } catch (error) {
+      console.error('Error fetching credits:', error);
+    }
+  }
+
+  function filterApps() {
+    let filtered = apps;
+
+    // Filter by category
+    if (selectedCategory !== 'All') {
+      filtered = filtered.filter(app => app.category === selectedCategory);
+    }
+
+    // Filter by search term
+    if (searchTerm) {
+      filtered = filtered.filter(app =>
+        app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        app.description.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    setFilteredApps(filtered);
+  }
+
+  async function launchApp(app: App) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert('Please sign in to launch apps');
+        return;
+      }
+
+      // Check credits if not free
+      if (!app.is_free && app.credits_cost > credits) {
+        alert(`Insufficient credits. You need ${app.credits_cost} credits but have ${credits}.`);
+        return;
+      }
+
+      const response = await fetch('/api/apps/launch', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ app_slug: app.slug })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Update credits display
+        if (data.credits_deducted > 0) {
+          setCredits(prev => prev - data.credits_deducted);
+        }
+
+        // Launch app based on type
+        if (app.app_url) {
+          if (data.app.app_type === 'new_tab') {
+            window.open(app.app_url, '_blank');
+          } else if (data.app.app_type === 'external') {
+            window.location.href = app.app_url;
+          } else {
+            // embedded or modal - show in modal
+            setSelectedApp(app);
+          }
+        }
+      } else {
+        alert(data.error || 'Failed to launch app');
+      }
+    } catch (error) {
+      console.error('Error launching app:', error);
+      alert('Failed to launch app. Please try again.');
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading apps...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
-      <section className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">60+ Creative Apps & Tools</h1>
-            <p className="text-xl md:text-2xl text-blue-100 mb-8">Everything you need to create, design, and build - all powered by AI</p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-6 text-lg"><Sparkles className="w-5 h-5 mr-2" />Build Custom App</Button>
-              <Link href="/pricing"><Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10 px-8 py-6 text-lg">View Pricing</Button></Link>
+      {/* Header */}
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Apps</h1>
+              <p className="text-gray-600 mt-1">
+                {filteredApps.length} professional applications at your fingertips
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-lg">
+                <Zap className="inline w-4 h-4 mr-2" />
+                {credits} Credits
+              </div>
+            </div>
+          </div>
+
+          {/* Search and filters */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search apps..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              {categories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}`}
+              >
+                <Grid3x3 className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded-lg ${viewMode === 'list' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}`}
+              >
+                <List className="w-5 h-5" />
+              </button>
             </div>
           </div>
         </div>
-      </section>
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <div className="inline-block bg-green-100 text-green-800 text-sm font-semibold px-4 py-2 rounded-full mb-4"><CheckCircle className="inline-block w-4 h-4 mr-1" />Live Now</div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Available Apps</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">Launch these production-ready apps instantly. Each app runs in your browser with full functionality.</p>
+      </div>
+
+      {/* Apps Grid/List */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {filteredApps.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-500 text-lg">No apps found matching your criteria.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-            {embeddedApps.map((app) => {
-              const IconComponent = app.iconComponent;
-              const colorClasses = {
-                blue: 'from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700',
-                purple: 'from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700',
-                green: 'from-green-500 to-green-600 hover:from-green-600 hover:to-green-700',
-                red: 'from-red-500 to-red-600 hover:from-red-600 hover:to-red-700',
-                amber: 'from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700',
-                indigo: 'from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700',
-                pink: 'from-pink-500 to-pink-600 hover:from-pink-600 hover:to-pink-700',
-                orange: 'from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700',
-                emerald: 'from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700',
-                cyan: 'from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700',
-                slate: 'from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700',
-                violet: 'from-violet-500 to-violet-600 hover:from-violet-600 hover:to-violet-700',
-              };
-              return (
-                <Card key={app.id} className="border-2 hover:shadow-xl transition-all duration-300 flex flex-col">
-                  <CardHeader>
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-3xl shadow-sm">{app.icon}</div>
-                      <div className="flex flex-col items-end gap-1">
-                        <div className="flex items-center gap-1 bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold"><Zap className="w-3 h-3" />Live</div>
-                        {app.creditCost && <div className="text-xs text-gray-600 font-medium">{app.creditCost} credits/use</div>}
-                      </div>
-                    </div>
-                    <CardTitle className="text-2xl font-bold text-gray-900">{app.name}</CardTitle>
-                    <CardDescription className="text-base text-gray-600">{app.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex-1 flex flex-col">
-                    <ul className="space-y-2 mb-6">
-                      {app.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start text-sm text-gray-700"><CheckCircle className="w-4 h-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" /><span>{feature}</span></li>
-                      ))}
-                    </ul>
-                    <Link href={app.href} className="mt-auto">
-                      <Button className={`w-full bg-gradient-to-r ${colorClasses[app.color as keyof typeof colorClasses]} text-white py-6 text-base font-semibold shadow-md`}>
-                        <IconComponent className="w-5 h-5 mr-2" />Launch {app.name}
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <div className="inline-block bg-yellow-100 text-yellow-800 text-sm font-semibold px-4 py-2 rounded-full mb-4">Coming Soon</div>
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">More Apps in Development</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">We're constantly building new tools to expand your creative capabilities. Here's what's coming next.</p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 max-w-7xl mx-auto">
-            {comingSoonApps.map((app, idx) => (
-              <Card key={idx} className="border-2 hover:shadow-lg transition-shadow bg-white">
-                <CardContent className="p-4 text-center">
-                  <div className="text-4xl mb-3">{app.icon}</div>
-                  <h3 className="font-semibold text-gray-900 text-sm mb-2">{app.name}</h3>
-                  <p className="text-xs text-gray-600 leading-tight">{app.description}</p>
-                </CardContent>
-              </Card>
+        ) : viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredApps.map((app) => (
+              <AppCard key={app.id} app={app} onLaunch={launchApp} />
             ))}
           </div>
+        ) : (
+          <div className="space-y-4">
+            {filteredApps.map((app) => (
+              <AppListItem key={app.id} app={app} onLaunch={launchApp} />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* App Modal */}
+      {selectedApp && (
+        <AppModal app={selectedApp} onClose={() => setSelectedApp(null)} />
+      )}
+    </div>
+  );
+}
+
+// App Card Component
+function AppCard({ app, onLaunch }: { app: App; onLaunch: (app: App) => void }) {
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow cursor-pointer">
+      <div className="flex items-start justify-between mb-4">
+        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-white text-xl font-bold">
+          {app.name.charAt(0)}
         </div>
-      </section>
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <Card className="max-w-5xl mx-auto border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white">
-            <CardHeader>
-              <CardTitle className="text-2xl md:text-3xl font-bold text-gray-900 mb-2"><Code2 className="inline-block w-8 h-8 mr-2 text-blue-600" />Need a Custom App?</CardTitle>
-              <CardDescription className="text-lg">Let Javari AI build exactly what you need - no coding required</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="flex items-start space-x-3"><div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0"><Sparkles className="w-5 h-5 text-blue-600" /></div><div><p className="font-semibold text-gray-900">AI-Powered</p><p className="text-sm text-gray-600">Describe your app, Javari builds it</p></div></div>
-                <div className="flex items-start space-x-3"><div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0"><Download className="w-5 h-5 text-green-600" /></div><div><p className="font-semibold text-gray-900">Full Ownership</p><p className="text-sm text-gray-600">Download complete source code</p></div></div>
-                <div className="flex items-start space-x-3"><div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0"><Share2 className="w-5 h-5 text-purple-600" /></div><div><p className="font-semibold text-gray-900">Earn Revenue</p><p className="text-sm text-gray-600">Sell on marketplace (70% revenue)</p></div></div>
-              </div>
-              <Link href="/apps/builder"><Button className="w-full md:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-6 text-lg shadow-md"><Code2 className="w-5 h-5 mr-2" />Start Building Custom App</Button></Link>
-            </CardContent>
-          </Card>
+        {app.is_beta && (
+          <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">
+            BETA
+          </span>
+        )}
+      </div>
+
+      <h3 className="font-semibold text-gray-900 mb-2">{app.name}</h3>
+      <p className="text-sm text-gray-600 mb-4 line-clamp-2">{app.description}</p>
+
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-gray-500">{app.category}</span>
+        <div className="flex items-center gap-2">
+          {app.is_free ? (
+            <span className="text-green-600 font-semibold text-sm">FREE</span>
+          ) : (
+            <span className="text-blue-600 font-semibold text-sm">
+              {app.credits_cost} <Zap className="inline w-3 h-3" />
+            </span>
+          )}
         </div>
-      </section>
-      <section className="py-12 bg-gradient-to-br from-blue-600 to-indigo-700 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">Ready to Build Something Amazing?</h2>
-          <p className="text-blue-100 text-lg mb-6 max-w-2xl mx-auto">Join thousands of creators using our platform to bring their ideas to life</p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/signup"><Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-6 text-lg">Get Started Free</Button></Link>
-            <Link href="/contact"><Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10 px-8 py-6 text-lg">Contact Sales</Button></Link>
+      </div>
+
+      <button
+        onClick={() => onLaunch(app)}
+        className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition-colors"
+      >
+        Launch App
+      </button>
+    </div>
+  );
+}
+
+// App List Item Component
+function AppListItem({ app, onLaunch }: { app: App; onLaunch: (app: App) => void }) {
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-md transition-shadow">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4 flex-1">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
+            {app.name.charAt(0)}
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-semibold text-gray-900">{app.name}</h3>
+              {app.is_beta && (
+                <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">
+                  BETA
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-gray-600 mb-2">{app.description}</p>
+            <div className="flex items-center gap-4 text-sm text-gray-500">
+              <span>{app.category}</span>
+              <span>•</span>
+              <span>{app.usage_count.toLocaleString()} launches</span>
+            </div>
           </div>
         </div>
-      </section>
+        <div className="flex items-center gap-4">
+          <div className="text-right">
+            {app.is_free ? (
+              <span className="text-green-600 font-semibold">FREE</span>
+            ) : (
+              <span className="text-blue-600 font-semibold">
+                {app.credits_cost} <Zap className="inline w-4 h-4" />
+              </span>
+            )}
+          </div>
+          <button
+            onClick={() => onLaunch(app)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors whitespace-nowrap"
+          >
+            Launch
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// App Modal Component
+function AppModal({ app, onClose }: { app: App; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-6xl w-full h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b">
+          <h2 className="text-xl font-semibold">{app.name}</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            ✕
+          </button>
+        </div>
+        <div className="flex-1 overflow-hidden">
+          <iframe
+            src={app.app_url}
+            className="w-full h-full border-0"
+            title={app.name}
+          />
+        </div>
+      </div>
     </div>
   );
 }
