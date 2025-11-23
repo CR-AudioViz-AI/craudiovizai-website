@@ -5,7 +5,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Menu, X, User, Shield } from 'lucide-react';
+import { MobileButton } from '@/components/mobile';
+import { Menu, X, User, Shield, LogOut } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 interface NavigationLink {
@@ -46,20 +47,15 @@ export default function Header() {
     // Check current user and admin status
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      console.log('🔍 AUTH: Current user:', user?.email, 'ID:', user?.id);
       setUser(user);
 
       if (user) {
         // Check if user is admin
-        const { data: profile, error } = await supabase
+        const { data: profile } = await supabase
           .from('profiles')
           .select('is_admin')
           .eq('id', user.id)
           .single();
-        
-        console.log('🔍 PROFILE QUERY:', { profile, error, userId: user.id });
-        console.log('🔍 is_admin value:', profile?.is_admin);
-        console.log('🔍 Setting isAdmin state to:', profile?.is_admin || false);
         
         setIsAdmin(profile?.is_admin || false);
       } else {
@@ -73,18 +69,14 @@ export default function Header() {
 
     // Listen for auth changes
     const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log('🔍 AUTH CHANGE EVENT:', _event, 'User:', session?.user?.email);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        const { data: profile, error } = await supabase
+        const { data: profile } = await supabase
           .from('profiles')
           .select('is_admin')
           .eq('id', session.user.id)
           .single();
-        
-        console.log('🔍 AUTH CHANGE - Profile query:', { profile, error });
-        console.log('🔍 AUTH CHANGE - Setting isAdmin to:', profile?.is_admin || false);
         
         setIsAdmin(profile?.is_admin || false);
       } else {
@@ -104,7 +96,6 @@ export default function Header() {
           filter: 'category=eq.header'
         },
         () => {
-          // Refetch navigation links when changes occur
           fetchNavLinks();
         }
       )
@@ -116,11 +107,31 @@ export default function Header() {
     };
   }, []);
 
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    };
+  }, [mobileMenuOpen]);
+
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
       setUser(null);
       setIsAdmin(false);
+      setMobileMenuOpen(false);
       window.location.href = '/';
     } catch (error) {
       console.error('Logout error:', error);
@@ -135,189 +146,242 @@ export default function Header() {
     return pathname.startsWith(href);
   };
 
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-      <nav className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-24">
-          
-          {/* Logo */}
-          <Link href="/" className="flex items-center">
-            <Image 
-              src="/craudiovizailogo.png" 
-              alt="CR AudioViz AI - Your Story. Our Design." 
-              width={1440}
-              height={480}
-              priority
-              className="h-60 w-auto"
-            />
-          </Link>
-
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.id}
-                href={link.href}
-                className={`transition-colors relative ${
-                  isActive(link.href)
-                    ? 'text-purple-600 font-semibold'
-                    : 'text-gray-700 hover:text-gray-900'
-                }`}
-              >
-                {link.label}
-                {isActive(link.href) && (
-                  <span className="absolute -bottom-6 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 to-pink-600" />
-                )}
-              </Link>
-            ))}
+    <>
+      <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+        <nav className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16 md:h-20">
             
-            {/* Meet the Team Link */}
-            <Link
-              href="/team"
-              className={`transition-colors relative ${
-                isActive('/team')
-                  ? 'text-purple-600 font-semibold'
-                  : 'text-gray-700 hover:text-gray-900'
-              }`}
-            >
-              Meet the Team
-              {isActive('/team') && (
-                <span className="absolute -bottom-6 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 to-pink-600" />
-              )}
+            {/* Logo */}
+            <Link href="/" className="flex items-center flex-shrink-0">
+              <Image 
+                src="/craudiovizailogo.png" 
+                alt="CR AudioViz AI - Your Story. Our Design." 
+                width={180}
+                height={60}
+                priority
+                className="h-12 md:h-14 w-auto"
+              />
             </Link>
-          </div>
 
-          {/* CTA Buttons */}
-          <div className="hidden lg:flex items-center space-x-4">
-            {!loading && (
-              <>
-                {(() => {
-                  console.log('🎨 RENDER STATE:', { user: !!user, isAdmin, loading, email: user?.email });
-                  return null;
-                })()}
-                {user ? (
-                  <>
-                    {isAdmin && (
-                      <Link href="/admin">
-                        <Button variant="outline" className="flex items-center gap-2">
-                          <Shield className="w-4 h-4" />
-                          Admin Dashboard
-                        </Button>
-                      </Link>
-                    )}
-                    <div className="flex flex-col items-end gap-1">
-                      <Button 
-                        onClick={handleLogout}
-                        variant="outline"
-                        className="h-9"
-                      >
-                        Log Out
-                      </Button>
-                      <span className="text-xs text-gray-600">{user.email}</span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <Link href="/login">
-                      <Button variant="ghost">Log In</Button>
-                    </Link>
-                    <Link href="/signup">
-                      <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
-                        Get Started Free
-                      </Button>
-                    </Link>
-                  </>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* Mobile Menu Button */}
-          <button
-            className="lg:hidden p-2"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? (
-              <X className="w-6 h-6 text-gray-700" />
-            ) : (
-              <Menu className="w-6 h-6 text-gray-700" />
-            )}
-          </button>
-
-        </div>
-
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-gray-200">
-            <div className="space-y-4">
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center space-x-6">
               {navLinks.map((link) => (
                 <Link
                   key={link.id}
                   href={link.href}
-                  className={`block transition-colors ${
+                  className={`text-sm transition-colors relative ${
                     isActive(link.href)
                       ? 'text-purple-600 font-semibold'
                       : 'text-gray-700 hover:text-gray-900'
                   }`}
                 >
                   {link.label}
+                  {isActive(link.href) && (
+                    <span className="absolute -bottom-5 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 to-pink-600" />
+                  )}
                 </Link>
               ))}
               
               <Link
                 href="/team"
-                className={`block transition-colors ${
+                className={`text-sm transition-colors relative ${
                   isActive('/team')
                     ? 'text-purple-600 font-semibold'
                     : 'text-gray-700 hover:text-gray-900'
                 }`}
               >
                 Meet the Team
+                {isActive('/team') && (
+                  <span className="absolute -bottom-5 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 to-pink-600" />
+                )}
               </Link>
-              <div className="pt-4 border-t border-gray-200 space-y-2">
-                {!loading && (
-                  <>
-                    {user ? (
-                      <>
-                        <div className="px-4 py-2 text-sm text-gray-600">
-                          {user.email}
-                        </div>
-                        {isAdmin && (
-                          <Link href="/admin" className="block">
-                            <Button variant="outline" className="w-full flex items-center justify-center gap-2">
-                              <Shield className="w-4 h-4" />
-                              Admin Dashboard
-                            </Button>
-                          </Link>
-                        )}
-                        <Button 
-                          onClick={handleLogout}
-                          variant="outline"
-                          className="w-full"
-                        >
-                          Log Out
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <Link href="/login" className="block">
-                          <Button variant="outline" className="w-full">Log In</Button>
-                        </Link>
-                        <Link href="/signup" className="block">
-                          <Button className="w-full bg-gradient-to-r from-purple-600 to-pink-600">
-                            Get Started Free
+            </div>
+
+            {/* Desktop CTA Buttons */}
+            <div className="hidden lg:flex items-center space-x-3">
+              {!loading && (
+                <>
+                  {user ? (
+                    <>
+                      {isAdmin && (
+                        <Link href="/admin">
+                          <Button variant="outline" size="sm" className="flex items-center gap-2">
+                            <Shield className="w-4 h-4" />
+                            Admin
                           </Button>
                         </Link>
-                      </>
-                    )}
-                  </>
-                )}
+                      )}
+                      <Button 
+                        onClick={handleLogout}
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Log Out
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Link href="/login">
+                        <Button variant="ghost" size="sm">Log In</Button>
+                      </Link>
+                      <Link href="/signup">
+                        <Button 
+                          size="sm"
+                          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                        >
+                          Get Started
+                        </Button>
+                      </Link>
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden min-h-[48px] min-w-[48px] inline-flex items-center justify-center rounded-lg hover:bg-gray-100 active:scale-95 transition-all"
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6 text-gray-700" />
+              ) : (
+                <Menu className="w-6 h-6 text-gray-700" />
+              )}
+            </button>
+
+          </div>
+        </nav>
+      </header>
+
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={closeMobileMenu}
+            aria-hidden="true"
+          />
+
+          {/* Slide-in Menu */}
+          <div className="fixed inset-y-0 left-0 z-50 w-full max-w-sm bg-white shadow-2xl lg:hidden">
+            <div className="flex flex-col h-full">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <Image 
+                  src="/craudiovizailogo.png" 
+                  alt="CR AudioViz AI" 
+                  width={120}
+                  height={40}
+                  className="h-10 w-auto"
+                />
+                <button
+                  onClick={closeMobileMenu}
+                  className="min-h-[48px] min-w-[48px] inline-flex items-center justify-center rounded-lg hover:bg-gray-100 active:scale-95 transition-all"
+                  aria-label="Close menu"
+                >
+                  <X className="h-6 w-6" />
+                </button>
               </div>
+
+              {/* Navigation Links */}
+              <nav className="flex-1 overflow-y-auto p-4">
+                <div className="space-y-2">
+                  {navLinks.map((link) => (
+                    <Link
+                      key={link.id}
+                      href={link.href}
+                      onClick={closeMobileMenu}
+                      className={`block min-h-[48px] px-4 py-3 rounded-lg text-base font-medium transition-colors ${
+                        isActive(link.href)
+                          ? 'bg-purple-50 text-purple-600 font-semibold'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                  
+                  <Link
+                    href="/team"
+                    onClick={closeMobileMenu}
+                    className={`block min-h-[48px] px-4 py-3 rounded-lg text-base font-medium transition-colors ${
+                      isActive('/team')
+                        ? 'bg-purple-50 text-purple-600 font-semibold'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    Meet the Team
+                  </Link>
+                </div>
+              </nav>
+
+              {/* User Actions Footer */}
+              {!loading && (
+                <div className="p-4 border-t border-gray-200 space-y-3">
+                  {user ? (
+                    <>
+                      <div className="px-4 py-2 bg-gray-50 rounded-lg">
+                        <p className="text-xs text-gray-500 mb-1">Signed in as</p>
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {user.email}
+                        </p>
+                      </div>
+                      {isAdmin && (
+                        <Link href="/admin" onClick={closeMobileMenu}>
+                          <MobileButton 
+                            variant="outline" 
+                            fullWidth
+                            icon={<Shield className="w-5 h-5" />}
+                            iconPosition="left"
+                          >
+                            Admin Dashboard
+                          </MobileButton>
+                        </Link>
+                      )}
+                      <MobileButton 
+                        onClick={handleLogout}
+                        variant="outline"
+                        fullWidth
+                        icon={<LogOut className="w-5 h-5" />}
+                        iconPosition="left"
+                      >
+                        Log Out
+                      </MobileButton>
+                    </>
+                  ) : (
+                    <>
+                      <Link href="/login" onClick={closeMobileMenu}>
+                        <MobileButton variant="outline" fullWidth>
+                          Log In
+                        </MobileButton>
+                      </Link>
+                      <Link href="/signup" onClick={closeMobileMenu}>
+                        <MobileButton 
+                          variant="primary" 
+                          fullWidth
+                          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                        >
+                          Get Started Free
+                        </MobileButton>
+                      </Link>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
-        )}
-
-      </nav>
-    </header>
+        </>
+      )}
+    </>
   );
 }
