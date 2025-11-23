@@ -5,7 +5,8 @@ import Header from "@/components/layout/Header";
 import CRBar from "@/components/layout/CRBar";
 import CreditsBar from "@/components/layout/CreditsBar";
 import Footer from "@/components/layout/Footer";
-import JavariWidget from '@/components/JavariWidget';
+import { JavariProvider } from '@/contexts/javari-context';
+import JavariFloatingButton from '@/components/javari-floating-button';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,16 +24,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Header />
-        <CRBar />
-        <CreditsBar />
-        <main className="min-h-screen">
-          {children}
-        </main>
-        <Footer />
-        <JavariWidget />
+        <JavariProvider>
+          <Header />
+          <CRBar />
+          <CreditsBar />
+          <main className="min-h-screen">
+            {children}
+          </main>
+          <Footer />
+          <JavariFloatingButton />
+        </JavariProvider>
       </body>
     </html>
   );
 }
-
