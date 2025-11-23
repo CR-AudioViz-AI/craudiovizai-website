@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Mail, Lock, User, AlertCircle } from 'lucide-react';
+import { Mail, Lock, User, AlertCircle, Check } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { MobileInput, MobileButton } from '@/components/mobile';
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState('');
@@ -63,111 +64,123 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-4 py-8 md:py-12">
       <div className="max-w-md w-full">
         {/* Header */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-block mb-6">
+        <div className="text-center mb-6 md:mb-8">
+          <Link href="/" className="inline-block mb-4 md:mb-6">
             <Image
               src="/logo.png"
               alt="CR AudioViz AI"
-              width={240}
-              height={80}
-              className="h-16 w-auto mx-auto"
+              width={180}
+              height={60}
+              className="h-12 md:h-16 w-auto mx-auto"
             />
           </Link>
-          <h1 className="text-4xl font-bold mb-2">Create Account</h1>
-          <p className="text-gray-600">Get 50 free credits to start building</p>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">Create Account</h1>
+          <p className="text-base md:text-lg text-gray-600">Get 50 free credits to start building</p>
         </div>
 
         {/* Signup Form */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Full Name */}
-            <div>
-              <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-2">
-                Full Name
-              </label>
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  id="fullName"
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                  disabled={loading}
-                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
-                  placeholder="John Doe"
-                />
-              </div>
-            </div>
+        <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Full Name - Uses MobileInput (16px font, prevents iOS zoom) */}
+            <MobileInput
+              type="text"
+              label="Full Name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+              disabled={loading}
+              placeholder="John Doe"
+              icon={<User className="w-5 h-5" />}
+              hint="This will be displayed on your profile"
+            />
 
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={loading}
-                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
-                  placeholder="you@example.com"
-                />
-              </div>
-            </div>
+            {/* Email - Uses MobileInput */}
+            <MobileInput
+              type="email"
+              label="Email Address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={loading}
+              placeholder="you@example.com"
+              icon={<Mail className="w-5 h-5" />}
+            />
 
-            {/* Password */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={loading}
-                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
-                  placeholder="••••••••"
-                  minLength={6}
-                />
+            {/* Password - Uses MobileInput */}
+            <MobileInput
+              type="password"
+              label="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={loading}
+              placeholder="••••••••"
+              icon={<Lock className="w-5 h-5" />}
+              hint="Minimum 6 characters"
+              error={error && error.includes('Password') ? error : undefined}
+            />
+
+            {/* Password Strength Indicator */}
+            {password.length > 0 && (
+              <div className="flex items-center gap-2 text-sm">
+                {password.length >= 6 ? (
+                  <>
+                    <Check className="w-4 h-4 text-green-600" />
+                    <span className="text-green-600">Strong password</span>
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle className="w-4 h-4 text-yellow-600" />
+                    <span className="text-yellow-600">Password too short</span>
+                  </>
+                )}
               </div>
-              <p className="mt-2 text-sm text-gray-500">Must be at least 6 characters</p>
-            </div>
+            )}
 
             {/* Error Message */}
-            {error && (
+            {error && !error.includes('Password') && (
               <div className="bg-red-50 border-2 border-red-200 rounded-xl p-4 flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
                 <p className="text-red-600 text-sm">{error}</p>
               </div>
             )}
 
-            {/* Submit Button */}
-            <button
+            {/* Submit Button - Uses MobileButton (48px+ min height) */}
+            <MobileButton
               type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="primary"
+              size="lg"
+              fullWidth
+              loading={loading}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
             >
-              {loading ? 'Creating account...' : 'Sign Up'}
-            </button>
+              {loading ? 'Creating account...' : 'Create Account'}
+            </MobileButton>
+
+            {/* Terms Notice */}
+            <p className="text-xs text-gray-500 text-center">
+              By creating an account, you agree to our{' '}
+              <Link href="/terms" className="text-purple-600 hover:underline">
+                Terms of Service
+              </Link>{' '}
+              and{' '}
+              <Link href="/privacy" className="text-purple-600 hover:underline">
+                Privacy Policy
+              </Link>
+            </p>
           </form>
         </div>
 
-        {/* Sign In Link */}
-        <p className="mt-8 text-center text-gray-600">
+        {/* Login Link */}
+        <p className="mt-6 md:mt-8 text-center text-sm md:text-base text-gray-600">
           Already have an account?{' '}
-          <Link href="/login" className="text-purple-600 hover:text-purple-700 font-bold">
+          <Link 
+            href="/login" 
+            className="text-purple-600 hover:text-purple-700 font-bold transition-colors"
+          >
             Sign in
           </Link>
         </p>
