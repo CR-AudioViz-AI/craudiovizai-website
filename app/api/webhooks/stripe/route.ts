@@ -133,7 +133,6 @@ async function addCreditsToUser(userId: string, credits: number, source: string)
         created_at: new Date().toISOString()
       })
 
-    console.log(`✅ Added ${credits} credits to user ${userId}. New balance: ${newCredits}`)
   } catch (error: unknown) {
     logError('Failed to add credits:', error)
     throw error
@@ -174,7 +173,6 @@ async function deductCreditsFromUser(userId: string, credits: number, reason: st
         created_at: new Date().toISOString()
       })
 
-    console.log(`⚠️ Deducted ${credits} credits from user ${userId}. New balance: ${newCredits}`)
   } catch (error: unknown) {
     logError('Failed to deduct credits:', error)
     throw error
@@ -240,7 +238,6 @@ async function updateUserSubscription(
       await addCreditsToUser(userId, plan.monthlyCredits, `subscription_${plan.tier}`)
     }
 
-    console.log(`✅ Updated subscription for user ${userId}: ${status}`)
   } catch (error: unknown) {
     logError('Failed to update subscription:', error)
     throw error
@@ -252,7 +249,6 @@ async function updateUserSubscription(
 // ============================================================================
 
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
-  console.log('💳 Processing checkout completion:', session.id)
 
   const userId = session.client_reference_id || session.metadata?.user_id
   if (!userId) {
@@ -297,7 +293,6 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
 }
 
 async function handleSubscriptionCreated(subscription: Stripe.Subscription): Promise<void> {
-  console.log('🆕 Processing subscription creation:', subscription.id)
 
   const userId = subscription.metadata?.user_id
   if (!userId) {
@@ -311,7 +306,6 @@ async function handleSubscriptionCreated(subscription: Stripe.Subscription): Pro
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
-  console.log('🔄 Processing subscription update:', subscription.id)
 
   // Find user by subscription ID
   const { data: userData, error } = await supabase
@@ -331,7 +325,6 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
-  console.log('❌ Processing subscription deletion:', subscription.id)
 
   const { data: userData, error } = await supabase
     .from('users')
@@ -356,7 +349,6 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
 }
 
 async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> {
-  console.log('💰 Processing paid invoice:', invoice.id)
 
   const subscriptionId = invoice.subscription as string
   if (!subscriptionId) return
@@ -383,7 +375,6 @@ async function handleInvoicePaid(invoice: Stripe.Invoice): Promise<void> {
 }
 
 async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
-  console.log('⚠️ Processing failed invoice:', invoice.id)
 
   const subscriptionId = invoice.subscription as string
   if (!subscriptionId) return
@@ -406,11 +397,9 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void
     .eq('id', userData.id)
 
   // TODO: Send email notification to user
-  console.log(`📧 Payment failed notification needed for user: ${userData.email}`)
 }
 
 async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent): Promise<void> {
-  console.log('✅ Processing successful payment intent:', paymentIntent.id)
 
   const userId = paymentIntent.metadata?.user_id
   if (!userId) return
@@ -428,7 +417,6 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
 }
 
 async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent): Promise<void> {
-  console.log('❌ Processing failed payment intent:', paymentIntent.id)
 
   const userId = paymentIntent.metadata?.user_id
   if (!userId) return
@@ -447,7 +435,6 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent): P
 }
 
 async function handleCustomerCreated(customer: Stripe.Customer): Promise<void> {
-  console.log('👤 Processing customer creation:', customer.id)
 
   const userId = customer.metadata?.user_id
   if (!userId) return
@@ -462,7 +449,6 @@ async function handleCustomerCreated(customer: Stripe.Customer): Promise<void> {
 }
 
 async function handleCustomerUpdated(customer: Stripe.Customer): Promise<void> {
-  console.log('👤 Processing customer update:', customer.id)
 
   // Update customer details in database
   await supabase
@@ -475,7 +461,6 @@ async function handleCustomerUpdated(customer: Stripe.Customer): Promise<void> {
 }
 
 async function handleCustomerDeleted(customer: Stripe.Customer): Promise<void> {
-  console.log('🗑️ Processing customer deletion:', customer.id)
 
   await supabase
     .from('users')
@@ -490,7 +475,6 @@ async function handleCustomerDeleted(customer: Stripe.Customer): Promise<void> {
 }
 
 async function handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
-  console.log('💸 Processing charge refund:', charge.id)
 
   const paymentIntent = charge.payment_intent as string
   if (!paymentIntent) return
@@ -519,7 +503,6 @@ async function handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
 }
 
 async function handleDisputeCreated(dispute: Stripe.Dispute): Promise<void> {
-  console.log('⚖️ Processing dispute creation:', dispute.id)
 
   const chargeId = dispute.charge as string
   const charge = await stripe.charges.retrieve(chargeId)
@@ -548,7 +531,6 @@ async function handleDisputeCreated(dispute: Stripe.Dispute): Promise<void> {
     })
 
   // TODO: Send notification to admin team
-  console.log('⚠️ ADMIN ALERT: New dispute created for review')
 }
 
 // ============================================================================
@@ -583,12 +565,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log(`\n🔔 Webhook received: ${event.type} (${event.id})`)
 
     // Check idempotency
     const alreadyProcessed = await checkIdempotency(event.id)
     if (alreadyProcessed) {
-      console.log('⏭️ Event already processed, skipping...')
       return NextResponse.json({ 
         received: true, 
         message: 'Event already processed' 
@@ -670,7 +650,6 @@ export async function POST(request: NextRequest) {
         break
 
       default:
-        console.log(`ℹ️ Unhandled event type: ${event.type}`)
     }
 
     // Log success
@@ -682,7 +661,6 @@ export async function POST(request: NextRequest) {
       processing_time_ms: processingTime
     })
 
-    console.log(`✅ Event processed successfully in ${processingTime}ms\n`)
 
     return NextResponse.json({ 
       received: true,
