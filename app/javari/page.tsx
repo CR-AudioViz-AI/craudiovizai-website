@@ -1,15 +1,20 @@
 'use client';
 
-// CR AudioViz AI - Javari AI Page
-// Full-page Javari AI interface with native integration
-// Version: 2.0 - Complete Native Integration
-
-import JavariChatInterface from '@/components/javari-chat-interface';
+/**
+ * Javari AI Page - Direct Embed
+ * Embeds the full Javari AI application directly
+ */
 
 export default function JavariAIPage() {
   return (
-    <div className="w-full h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900">
-      <JavariChatInterface mode="fullpage" />
+    <div className="w-full h-screen overflow-hidden">
+      <iframe
+        src="https://crav-javari-1dru7gr25-roy-hendersons-projects-1d3d5e94.vercel.app/javari"
+        className="w-full h-full border-0"
+        title="Javari AI Application"
+        allow="clipboard-read; clipboard-write; microphone; camera"
+        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
+      />
     </div>
   );
 }
