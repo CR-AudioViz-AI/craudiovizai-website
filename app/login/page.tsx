@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { MobileInput, MobileButton } from '@/components/mobile';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -55,65 +56,51 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center px-4 py-8 md:py-12">
       <div className="max-w-md w-full">
         {/* Header */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-block mb-6">
+        <div className="text-center mb-6 md:mb-8">
+          <Link href="/" className="inline-block mb-4 md:mb-6">
             <Image
               src="/logo.png"
               alt="CR AudioViz AI"
-              width={240}
-              height={80}
-              className="h-16 w-auto mx-auto"
+              width={180}
+              height={60}
+              className="h-12 md:h-16 w-auto mx-auto"
             />
           </Link>
-          <h1 className="text-4xl font-bold mb-2">Welcome Back</h1>
-          <p className="text-gray-600">Sign in to continue building</p>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">Welcome Back</h1>
+          <p className="text-base md:text-lg text-gray-600">Sign in to continue building</p>
         </div>
 
         {/* Login Form */}
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email */}
-            <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
-                Email Address
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={loading}
-                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
-                  placeholder="you@example.com"
-                />
-              </div>
-            </div>
+        <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Email - Uses MobileInput (16px font, prevents iOS zoom) */}
+            <MobileInput
+              type="email"
+              label="Email Address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={loading}
+              placeholder="you@example.com"
+              icon={<Mail className="w-5 h-5" />}
+              error={error && email === '' ? 'Email is required' : undefined}
+            />
 
-            {/* Password */}
-            <div>
-              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={loading}
-                  className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors"
-                  placeholder="••••••••"
-                />
-              </div>
-            </div>
+            {/* Password - Uses MobileInput */}
+            <MobileInput
+              type="password"
+              label="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={loading}
+              placeholder="••••••••"
+              icon={<Lock className="w-5 h-5" />}
+              error={error && password === '' ? 'Password is required' : undefined}
+            />
 
             {/* Error Message */}
             {error && (
@@ -123,21 +110,37 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Submit Button */}
-            <button
+            {/* Submit Button - Uses MobileButton (48px+ min height) */}
+            <MobileButton
               type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-xl font-bold text-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              variant="primary"
+              size="lg"
+              fullWidth
+              loading={loading}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
             >
               {loading ? 'Signing in...' : 'Sign In'}
-            </button>
+            </MobileButton>
           </form>
+
+          {/* Forgot Password Link */}
+          <div className="mt-4 text-center">
+            <Link 
+              href="/forgot-password" 
+              className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              Forgot your password?
+            </Link>
+          </div>
         </div>
 
         {/* Sign Up Link */}
-        <p className="mt-8 text-center text-gray-600">
+        <p className="mt-6 md:mt-8 text-center text-sm md:text-base text-gray-600">
           Don't have an account?{' '}
-          <Link href="/signup" className="text-purple-600 hover:text-purple-700 font-bold">
+          <Link 
+            href="/signup" 
+            className="text-purple-600 hover:text-purple-700 font-bold transition-colors"
+          >
             Sign up free
           </Link>
         </p>
