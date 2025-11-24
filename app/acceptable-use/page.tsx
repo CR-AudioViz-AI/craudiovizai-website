@@ -1,103 +1,94 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { 
-  ShieldCheck, 
-  AlertTriangle, 
-  CheckCircle2, 
-  XCircle,
-  Scale,
-  Users,
-  Lock,
-  Ban,
-  FileWarning,
-  Mail
-} from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { MobileButton } from '@/components/mobile';
+import { AlertTriangle, CheckCircle, XCircle, Mail } from 'lucide-react';
 import Link from 'next/link';
 
-/**
- * Acceptable Use Policy Page
- * Defines acceptable and prohibited uses of the CR AudioViz AI platform
- * 
- * Created: October 31, 2025
- * Last Updated: October 31, 2025
- */
-
 export default function AcceptableUsePage() {
-  const lastUpdated = 'October 31, 2025';
-  const effectiveDate = 'October 31, 2025';
-
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-600 to-purple-600 text-white py-20">
-        <div className="container mx-auto px-4">
+      {/* Hero */}
+      <section className="bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 text-white px-4 py-12 md:py-16 lg:py-20">
+        <div className="container mx-auto">
           <div className="max-w-4xl mx-auto text-center">
-            <ShieldCheck className="w-16 h-16 mx-auto mb-4" />
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            <AlertTriangle className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 md:mb-6" />
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">
               Acceptable Use Policy
             </h1>
-            <p className="text-xl text-white/90 mb-8">
-              Guidelines for appropriate and responsible use of our platform
+            <p className="text-base md:text-lg text-orange-100">
+              Last Updated: October 22, 2025
             </p>
-            <div className="flex gap-4 justify-center flex-wrap">
-              <Badge className="bg-white/20 text-white border-white/30">
-                Effective: {effectiveDate}
-              </Badge>
-              <Badge className="bg-white/20 text-white border-white/30">
-                Last Updated: {lastUpdated}
-              </Badge>
+          </div>
+        </div>
+      </section>
+
+      {/* Allowed */}
+      <section className="px-4 py-12 md:py-16 bg-white">
+        <div className="container mx-auto">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8 flex items-center gap-2">
+              <CheckCircle className="w-8 h-8 text-green-600" /> Allowed Uses
+            </h2>
+            <div className="space-y-3 md:space-y-4">
+              {[
+                'Creating apps, games, and content for personal or commercial use',
+                'Using AI tools to enhance your creative work',
+                'Selling your creations on our marketplace',
+                'Collaborating with team members on projects',
+                'Integrating with our API for legitimate purposes',
+              ].map((item) => (
+                <Card key={item} className="border-green-200">
+                  <CardContent className="p-4 md:p-6 flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm md:text-base text-gray-700">{item}</span>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Overview */}
-      <section className="py-12 bg-white border-b">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl flex items-center gap-3">
-                <Scale className="w-6 h-6 text-blue-600" />
-                Policy Overview
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-gray-700 leading-relaxed">
-                This Acceptable Use Policy (AUP) governs your use of CR AudioViz AI's platform, 
-                services, and tools. By accessing or using our platform, you agree to comply with 
-                this policy and all applicable laws and regulations.
-              </p>
-              <p className="text-gray-700 leading-relaxed">
-                We are committed to maintaining a safe, legal, and productive environment for all 
-                users. This policy outlines acceptable behaviors and explicitly prohibits activities 
-                that could harm our platform, users, or third parties.
-              </p>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
-                <p className="text-sm text-blue-900 font-medium flex items-start gap-2">
-                  <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                  Violations of this policy may result in immediate suspension or termination of 
-                  your account, removal of content, and potential legal action.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Prohibited */}
+      <section className="px-4 py-12 md:py-16 bg-gray-50">
+        <div className="container mx-auto">
+          <div className="max-w-4xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8 flex items-center gap-2">
+              <XCircle className="w-8 h-8 text-red-600" /> Prohibited Uses
+            </h2>
+            <div className="space-y-3 md:space-y-4">
+              {[
+                'Creating illegal, harmful, or offensive content',
+                'Automated abuse, scraping, or excessive API usage',
+                'Reselling credits or account access',
+                'Harassment, spam, or malicious activities',
+                'Violating intellectual property rights',
+                'Circumventing security measures',
+              ].map((item) => (
+                <Card key={item} className="border-red-200">
+                  <CardContent className="p-4 md:p-6 flex items-start gap-3">
+                    <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm md:text-base text-gray-700">{item}</span>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Contact & Legal */}
-      <section className="py-12 bg-gray-50">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-2xl">Questions or Concerns?</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-gray-700 leading-relaxed">
-                If you have questions about this Acceptable Use Policy, please contact us at <a href="mailto:legal@craudiovizai.com" className="text-blue-600 hover:underline">legal@craudiovizai.com</a>.
-              </p>
-            </CardContent>
-          </Card>
+      {/* Contact */}
+      <section className="px-4 py-12 md:py-16 bg-gradient-to-br from-gray-800 to-gray-900 text-white">
+        <div className="container mx-auto text-center">
+          <Mail className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 md:mb-6" />
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">Questions?</h2>
+          <p className="text-base md:text-lg text-gray-300 mb-6 md:mb-8 max-w-2xl mx-auto">
+            Contact us if you're unsure about acceptable use
+          </p>
+          <Link href="/contact?subject=Acceptable Use" className="inline-block">
+            <MobileButton size="lg" className="bg-white text-gray-900 hover:bg-gray-100">
+              Contact Us
+            </MobileButton>
+          </Link>
         </div>
       </section>
     </div>
