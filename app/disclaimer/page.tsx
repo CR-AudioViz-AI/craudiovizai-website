@@ -1,304 +1,84 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle, Info, Scale, FileWarning } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { MobileButton } from '@/components/mobile';
+import { AlertCircle, Info, Mail } from 'lucide-react';
+import Link from 'next/link';
 
 export default function DisclaimerPage() {
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className="bg-gradient-to-br from-orange-600 via-red-600 to-pink-700 text-white py-20">
-        <div className="container mx-auto px-4">
+      {/* Hero */}
+      <section className="bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900 text-white px-4 py-12 md:py-16 lg:py-20">
+        <div className="container mx-auto">
           <div className="max-w-4xl mx-auto text-center">
-            <AlertTriangle className="w-16 h-16 mx-auto mb-6" />
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+            <AlertCircle className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 md:mb-6" />
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">
               Disclaimer
             </h1>
-            <p className="text-xl text-orange-100">
-              Last Updated: October 21, 2025
+            <p className="text-base md:text-lg text-gray-300">
+              Last Updated: October 22, 2025
             </p>
           </div>
         </div>
       </section>
 
-      {/* Main Content */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            
-            {/* General Disclaimer */}
-            <Card className="mb-8 border-2 border-orange-200">
-              <CardHeader>
-                <CardTitle className="text-2xl flex items-center">
-                  <Info className="w-6 h-6 mr-3 text-orange-600" />
-                  General Disclaimer
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="prose max-w-none text-gray-600">
-                <p className="text-sm">
-                  The information provided by CR AudioViz AI ("we," "us," or "our") on craudiovizai.com 
-                  (the "Site") and through our services is for general informational purposes only. 
-                  All information on the Site is provided in good faith; however, we make no representation 
-                  or warranty of any kind, express or implied, regarding the accuracy, adequacy, validity, 
-                  reliability, availability, or completeness of any information on the Site or our services.
-                </p>
-                <p className="text-sm mt-4 font-semibold uppercase text-orange-700">
-                  UNDER NO CIRCUMSTANCE SHALL WE HAVE ANY LIABILITY TO YOU FOR ANY LOSS OR DAMAGE OF ANY 
-                  KIND INCURRED AS A RESULT OF THE USE OF THE SITE OR OUR SERVICES OR RELIANCE ON ANY 
-                  INFORMATION PROVIDED ON THE SITE. YOUR USE OF THE SITE AND OUR SERVICES AND YOUR RELIANCE 
-                  ON ANY INFORMATION ON THE SITE IS SOLELY AT YOUR OWN RISK.
+      {/* Content */}
+      <section className="px-4 py-12 md:py-16 bg-white">
+        <div className="container mx-auto">
+          <div className="max-w-4xl mx-auto space-y-6 md:space-y-8">
+            <Card>
+              <CardContent className="p-4 md:p-6">
+                <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
+                  <Info className="w-5 h-5 text-blue-600" /> General Information
+                </h2>
+                <p className="text-sm md:text-base text-gray-600">
+                  The information provided by CR AudioViz AI is for general informational purposes only. All content is provided in good faith, but we make no representation or warranty regarding accuracy, adequacy, or completeness.
                 </p>
               </CardContent>
             </Card>
 
-            {/* AI-Generated Content */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="text-2xl flex items-center">
-                  <FileWarning className="w-6 h-6 mr-3 text-purple-600" />
-                  AI-Generated Content Disclaimer
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-gray-600 space-y-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2 text-sm">Content Accuracy</h3>
-                  <p className="text-sm">
-                    Our platform includes AI-powered tools (including Javari) that generate content, code, 
-                    designs, and other materials. While we strive for accuracy, AI-generated content may 
-                    contain errors, inaccuracies, or inappropriate material. You are solely responsible 
-                    for reviewing, verifying, and editing all AI-generated content before use.
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2 text-sm">No Guarantee of Results</h3>
-                  <p className="text-sm">
-                    We do not guarantee that AI-generated content will meet your specific requirements, 
-                    be error-free, secure, or suitable for any particular purpose. The quality and 
-                    appropriateness of AI-generated content depends on many factors, including the 
-                    quality of your input and instructions.
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2 text-sm">User Responsibility</h3>
-                  <p className="text-sm">
-                    You acknowledge that you are responsible for all content you create, publish, or 
-                    distribute using our AI tools, regardless of whether the content was generated by 
-                    AI or created manually. You must ensure compliance with all applicable laws, 
-                    regulations, and third-party rights.
-                  </p>
-                </div>
-
-                <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded">
-                  <p className="text-sm font-semibold text-yellow-900">
-                    ⚠️ Always review AI-generated code, content, and designs before deploying to production 
-                    or using in any professional capacity.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Professional Advice Disclaimer */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="text-2xl">Professional Advice Disclaimer</CardTitle>
-              </CardHeader>
-              <CardContent className="text-gray-600 space-y-4">
-                <p className="text-sm">
-                  The Site and our services cannot and do not contain professional advice. The information 
-                  provided is for general informational and educational purposes only and is not a substitute 
-                  for professional advice.
-                </p>
-                
-                <div className="space-y-3 text-sm">
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Legal Advice</h3>
-                    <p>
-                      We are not a law firm and do not provide legal advice. Any information provided should 
-                      not be considered legal advice. Consult with a qualified attorney for legal matters.
-                    </p>
-                  </div>
-
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Financial Advice</h3>
-                    <p>
-                      We do not provide financial, investment, or tax advice. Consult with a qualified 
-                      financial advisor for financial matters.
-                    </p>
-                  </div>
-
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-1">Technical/Professional Advice</h3>
-                    <p>
-                      While we provide tools and resources, we do not provide professional consulting services. 
-                      Consult with qualified professionals in relevant fields for specific guidance.
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Third-Party Content */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="text-2xl">Third-Party Content and Services</CardTitle>
-              </CardHeader>
-              <CardContent className="text-gray-600 space-y-4">
-                <p className="text-sm">
-                  Our platform may contain links to third-party websites, services, or content not owned 
-                  or controlled by CR AudioViz AI. We have no control over and assume no responsibility 
-                  for the content, privacy policies, or practices of any third-party websites or services.
-                </p>
-                <p className="text-sm">
-                  We strongly advise you to read the terms and conditions and privacy policies of any 
-                  third-party websites or services that you visit or use.
-                </p>
-                <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-                  <p className="text-sm text-blue-900">
-                    Links to third-party sites are provided for convenience only and do not constitute 
-                    an endorsement by CR AudioViz AI.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* User-Generated Content */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="text-2xl">User-Generated Content Disclaimer</CardTitle>
-              </CardHeader>
-              <CardContent className="text-gray-600 space-y-4">
-                <p className="text-sm">
-                  Our platform allows users to create, upload, and share content including games, apps, 
-                  templates, and other materials. We do not pre-screen, monitor, or verify all user-generated 
-                  content.
-                </p>
-                <ul className="list-disc list-inside text-sm space-y-2 ml-4">
-                  <li>User-generated content does not reflect the views or opinions of CR AudioViz AI</li>
-                  <li>We are not responsible for the accuracy, legality, or quality of user-generated content</li>
-                  <li>Users are solely responsible for content they create, upload, or share</li>
-                  <li>We reserve the right to remove any content that violates our Terms of Service</li>
-                </ul>
-                <p className="text-sm mt-4">
-                  If you believe any user-generated content violates your rights or our policies, 
-                  please contact us immediately at{' '}
-                  <a href="mailto:support@craudiovizai.com" className="text-blue-600 hover:text-blue-700 font-medium">
-                    support@craudiovizai.com
-                  </a>
+            <Card>
+              <CardContent className="p-4 md:p-6">
+                <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-3 md:mb-4">AI-Generated Content</h2>
+                <p className="text-sm md:text-base text-gray-600">
+                  Content generated by our AI tools may not always be accurate or appropriate. Users are responsible for reviewing and verifying AI-generated content before use.
                 </p>
               </CardContent>
             </Card>
 
-            {/* Marketplace Disclaimer */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="text-2xl">Marketplace Disclaimer</CardTitle>
-              </CardHeader>
-              <CardContent className="text-gray-600 space-y-4">
-                <p className="text-sm">
-                  Our marketplace allows creators to sell games, apps, templates, and other digital products. 
-                  CR AudioViz AI acts as a platform provider and is not the seller of these items.
-                </p>
-                <ul className="list-disc list-inside text-sm space-y-2 ml-4">
-                  <li>We do not guarantee the quality, accuracy, or functionality of marketplace items</li>
-                  <li>Creators are responsible for their products and customer support</li>
-                  <li>We facilitate transactions but do not warrant products sold by third parties</li>
-                  <li>Refund policies are set by individual creators within our guidelines</li>
-                </ul>
-                <p className="text-sm mt-4">
-                  While we implement quality controls and review processes, we cannot guarantee that 
-                  all marketplace content is error-free or suitable for your specific needs.
+            <Card>
+              <CardContent className="p-4 md:p-6">
+                <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-3 md:mb-4">External Links</h2>
+                <p className="text-sm md:text-base text-gray-600">
+                  Our platform may contain links to external websites. We have no control over and assume no responsibility for the content, privacy policies, or practices of third-party sites.
                 </p>
               </CardContent>
             </Card>
 
-            {/* Service Availability */}
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle className="text-2xl">Service Availability and Changes</CardTitle>
-              </CardHeader>
-              <CardContent className="text-gray-600 space-y-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2 text-sm">No Guarantee of Availability</h3>
-                  <p className="text-sm">
-                    We do not guarantee that our services will be available at all times or will be 
-                    uninterrupted, secure, or error-free. We may suspend, modify, or discontinue any 
-                    part of our services at any time without notice.
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2 text-sm">Changes to Services</h3>
-                  <p className="text-sm">
-                    We reserve the right to modify, update, or discontinue any features, tools, or 
-                    services at any time. We will attempt to provide notice of significant changes 
-                    but are not obligated to do so.
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-gray-900 mb-2 text-sm">Beta Features</h3>
-                  <p className="text-sm">
-                    Some features may be designated as "beta," "experimental," or "preview." These 
-                    features are provided as-is and may not function as expected. We may discontinue 
-                    beta features at any time.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Limitation of Liability */}
-            <Card className="mb-8 border-2 border-red-200">
-              <CardHeader>
-                <CardTitle className="text-2xl flex items-center">
-                  <Scale className="w-6 h-6 mr-3 text-red-600" />
-                  Limitation of Liability
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-gray-600">
-                <p className="text-sm mb-4 font-semibold uppercase text-red-700">
-                  TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL CR AUDIOVIZ AI, 
-                  ITS OFFICERS, DIRECTORS, EMPLOYEES, OR AGENTS BE LIABLE FOR ANY DAMAGES WHATSOEVER, 
-                  INCLUDING BUT NOT LIMITED TO:
-                </p>
-                <ul className="list-disc list-inside text-sm space-y-2 ml-4">
-                  <li>Direct, indirect, incidental, special, consequential, or punitive damages</li>
-                  <li>Loss of profits, revenue, data, or use</li>
-                  <li>Loss of or damage to property</li>
-                  <li>Claims of third parties</li>
-                  <li>Any other loss or damage of any kind</li>
-                </ul>
-                <p className="text-sm mt-4">
-                  This applies whether the damages arise from use or inability to use our services, 
-                  any content obtained from or through our services, or otherwise arising out of the 
-                  use of our services, whether based on warranty, contract, tort, or any other legal theory.
+            <Card>
+              <CardContent className="p-4 md:p-6">
+                <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-3 md:mb-4">Limitation of Liability</h2>
+                <p className="text-sm md:text-base text-gray-600">
+                  CR AudioViz AI shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of or inability to use the service.
                 </p>
               </CardContent>
             </Card>
-
-            {/* Contact */}
-            <Card className="mb-8 bg-orange-50 border-2 border-orange-200">
-              <CardHeader>
-                <CardTitle className="text-2xl">Questions About This Disclaimer</CardTitle>
-              </CardHeader>
-              <CardContent className="text-gray-700">
-                <p className="text-sm mb-4">
-                  If you have any questions about this Disclaimer, please contact us:
-                </p>
-                <div className="space-y-2 text-sm">
-                  <div>
-                    <strong>Email:</strong>{' '}
-                    <a href="mailto:support@craudiovizai.com" className="text-blue-600 hover:text-blue-700">
-                      support@craudiovizai.com
-                    </a>
-                  </div>
-                  <div>
-                    <strong>Location:</strong> Fort Myers, Florida, United States
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
           </div>
+        </div>
+      </section>
+
+      {/* Contact */}
+      <section className="px-4 py-12 md:py-16 bg-gradient-to-br from-gray-800 to-gray-900 text-white">
+        <div className="container mx-auto text-center">
+          <Mail className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 md:mb-6" />
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">Questions?</h2>
+          <p className="text-base md:text-lg text-gray-300 mb-6 md:mb-8 max-w-2xl mx-auto">
+            Contact our legal team for clarification
+          </p>
+          <Link href="/contact?subject=Disclaimer" className="inline-block">
+            <MobileButton size="lg" className="bg-white text-gray-900 hover:bg-gray-100">
+              Contact Legal
+            </MobileButton>
+          </Link>
         </div>
       </section>
     </div>
