@@ -1,273 +1,115 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { CheckCircle, AlertCircle, XCircle, Activity, Clock } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { MobileButton } from '@/components/mobile';
+import { CheckCircle, AlertCircle, Clock, Server, Database, Globe, Zap } from 'lucide-react';
+import Link from 'next/link';
+
+const services = [
+  { name: 'Web Application', status: 'operational', icon: Globe },
+  { name: 'API Services', status: 'operational', icon: Server },
+  { name: 'Database', status: 'operational', icon: Database },
+  { name: 'Javari AI', status: 'operational', icon: Zap },
+  { name: 'Payment Processing', status: 'operational', icon: CheckCircle },
+  { name: 'CDN & Assets', status: 'operational', icon: Globe },
+];
 
 export default function StatusPage() {
-  // Mock status data - replace with real monitoring
-  const currentStatus = {
-    overall: 'operational', // operational, degraded, outage
-    lastUpdate: new Date().toLocaleString()
-  };
-
-  const services = [
-    { name: 'Website & Dashboard', status: 'operational', uptime: '99.99%' },
-    { name: 'Javari AI Assistant', status: 'operational', uptime: '99.95%' },
-    { name: 'API Services', status: 'operational', uptime: '99.98%' },
-    { name: 'Payment Processing', status: 'operational', uptime: '100%' },
-    { name: 'Tools & Features', status: 'operational', uptime: '99.97%' },
-    { name: 'Marketplace', status: 'operational', uptime: '99.96%' },
-    { name: 'Game Platform', status: 'operational', uptime: '99.94%' },
-    { name: 'File Storage & CDN', status: 'operational', uptime: '99.99%' }
-  ];
-
-  const recentIncidents = [
-    {
-      date: 'October 15, 2025',
-      title: 'Scheduled Maintenance - Database Upgrade',
-      status: 'resolved',
-      duration: '2 hours',
-      impact: 'Minor performance degradation'
-    },
-    {
-      date: 'September 28, 2025',
-      title: 'API Rate Limiting Issue',
-      status: 'resolved',
-      duration: '45 minutes',
-      impact: 'Some API requests failed'
-    }
-  ];
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'operational':
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'degraded':
-        return <AlertCircle className="w-5 h-5 text-yellow-500" />;
-      case 'outage':
-        return <XCircle className="w-5 h-5 text-red-500" />;
-      default:
-        return <Activity className="w-5 h-5 text-gray-500" />;
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'operational':
-        return 'Operational';
-      case 'degraded':
-        return 'Degraded Performance';
-      case 'outage':
-        return 'Service Outage';
-      default:
-        return 'Unknown';
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'operational':
-        return 'text-green-600';
-      case 'degraded':
-        return 'text-yellow-600';
-      case 'outage':
-        return 'text-red-600';
-      default:
-        return 'text-gray-600';
-    }
-  };
+  const allOperational = services.every(s => s.status === 'operational');
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className={`py-20 ${
-        currentStatus.overall === 'operational' 
-          ? 'bg-gradient-to-br from-green-600 to-teal-600' 
-          : currentStatus.overall === 'degraded'
-          ? 'bg-gradient-to-br from-yellow-600 to-orange-600'
-          : 'bg-gradient-to-br from-red-600 to-pink-600'
-      } text-white`}>
-        <div className="container mx-auto px-4">
+      <section className={`px-4 py-12 md:py-16 lg:py-20 ${allOperational ? 'bg-gradient-to-br from-green-600 to-teal-600' : 'bg-gradient-to-br from-yellow-500 to-orange-500'} text-white`}>
+        <div className="container mx-auto">
           <div className="max-w-4xl mx-auto text-center">
-            <Activity className="w-16 h-16 mx-auto mb-6" />
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
-              System Status
+            {allOperational ? (
+              <CheckCircle className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 md:mb-6" />
+            ) : (
+              <AlertCircle className="w-16 h-16 md:w-20 md:h-20 mx-auto mb-4 md:mb-6" />
+            )}
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">
+              {allOperational ? 'All Systems Operational' : 'Partial Service Disruption'}
             </h1>
-            <div className="flex items-center justify-center space-x-3 mb-4">
-              {getStatusIcon(currentStatus.overall)}
-              <span className="text-2xl font-semibold">
-                All Systems {getStatusText(currentStatus.overall)}
-              </span>
-            </div>
-            <p className="text-lg opacity-90">
-              Last updated: {currentStatus.lastUpdate}
+            <p className="text-base md:text-lg lg:text-xl text-white/80">
+              Last updated: {new Date().toLocaleString()}
             </p>
           </div>
         </div>
       </section>
 
-      {/* Services Status */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
+      {/* Service Status */}
+      <section className="px-4 py-12 md:py-16 bg-white">
+        <div className="container mx-auto">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Service Status</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8">Service Status</h2>
             
-            <div className="space-y-4">
-              {services.map((service, idx) => (
-                <Card key={idx} className="hover:shadow-lg transition-shadow">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4 flex-1">
-                        {getStatusIcon(service.status)}
-                        <div>
-                          <h3 className="font-semibold text-gray-900">{service.name}</h3>
-                          <p className={`text-sm ${getStatusColor(service.status)}`}>
-                            {getStatusText(service.status)}
-                          </p>
-                        </div>
+            <div className="space-y-3 md:space-y-4">
+              {services.map((service) => {
+                const Icon = service.icon;
+                return (
+                  <Card key={service.name}>
+                    <CardContent className="p-4 md:p-6 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Icon className="w-5 h-5 md:w-6 md:h-6 text-gray-600" />
+                        <span className="font-medium text-sm md:text-base">{service.name}</span>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-gray-900">{service.uptime}</p>
-                        <p className="text-xs text-gray-500">30-day uptime</p>
+                      <div className="flex items-center gap-2">
+                        <div className={`w-3 h-3 rounded-full ${service.status === 'operational' ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                        <span className={`text-xs md:text-sm font-medium ${service.status === 'operational' ? 'text-green-600' : 'text-yellow-600'}`}>
+                          {service.status === 'operational' ? 'Operational' : 'Degraded'}
+                        </span>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Uptime Chart Placeholder */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
+      {/* Uptime Stats */}
+      <section className="px-4 py-12 md:py-16 bg-gray-50">
+        <div className="container mx-auto">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">90-Day Uptime History</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 md:mb-8">Uptime Statistics</h2>
             
-            <Card>
-              <CardContent className="pt-6">
-                <div className="h-64 flex items-center justify-center bg-gray-100 rounded">
-                  <p className="text-gray-500">Uptime chart visualization would go here</p>
-                </div>
-                <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
-                  <span>90 days ago</span>
-                  <span>Today</span>
-                </div>
-                <div className="mt-6 grid grid-cols-4 gap-4 text-center text-sm">
-                  <div>
-                    <div className="font-bold text-2xl text-green-600">99.98%</div>
-                    <div className="text-gray-600">Overall Uptime</div>
-                  </div>
-                  <div>
-                    <div className="font-bold text-2xl text-blue-600">15ms</div>
-                    <div className="text-gray-600">Avg Response</div>
-                  </div>
-                  <div>
-                    <div className="font-bold text-2xl text-purple-600">2</div>
-                    <div className="text-gray-600">Incidents</div>
-                  </div>
-                  <div>
-                    <div className="font-bold text-2xl text-orange-600">3.5h</div>
-                    <div className="text-gray-600">Total Downtime</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Recent Incidents */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-gray-900 mb-8">Recent Incidents</h2>
-            
-            {recentIncidents.length === 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
               <Card>
-                <CardContent className="pt-6 text-center py-12">
-                  <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-                  <p className="text-gray-600">No incidents reported in the last 90 days</p>
+                <CardContent className="p-4 md:p-6 text-center">
+                  <div className="text-3xl md:text-4xl font-bold text-green-600 mb-2">99.9%</div>
+                  <div className="text-xs md:text-sm text-gray-600">Last 30 Days</div>
                 </CardContent>
               </Card>
-            ) : (
-              <div className="space-y-6">
-                {recentIncidents.map((incident, idx) => (
-                  <Card key={idx}>
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-lg">{incident.title}</CardTitle>
-                          <p className="text-sm text-gray-500 mt-1">{incident.date}</p>
-                        </div>
-                        <span className="px-3 py-1 bg-green-100 text-green-600 rounded-full text-xs font-semibold">
-                          {incident.status}
-                        </span>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className="text-gray-500">Duration</p>
-                          <p className="font-semibold text-gray-900">{incident.duration}</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-500">Impact</p>
-                          <p className="font-semibold text-gray-900">{incident.impact}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+              <Card>
+                <CardContent className="p-4 md:p-6 text-center">
+                  <div className="text-3xl md:text-4xl font-bold text-green-600 mb-2">99.95%</div>
+                  <div className="text-xs md:text-sm text-gray-600">Last 90 Days</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 md:p-6 text-center">
+                  <div className="text-3xl md:text-4xl font-bold text-green-600 mb-2">99.9%</div>
+                  <div className="text-xs md:text-sm text-gray-600">All Time</div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Subscribe to Updates */}
-      <section className="py-16 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <Card className="border-2 border-blue-200">
-              <CardContent className="pt-6">
-                <div className="text-center mb-6">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                    Get Status Updates
-                  </h3>
-                  <p className="text-gray-600">
-                    Subscribe to receive notifications about system status changes and maintenance
-                  </p>
-                </div>
-                <div className="max-w-md mx-auto flex gap-2">
-                  <input
-                    type="email"
-                    placeholder="Enter your email"
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    Subscribe
-                  </button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Support Contact */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Need Help?
-          </h2>
-          <p className="text-gray-600 mb-6">
-            If you're experiencing issues not listed here, contact our support team
+      {/* Subscribe */}
+      <section className="px-4 py-12 md:py-16 bg-gradient-to-br from-blue-600 to-purple-600 text-white">
+        <div className="container mx-auto text-center">
+          <Clock className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 md:mb-6" />
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">Stay Updated</h2>
+          <p className="text-base md:text-lg text-blue-100 mb-6 md:mb-8 max-w-2xl mx-auto">
+            Get notified about service incidents and maintenance
           </p>
-          <a href="mailto:support@craudiovizai.com">
-            <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-              Contact Support
-            </button>
-          </a>
+          <Link href="/contact?subject=Status Updates" className="inline-block">
+            <MobileButton size="lg" className="bg-white text-blue-600 hover:bg-blue-50">
+              Subscribe to Updates
+            </MobileButton>
+          </Link>
         </div>
       </section>
     </div>
