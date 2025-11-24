@@ -1,352 +1,284 @@
-import Link from 'next/link';
+'use client';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { MobileButton, MobileInput } from '@/components/mobile';
 import { 
-  Wand2, Share2, FileText, QrCode, Image, Mail, Layout, 
-  Palette, TrendingUp, Calendar, FileSpreadsheet, Video,
-  Mic, Megaphone, Smartphone, Globe, Code, Sparkles
+  Code2, Download, Share2, Sparkles, Search,
+  Image, FileText, Video, Music, Palette, Wand2
 } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
 
-/**
- * Tools Landing Page
- * Showcase all available creative tools
- * 
- * Session: 2025-10-25 - Saturday
- */
-
-const TOOLS = [
+const toolCategories = [
   {
-    id: 'image-generator',
-    name: 'AI Image Generator',
-    description: 'Create stunning AI-generated images from text descriptions',
-    icon: Wand2,
-    gradient: 'from-purple-500 to-pink-600',
-    href: '/tools/image-generator',
-    credits: 10,
-    category: 'Creative',
-    featured: true,
+    id: 'image',
+    name: 'Image Tools',
+    icon: Image,
+    color: 'blue',
+    tools: [
+      { name: 'Image Generator', slug: 'image-generator', icon: '🎨' },
+      { name: 'Image Resizer', slug: 'image-resizer', icon: '📐' },
+      { name: 'Background Remover', slug: 'background-remover', icon: '✂️' },
+      { name: 'Thumbnail Creator', slug: 'thumbnail-creator', icon: '🖼️' }
+    ]
   },
   {
-    id: 'social-media-post',
-    name: 'Social Media Post Creator',
-    description: 'Generate engaging content for any social platform',
-    icon: Share2,
-    gradient: 'from-blue-500 to-indigo-600',
-    href: '/tools/social-media-post',
-    credits: 5,
-    category: 'Marketing',
-    featured: true,
-  },
-  {
-    id: 'resume-builder',
-    name: 'Resume Builder',
-    description: 'Create professional, ATS-friendly resumes with AI assistance',
+    id: 'document',
+    name: 'Document Tools',
     icon: FileText,
-    gradient: 'from-blue-500 to-cyan-600',
-    href: '/tools/resume-builder',
-    credits: 0,
-    category: 'Professional',
-    featured: true,
+    color: 'green',
+    tools: [
+      { name: 'eBook Creator', slug: 'ebook-creator', icon: '📚' },
+      { name: 'Invoice Generator', slug: 'invoice-generator', icon: '💰' },
+      { name: 'PDF Editor', slug: 'pdf-editor', icon: '📄' },
+      { name: 'Resume Builder', slug: 'resume-builder', icon: '📝' }
+    ]
   },
   {
-    id: 'qr-code-generator',
-    name: 'QR Code Generator',
-    description: 'Create custom QR codes for websites, WiFi, and more',
-    icon: QrCode,
-    gradient: 'from-indigo-500 to-purple-600',
-    href: '/tools/qr-code-generator',
-    credits: 0,
-    category: 'Utility',
-    featured: true,
-  },
-  {
-    id: 'email-template',
-    name: 'Email Template Builder',
-    description: 'Design professional email templates that convert',
-    icon: Mail,
-    gradient: 'from-red-500 to-orange-600',
-    href: '/tools/email-template',
-    credits: 5,
-    category: 'Marketing',
-    featured: false,
-    comingSoon: true,
-  },
-  {
-    id: 'landing-page',
-    name: 'Landing Page Builder',
-    description: 'Build high-converting landing pages in minutes',
-    icon: Layout,
-    gradient: 'from-green-500 to-emerald-600',
-    href: '/tools/landing-page',
-    credits: 10,
-    category: 'Marketing',
-    featured: false,
-    comingSoon: true,
-  },
-  {
-    id: 'logo-designer',
-    name: 'Logo Designer',
-    description: 'Create unique logos with AI-powered design',
+    id: 'creative',
+    name: 'Creative Tools',
     icon: Palette,
-    gradient: 'from-pink-500 to-rose-600',
-    href: '/tools/logo-designer',
-    credits: 15,
-    category: 'Creative',
-    featured: false,
-    comingSoon: true,
+    color: 'purple',
+    tools: [
+      { name: 'Meme Generator', slug: 'meme-generator', icon: '😂' },
+      { name: 'Logo Maker', slug: 'logo-maker', icon: '🎭' },
+      { name: 'Poster Designer', slug: 'poster-designer', icon: '🎨' },
+      { name: 'Social Media Kit', slug: 'social-media-kit', icon: '📱' }
+    ]
   },
   {
-    id: 'seo-optimizer',
-    name: 'SEO Optimizer',
-    description: 'Optimize your content for search engines',
-    icon: TrendingUp,
-    gradient: 'from-yellow-500 to-orange-600',
-    href: '/tools/seo-optimizer',
-    credits: 5,
-    category: 'Marketing',
-    featured: false,
-    comingSoon: true,
-  },
-  {
-    id: 'content-calendar',
-    name: 'Content Calendar',
-    description: 'Plan and schedule your content strategy',
-    icon: Calendar,
-    gradient: 'from-teal-500 to-cyan-600',
-    href: '/tools/content-calendar',
-    credits: 0,
-    category: 'Marketing',
-    featured: false,
-    comingSoon: true,
-  },
-  {
-    id: 'spreadsheet-analyzer',
-    name: 'Spreadsheet Analyzer',
-    description: 'Get insights from your data with AI analysis',
-    icon: FileSpreadsheet,
-    gradient: 'from-green-600 to-teal-600',
-    href: '/tools/spreadsheet-analyzer',
-    credits: 10,
-    category: 'Business',
-    featured: false,
-    comingSoon: true,
-  },
-  {
-    id: 'video-editor',
-    name: 'Video Editor',
-    description: 'Edit and enhance your videos with AI',
+    id: 'video',
+    name: 'Video Tools',
     icon: Video,
-    gradient: 'from-purple-600 to-indigo-600',
-    href: '/tools/video-editor',
-    credits: 20,
-    category: 'Creative',
-    featured: false,
-    comingSoon: true,
+    color: 'red',
+    tools: [
+      { name: 'Video Editor', slug: 'video-editor', icon: '🎬' },
+      { name: 'Subtitle Generator', slug: 'subtitle-generator', icon: '💬' },
+      { name: 'Animation Studio', slug: 'animation-studio', icon: '🎞️' },
+      { name: 'Screen Recorder', slug: 'screen-recorder', icon: '📹' }
+    ]
   },
   {
-    id: 'podcast-creator',
-    name: 'Podcast Creator',
-    description: 'Create and edit podcasts with AI assistance',
-    icon: Mic,
-    gradient: 'from-blue-600 to-purple-600',
-    href: '/tools/podcast-creator',
-    credits: 15,
-    category: 'Creative',
-    featured: false,
-    comingSoon: true,
+    id: 'audio',
+    name: 'Audio Tools',
+    icon: Music,
+    color: 'orange',
+    tools: [
+      { name: 'Audio Editor', slug: 'audio-editor', icon: '🎵' },
+      { name: 'Voice Generator', slug: 'voice-generator', icon: '🎤' },
+      { name: 'Music Mixer', slug: 'music-mixer', icon: '🎧' },
+      { name: 'Podcast Editor', slug: 'podcast-editor', icon: '🎙️' }
+    ]
   },
+  {
+    id: 'ai',
+    name: 'AI-Powered Tools',
+    icon: Wand2,
+    color: 'pink',
+    tools: [
+      { name: 'AI Writer', slug: 'ai-writer', icon: '✍️' },
+      { name: 'AI Chatbot', slug: 'ai-chatbot', icon: '💬' },
+      { name: 'AI Analyzer', slug: 'ai-analyzer', icon: '🔍' },
+      { name: 'AI Translator', slug: 'ai-translator', icon: '🌐' }
+    ]
+  }
 ];
 
-const CATEGORIES = [
-  'All',
-  'Creative',
-  'Marketing',
-  'Professional',
-  'Business',
-  'Utility',
-];
+export default function ToolsPage() {
+  const [searchQuery, setSearchQuery] = useState('');
 
-export const metadata = {
-  title: 'Creative Tools | CR AudioViz AI',
-  description: '60+ AI-powered creative tools for content creation, marketing, and business',
-};
+  const filteredCategories = toolCategories.map(category => ({
+    ...category,
+    tools: category.tools.filter(tool =>
+      tool.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  })).filter(category => category.tools.length > 0);
 
-export default function ToolsLandingPage() {
-  const featuredTools = TOOLS.filter(tool => tool.featured);
-  const availableTools = TOOLS.filter(tool => !tool.comingSoon);
-  const comingSoonTools = TOOLS.filter(tool => tool.comingSoon);
+  const getColorClasses = (color: string) => {
+    const colors: Record<string, { bg: string; text: string; border: string; hover: string }> = {
+      blue: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200', hover: 'hover:bg-blue-100' },
+      green: { bg: 'bg-green-50', text: 'text-green-600', border: 'border-green-200', hover: 'hover:bg-green-100' },
+      purple: { bg: 'bg-purple-50', text: 'text-purple-600', border: 'border-purple-200', hover: 'hover:bg-purple-100' },
+      red: { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200', hover: 'hover:bg-red-100' },
+      orange: { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-200', hover: 'hover:bg-orange-100' },
+      pink: { bg: 'bg-pink-50', text: 'text-pink-600', border: 'border-pink-200', hover: 'hover:bg-pink-100' },
+    };
+    return colors[color] || colors.blue;
+  };
+
+  const totalTools = toolCategories.reduce((sum, cat) => sum + cat.tools.length, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+    <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-        <div className="max-w-7xl mx-auto px-6 py-16">
-          <div className="text-center">
-            <h1 className="text-5xl font-bold mb-4">Creative Tools</h1>
-            <p className="text-xl mb-8 text-blue-100">
-              60+ AI-powered tools to supercharge your creativity and productivity
+      <section className="bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 text-white px-4 py-12 md:py-16 lg:py-20">
+        <div className="container mx-auto">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold mb-4 md:mb-6">
+              {totalTools}+ Creative Tools
+            </h1>
+            <p className="text-base md:text-lg lg:text-xl text-purple-100 mb-6 md:mb-8">
+              Everything you need to create, design, and build - all powered by AI
             </p>
-            <div className="flex justify-center gap-4 text-sm">
-              <div className="px-4 py-2 bg-white/20 backdrop-blur rounded-lg">
-                <p className="font-semibold">{availableTools.length}</p>
-                <p className="text-blue-100">Available Now</p>
+            <MobileInput
+              type="search"
+              placeholder="Search tools..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              icon={<Search className="w-5 h-5" />}
+              className="max-w-2xl mx-auto bg-white/90 text-gray-900"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* App Builder Highlight */}
+      <section className="px-4 py-12 md:py-16 bg-white">
+        <div className="container mx-auto">
+          <Card className="max-w-5xl mx-auto border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-white">
+            <CardHeader className="p-4 md:p-6">
+              <CardTitle className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+                <Code2 className="inline-block w-6 h-6 md:w-8 md:h-8 mr-2 text-blue-600" />
+                Build Custom Tools with AI
+              </CardTitle>
+              <p className="text-sm md:text-base lg:text-lg text-gray-600">
+                Create custom apps with Javari AI assistance - no coding required
+              </p>
+            </CardHeader>
+            <CardContent className="p-4 md:p-6 pt-0">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Sparkles className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm md:text-base">AI-Powered</p>
+                    <p className="text-xs md:text-sm text-gray-600">Let Javari build your app</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Share2 className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm md:text-base">Host or Export</p>
+                    <p className="text-xs md:text-sm text-gray-600">Keep code or earn 70%</p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Download className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm md:text-base">Full Control</p>
+                    <p className="text-xs md:text-sm text-gray-600">Download source code</p>
+                  </div>
+                </div>
               </div>
-              <div className="px-4 py-2 bg-white/20 backdrop-blur rounded-lg">
-                <p className="font-semibold">{comingSoonTools.length}</p>
-                <p className="text-blue-100">Coming Soon</p>
-              </div>
-              <div className="px-4 py-2 bg-white/20 backdrop-blur rounded-lg">
-                <p className="font-semibold">$0</p>
-                <p className="text-blue-100">Free to Start</p>
-              </div>
+              <Link href="/apps" className="block">
+                <MobileButton 
+                  fullWidth
+                  size="lg"
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Start Building Your App
+                </MobileButton>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
+      {/* Tools by Category */}
+      <section className="px-4 py-12 md:py-16 bg-gray-50">
+        <div className="container mx-auto">
+          <div className="max-w-6xl mx-auto space-y-8 md:space-y-12">
+            {filteredCategories.map((category) => {
+              const Icon = category.icon;
+              const colors = getColorClasses(category.color);
+              
+              return (
+                <div key={category.id}>
+                  <div className="flex items-center gap-3 mb-4 md:mb-6">
+                    <div className={`w-10 h-10 md:w-12 md:h-12 ${colors.bg} rounded-xl flex items-center justify-center`}>
+                      <Icon className={`w-5 h-5 md:w-6 md:h-6 ${colors.text}`} />
+                    </div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+                      {category.name}
+                    </h2>
+                    <span className="text-sm md:text-base text-gray-500">
+                      ({category.tools.length})
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                    {category.tools.map((tool) => (
+                      <Link
+                        key={tool.slug}
+                        href={`/tools/${tool.slug}`}
+                        className={`${colors.bg} ${colors.border} border-2 rounded-xl p-4 md:p-6 ${colors.hover} transition-all group`}
+                      >
+                        <div className="text-4xl md:text-5xl mb-3 md:mb-4">{tool.icon}</div>
+                        <h3 className={`text-base md:text-lg font-bold ${colors.text} group-hover:underline`}>
+                          {tool.name}
+                        </h3>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* No Results */}
+          {filteredCategories.length === 0 && (
+            <div className="text-center py-12">
+              <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">No tools found</h3>
+              <p className="text-gray-600 mb-6">Try a different search term</p>
+              <MobileButton
+                onClick={() => setSearchQuery('')}
+                variant="outline"
+              >
+                Clear Search
+              </MobileButton>
             </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* Featured Tools */}
-        <div className="mb-16">
-          <div className="flex items-center gap-3 mb-8">
-            <Sparkles className="w-6 h-6 text-yellow-500" />
-            <h2 className="text-3xl font-bold text-slate-900 dark:text-white">Featured Tools</h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredTools.map(tool => {
-              const Icon = tool.icon;
-              return (
-                <Link
-                  key={tool.id}
-                  href={tool.href}
-                  className="group bg-white dark:bg-slate-800 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden"
-                >
-                  <div className={`h-2 bg-gradient-to-r ${tool.gradient}`} />
-                  <div className="p-6">
-                    <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${tool.gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                      {tool.name}
-                    </h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
-                      {tool.description}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded">
-                        {tool.category}
-                      </span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400">
-                        {tool.credits === 0 ? 'Free' : `${tool.credits} credits`}
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* All Tools */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-8">All Tools</h2>
-          
-          {/* Available Tools */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-            {availableTools.map(tool => {
-              const Icon = tool.icon;
-              return (
-                <Link
-                  key={tool.id}
-                  href={tool.href}
-                  className="group bg-white dark:bg-slate-800 rounded-lg shadow hover:shadow-xl transition-all p-6"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${tool.gradient} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
-                      <Icon className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-slate-900 dark:text-white mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                        {tool.name}
-                      </h3>
-                      <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-                        {tool.description}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded">
-                          {tool.category}
-                        </span>
-                        <span className="text-xs text-slate-500 dark:text-slate-400">
-                          {tool.credits === 0 ? 'Free' : `${tool.credits} credits`}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-
-          {/* Coming Soon Tools */}
-          {comingSoonTools.length > 0 && (
-            <>
-              <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-6">Coming Soon</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {comingSoonTools.map(tool => {
-                  const Icon = tool.icon;
-                  return (
-                    <div
-                      key={tool.id}
-                      className="relative bg-white dark:bg-slate-800 rounded-lg shadow p-6 opacity-75"
-                    >
-                      <div className="absolute top-4 right-4 px-2 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 text-xs font-medium rounded">
-                        Coming Soon
-                      </div>
-                      <div className="flex items-start gap-4">
-                        <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${tool.gradient} flex items-center justify-center flex-shrink-0`}>
-                          <Icon className="w-5 h-5 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-slate-900 dark:text-white mb-1">
-                            {tool.name}
-                          </h3>
-                          <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
-                            {tool.description}
-                          </p>
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs px-2 py-0.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded">
-                              {tool.category}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
           )}
         </div>
+      </section>
 
-        {/* CTA Section */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-12 text-center text-white">
-          <h2 className="text-3xl font-bold mb-4">Ready to Create Something Amazing?</h2>
-          <p className="text-xl mb-8 text-blue-100">
-            Join thousands of creators using CR AudioViz AI tools
+      {/* CTA Section */}
+      <section className="px-4 py-12 md:py-16 bg-gradient-to-br from-purple-600 to-pink-600 text-white">
+        <div className="container mx-auto text-center">
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">
+            Ready to Start Creating?
+          </h2>
+          <p className="text-base md:text-lg lg:text-xl text-purple-100 mb-6 md:mb-8 max-w-2xl mx-auto">
+            Access all {totalTools}+ tools with a Creative Pro subscription
           </p>
-          <div className="flex justify-center gap-4">
-            <Link
-              href="/auth/signup"
-              className="px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
-            >
-              Get Started Free
+          <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
+            <Link href="/signup" className="flex-1">
+              <MobileButton 
+                size="lg" 
+                fullWidth
+                className="bg-white text-purple-600 hover:bg-purple-50"
+              >
+                Start Free Trial
+              </MobileButton>
             </Link>
-            <Link
-              href="/pricing"
-              className="px-8 py-3 bg-white/20 backdrop-blur text-white border-2 border-white rounded-lg font-semibold hover:bg-white/30 transition-colors"
-            >
-              View Pricing
+            <Link href="/pricing" className="flex-1">
+              <MobileButton 
+                size="lg" 
+                fullWidth
+                variant="outline"
+                className="border-2 border-white text-white hover:bg-white/10"
+              >
+                View Pricing
+              </MobileButton>
             </Link>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
