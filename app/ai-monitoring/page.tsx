@@ -1,67 +1,72 @@
-'use client'
-
-import { useState } from 'react'
-import { TrendingUp, AlertCircle, BarChart3, Activity, Zap } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card';
+import { MobileButton } from '@/components/mobile';
+import { Activity, Shield, Eye, Zap, CheckCircle } from 'lucide-react';
+import Link from 'next/link';
 
 export default function AIMonitoringPage() {
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8 flex items-center gap-3">
-          <Activity size={40} />
-          AI Trend Monitoring
-        </h1>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow p-6">
-            <TrendingUp className="text-blue-600 mb-4" size={32} />
-            <h3 className="font-bold text-lg">Trending Topics</h3>
-            <p className="text-3xl font-bold text-blue-600">127</p>
-            <p className="text-sm text-gray-600">Detected today</p>
-          </div>
-          <div className="bg-white rounded-xl shadow p-6">
-            <Zap className="text-yellow-600 mb-4" size={32} />
-            <h3 className="font-bold text-lg">Viral Moments</h3>
-            <p className="text-3xl font-bold text-yellow-600">23</p>
-            <p className="text-sm text-gray-600">High velocity</p>
-          </div>
-          <div className="bg-white rounded-xl shadow p-6">
-            <AlertCircle className="text-red-600 mb-4" size={32} />
-            <h3 className="font-bold text-lg">Alerts Generated</h3>
-            <p className="text-3xl font-bold text-red-600">8</p>
-            <p className="text-sm text-gray-600">Requires action</p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero */}
+      <section className="bg-gradient-to-br from-cyan-600 via-blue-600 to-purple-600 text-white px-4 py-12 md:py-16 lg:py-20">
+        <div className="container mx-auto">
+          <div className="max-w-4xl mx-auto text-center">
+            <Activity className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 md:mb-6" />
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6">
+              AI Monitoring
+            </h1>
+            <p className="text-base md:text-lg lg:text-xl text-blue-100 mb-6 md:mb-8">
+              24/7 monitoring of AI systems for safety and performance
+            </p>
           </div>
         </div>
+      </section>
 
-        <div className="bg-white rounded-xl shadow p-6">
-          <h2 className="text-2xl font-bold mb-6">Real-Time Trend Detection</h2>
-          <div className="space-y-4">
-            {[
-              { topic: 'AI Image Generation', velocity: 95, category: 'Tech' },
-              { topic: 'Sustainable Fashion', velocity: 87, category: 'Lifestyle' },
-              { topic: 'Remote Work Tools', velocity: 82, category: 'Business' }
-            ].map((trend, idx) => (
-              <div key={idx} className="border rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-bold">{trend.topic}</h3>
-                  <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded text-xs">
-                    {trend.category}
-                  </span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <div className="flex-1 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-blue-600 h-2 rounded-full transition-all"
-                      style={{ width: `${trend.velocity}%` }}
-                    />
-                  </div>
-                  <span className="font-bold text-blue-600">{trend.velocity}%</span>
-                </div>
-              </div>
-            ))}
+      {/* Features */}
+      <section className="px-4 py-12 md:py-16 bg-white">
+        <div className="container mx-auto">
+          <div className="max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+              <Card>
+                <CardContent className="p-4 md:p-6 text-center">
+                  <Shield className="w-10 h-10 md:w-12 md:h-12 text-green-600 mx-auto mb-3" />
+                  <h3 className="font-bold text-gray-900 mb-2 text-sm md:text-base">Safety Monitoring</h3>
+                  <p className="text-xs md:text-sm text-gray-600">Content filtering and safety checks</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 md:p-6 text-center">
+                  <Eye className="w-10 h-10 md:w-12 md:h-12 text-blue-600 mx-auto mb-3" />
+                  <h3 className="font-bold text-gray-900 mb-2 text-sm md:text-base">Quality Assurance</h3>
+                  <p className="text-xs md:text-sm text-gray-600">Output quality monitoring</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent className="p-4 md:p-6 text-center">
+                  <Zap className="w-10 h-10 md:w-12 md:h-12 text-yellow-600 mx-auto mb-3" />
+                  <h3 className="font-bold text-gray-900 mb-2 text-sm md:text-base">Performance</h3>
+                  <p className="text-xs md:text-sm text-gray-600">Real-time performance tracking</p>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Status */}
+      <section className="px-4 py-12 md:py-16 bg-gradient-to-br from-green-600 to-teal-600 text-white">
+        <div className="container mx-auto text-center">
+          <CheckCircle className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 md:mb-6" />
+          <h2 className="text-2xl md:text-3xl font-bold mb-4">All AI Systems Normal</h2>
+          <p className="text-base md:text-lg text-green-100 mb-6 md:mb-8 max-w-2xl mx-auto">
+            Our AI monitoring systems are active and operational
+          </p>
+          <Link href="/status" className="inline-block">
+            <MobileButton size="lg" className="bg-white text-green-600 hover:bg-green-50">
+              View Full Status
+            </MobileButton>
+          </Link>
+        </div>
+      </section>
     </div>
-  )
+  );
 }
