@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Script from 'next/script';
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
@@ -77,6 +78,8 @@ export default function RootLayout({
         
         {/* Javari widget */}
         <JavariWidget />
+              {/* Javari AI Assistant */}
+        <Script src="https://javariai.com/embed.js" strategy="lazyOnload" />
       </body>
     </html>
   );
