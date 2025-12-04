@@ -1,9 +1,16 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MobileButton } from "@/components/mobile";
 import Link from "next/link";
-import { MessageCircle, Mail, Phone, FileText, HelpCircle, Clock, Ticket, Bot } from "lucide-react";
+import { MessageCircle, Mail, FileText, HelpCircle, Clock, Ticket, Bot } from "lucide-react";
 
 export default function SupportPage() {
+  const openJavariChat = () => {
+    const chatButton = document.querySelector("button[aria-label=\"Chat with Javari AI\"]") as HTMLElement;
+    if (chatButton) chatButton.click();
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero */}
@@ -34,14 +41,11 @@ export default function SupportPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 mb-4">
-                  Get instant answers 24/7 from our AI assistant. Javari can help with most questions and escalate to humans when needed.
+                  Get instant answers 24/7 from our AI assistant.
                 </p>
                 <MobileButton 
                   className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white"
-                  onClick={() => {
-                    const chatButton = document.querySelector("button[aria-label=\"Chat with Javari AI\"]");
-                    if (chatButton) (chatButton as HTMLElement).click();
-                  }}
+                  onClick={openJavariChat}
                 >
                   <MessageCircle className="w-4 h-4 mr-2" />
                   Start Chat
@@ -80,7 +84,7 @@ export default function SupportPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 mb-4">
-                  Create a support ticket for tracked assistance. Our bots will auto-assign and escalate as needed.
+                  Create a support ticket for tracked assistance.
                 </p>
                 <Link href="/dashboard/support">
                   <MobileButton variant="outline" className="w-full">
@@ -101,7 +105,7 @@ export default function SupportPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 mb-4">
-                  Browse our comprehensive guides, tutorials, and API documentation.
+                  Browse our comprehensive guides and tutorials.
                 </p>
                 <Link href="/help">
                   <MobileButton variant="outline" className="w-full">
@@ -122,7 +126,7 @@ export default function SupportPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 mb-4">
-                  Find quick answers to frequently asked questions.
+                  Find quick answers to common questions.
                 </p>
                 <Link href="/help#faq">
                   <MobileButton variant="outline" className="w-full">
@@ -166,7 +170,7 @@ export default function SupportPage() {
         </div>
       </section>
 
-      {/* Status Section */}
+      {/* Status */}
       <section className="px-4 py-12 bg-white">
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-2xl font-bold mb-4">System Status</h2>
@@ -174,11 +178,6 @@ export default function SupportPage() {
             <span className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
             All Systems Operational
           </div>
-          <p className="text-gray-600 mt-4">
-            <a href="https://status.craudiovizai.com" className="text-blue-600 hover:underline">
-              View detailed status page →
-            </a>
-          </p>
         </div>
       </section>
     </div>
