@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { MobileButton } from '@/components/mobile';
-import { Handshake, Rocket, DollarSign, Users, Award, ArrowRight } from 'lucide-react';
+import { HeartHandshake as Handshake, Rocket, DollarSign, Users, Award, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 const partnerTypes = [
@@ -107,3 +107,4 @@ export default function PartnersPage() {
     </div>
   );
 }
+
