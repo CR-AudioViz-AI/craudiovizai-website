@@ -1,147 +1,178 @@
-'use client'
+'use client';
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
-import { usePathname } from 'next/navigation'
-import { Menu, X, Shield, LogOut, User, ChevronDown } from 'lucide-react'
-import { createClient } from '@/lib/supabase-client'
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { usePathname, useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { MobileButton } from '@/components/mobile';
+import { Menu, X, User, Shield, LogOut } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 
-// Hardcoded navigation links - these will ALWAYS work regardless of database state
+// Hardcoded fallback navigation links - always show these if database is empty
 const DEFAULT_NAV_LINKS = [
-  { id: 'home', label: 'Home', href: '/', display_order: 0 },
-  { id: 'apps', label: 'Apps', href: '/apps', display_order: 1 },
-  { id: 'games', label: 'Games', href: '/games', display_order: 2 },
-  { id: 'javari', label: 'Javari AI', href: '/javari', display_order: 3 },
-  { id: 'craiverse', label: 'CRAIverse', href: '/craiverse', display_order: 4 },
-  { id: 'pricing', label: 'Pricing', href: '/pricing', display_order: 5 },
-  { id: 'about', label: 'About', href: '/about', display_order: 6 },
-  { id: 'contact', label: 'Contact', href: '/contact', display_order: 7 },
-]
+  { id: 'home', label: 'Home', href: '/', is_visible: true, display_order: 0 },
+  { id: 'apps', label: 'Apps', href: '/apps', is_visible: true, display_order: 1 },
+  { id: 'games', label: 'Games', href: '/games', is_visible: true, display_order: 2 },
+  { id: 'javari', label: 'Javari AI', href: '/javari', is_visible: true, display_order: 3 },
+  { id: 'craiverse', label: 'CRAIverse', href: '/craiverse', is_visible: true, display_order: 4 },
+  { id: 'pricing', label: 'Pricing', href: '/pricing', is_visible: true, display_order: 5 },
+  { id: 'about', label: 'About', href: '/about', is_visible: true, display_order: 6 },
+  { id: 'contact', label: 'Contact', href: '/contact', is_visible: true, display_order: 7 },
+];
 
-interface NavLink {
+interface NavigationLink {
   id: string
   label: string
   href: string
+  is_visible: boolean
   display_order: number
 }
 
-interface UserData {
-  id: string
-  email: string
-  is_admin?: boolean
-}
-
 export default function Header() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [navLinks, setNavLinks] = useState<NavLink[]>(DEFAULT_NAV_LINKS)
-  const [user, setUser] = useState<UserData | null>(null)
-  const [showDropdown, setShowDropdown] = useState(false)
-  const pathname = usePathname()
-  const supabase = createClient()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [navLinks, setNavLinks] = useState<NavigationLink[]>(DEFAULT_NAV_LINKS);
+  const pathname = usePathname();
+  const router = useRouter();
+  const supabase = createClient();
 
-  // Fetch navigation links from database (with fallback to defaults)
-  useEffect(() => {
-    async function fetchNavLinks() {
-      try {
-        const { data, error } = await supabase
-          .from('navigation_links')
-          .select('id, label, href, display_order')
-          .eq('category', 'header')
-          .eq('is_visible', true)
-          .order('display_order')
-
-        if (error) {
-          console.warn('Navigation links fetch error, using defaults:', error.message)
-          return // Keep using DEFAULT_NAV_LINKS
-        }
-
-        if (data && data.length > 0) {
-          setNavLinks(data)
-        }
-        // If data is empty, keep using DEFAULT_NAV_LINKS
-      } catch (err) {
-        console.warn('Navigation fetch failed, using defaults')
-        // Keep using DEFAULT_NAV_LINKS
+  // Fetch navigation links - use database if available, fallback to hardcoded
+  const fetchNavLinks = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('navigation_links')
+        .select('id, label, href, is_visible, display_order')
+        .eq('category', 'header')
+        .eq('is_visible', true)
+        .order('display_order');
+      
+      if (data && data.length > 0) {
+        setNavLinks(data);
       }
+      // If no data or error, keep using DEFAULT_NAV_LINKS
+    } catch (err) {
+      console.error('Error fetching nav links:', err);
+      // Keep using DEFAULT_NAV_LINKS on error
     }
+  };
 
-    fetchNavLinks()
-  }, [supabase])
-
-  // Check auth state
   useEffect(() => {
-    async function getUser() {
+    fetchNavLinks();
+
+    // Check current user and admin status
+    const checkUser = async () => {
       try {
-        const { data: { user: authUser } } = await supabase.auth.getUser()
-        
-        if (authUser) {
+        const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
+
+        if (user) {
           // Check if user is admin
           const { data: profile } = await supabase
             .from('profiles')
             .select('is_admin')
-            .eq('id', authUser.id)
-            .single()
-
-          setUser({
-            id: authUser.id,
-            email: authUser.email || '',
-            is_admin: profile?.is_admin || false
-          })
+            .eq('id', user.id)
+            .single();
+          
+          setIsAdmin(profile?.is_admin || false);
+        } else {
+          setIsAdmin(false);
         }
       } catch (err) {
-        // User not logged in
+        console.error('Error checking user:', err);
       }
+
+      setLoading(false);
+    };
+
+    checkUser();
+
+    // Listen for auth changes
+    const { data: { subscription: authSubscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        try {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', session.user.id)
+            .single();
+          
+          setIsAdmin(profile?.is_admin || false);
+        } catch (err) {
+          setIsAdmin(false);
+        }
+      } else {
+        setIsAdmin(false);
+      }
+    });
+
+    return () => {
+      authSubscription.unsubscribe();
+    };
+  }, []);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
     }
 
-    getUser()
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    };
+  }, [mobileMenuOpen]);
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user) {
-        setUser({
-          id: session.user.id,
-          email: session.user.email || '',
-          is_admin: false // Will be checked separately
-        })
-      } else {
-        setUser(null)
-      }
-    })
-
-    return () => subscription.unsubscribe()
-  }, [supabase])
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    setShowDropdown(false)
-    window.location.href = '/'
-  }
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setIsAdmin(false);
+      setMobileMenuOpen(false);
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout error:', error);
+      window.location.href = '/';
+    }
+  };
 
   const isActive = (href: string) => {
-    if (href === '/') return pathname === '/'
-    return pathname?.startsWith(href)
-  }
+    if (href === '/') {
+      return pathname === '/';
+    }
+    return pathname.startsWith(href);
+  };
 
-  const getUserInitial = () => {
-    if (!user?.email) return 'U'
-    return user.email.charAt(0).toUpperCase()
-  }
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
 
   return (
     <>
       <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
         <nav className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16 md:h-20">
+            
             {/* Logo */}
             <Link href="/" className="flex items-center flex-shrink-0">
-              <Image
-                src="/craudiovizailogo.png"
-                alt="CR AudioViz AI - Your Story. Our Design."
+              <Image 
+                src="/craudiovizailogo.png" 
+                alt="CR AudioViz AI - Your Story. Our Design." 
                 width={180}
                 height={60}
-                className="h-12 md:h-14 w-auto"
                 priority
+                className="h-12 md:h-14 w-auto"
               />
             </Link>
 
@@ -159,11 +190,11 @@ export default function Header() {
                 >
                   {link.label}
                   {isActive(link.href) && (
-                    <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-purple-600 rounded-full" />
+                    <span className="absolute -bottom-5 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 to-pink-600" />
                   )}
                 </Link>
               ))}
-              {/* Team Link - always visible */}
+              
               <Link
                 href="/team"
                 className={`text-sm transition-colors relative ${
@@ -174,202 +205,191 @@ export default function Header() {
               >
                 Meet the Team
                 {isActive('/team') && (
-                  <span className="absolute -bottom-1 left-0 right-0 h-0.5 bg-purple-600 rounded-full" />
+                  <span className="absolute -bottom-5 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 to-pink-600" />
                 )}
               </Link>
             </div>
 
-            {/* Desktop Auth */}
+            {/* Desktop CTA Buttons */}
             <div className="hidden lg:flex items-center space-x-3">
-              {user ? (
-                <div className="relative">
-                  <button
-                    onClick={() => setShowDropdown(!showDropdown)}
-                    className="flex items-center space-x-2 text-sm text-gray-700 hover:text-gray-900"
-                  >
-                    <div className="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center font-medium">
-                      {getUserInitial()}
-                    </div>
-                    <ChevronDown className="w-4 h-4" />
-                  </button>
-
-                  {showDropdown && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
-                      {user.is_admin && (
-                        <Link
-                          href="/admin"
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setShowDropdown(false)}
-                        >
-                          <Shield className="w-4 h-4 mr-2" />
-                          Admin Dashboard
+              {!loading && (
+                <>
+                  {user ? (
+                    <>
+                      {isAdmin && (
+                        <Link href="/admin">
+                          <Button variant="outline" size="sm" className="flex items-center gap-2">
+                            <Shield className="w-4 h-4" />
+                            Admin
+                          </Button>
                         </Link>
                       )}
-                      <Link
-                        href="/dashboard"
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                        onClick={() => setShowDropdown(false)}
+                      <Button 
+                        onClick={handleLogout}
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2"
                       >
-                        <User className="w-4 h-4 mr-2" />
-                        Dashboard
-                      </Link>
-                      <button
-                        onClick={handleSignOut}
-                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        <LogOut className="w-4 h-4 mr-2" />
+                        <LogOut className="w-4 h-4" />
                         Log Out
-                      </button>
-                    </div>
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Link href="/login">
+                        <Button variant="ghost" size="sm">Log In</Button>
+                      </Link>
+                      <Link href="/signup">
+                        <Button 
+                          size="sm"
+                          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                        >
+                          Get Started
+                        </Button>
+                      </Link>
+                    </>
                   )}
-                </div>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    className="text-sm text-gray-700 hover:text-gray-900"
-                  >
-                    Log In
-                  </Link>
-                  <Link
-                    href="/signup"
-                    className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors"
-                  >
-                    Get Started
-                  </Link>
                 </>
               )}
             </div>
 
             {/* Mobile Menu Button */}
             <button
-              onClick={() => setIsOpen(!isOpen)}
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="lg:hidden min-h-[48px] min-w-[48px] inline-flex items-center justify-center rounded-lg hover:bg-gray-100 active:scale-95 transition-all"
               aria-label="Toggle menu"
             >
-              {isOpen ? (
+              {mobileMenuOpen ? (
                 <X className="w-6 h-6 text-gray-700" />
               ) : (
                 <Menu className="w-6 h-6 text-gray-700" />
               )}
             </button>
+
           </div>
         </nav>
       </header>
 
-      {/* Announcement Bar */}
-      <div className="bg-gradient-to-r from-blue-600 to-green-600 text-white py-2 text-center">
-        <p className="text-sm font-semibold tracking-wide transition-opacity duration-500">
-          CR = Creative Results
-        </p>
-      </div>
-
-      {/* Mobile Menu */}
-      {isOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
-          <div 
-            className="fixed inset-0 bg-black/50" 
-            onClick={() => setIsOpen(false)} 
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={closeMobileMenu}
+            aria-hidden="true"
           />
-          <div className="fixed inset-y-0 right-0 w-full max-w-sm bg-white shadow-xl overflow-y-auto">
-            <div className="flex items-center justify-between p-4 border-b">
-              <Image
-                src="/craudiovizailogo.png"
-                alt="CR AudioViz AI"
-                width={120}
-                height={40}
-                className="h-10 w-auto"
-              />
-              <button
-                onClick={() => setIsOpen(false)}
-                className="min-h-[48px] min-w-[48px] inline-flex items-center justify-center rounded-lg hover:bg-gray-100"
-              >
-                <X className="w-6 h-6 text-gray-700" />
-              </button>
-            </div>
-            
-            <nav className="px-4 py-6 space-y-2">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.id}
-                  href={link.href}
-                  onClick={() => setIsOpen(false)}
-                  className={`block px-4 py-3 rounded-lg text-base ${
-                    isActive(link.href)
-                      ? 'bg-purple-100 text-purple-600 font-semibold'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <Link
-                href="/team"
-                onClick={() => setIsOpen(false)}
-                className={`block px-4 py-3 rounded-lg text-base ${
-                  isActive('/team')
-                    ? 'bg-purple-100 text-purple-600 font-semibold'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                Meet the Team
-              </Link>
-            </nav>
 
-            <div className="px-4 py-6 border-t space-y-3">
-              {user ? (
-                <>
-                  {user.is_admin && (
+          {/* Slide-in Menu */}
+          <div className="fixed inset-y-0 left-0 z-50 w-full max-w-sm bg-white shadow-2xl lg:hidden">
+            <div className="flex flex-col h-full">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <Image 
+                  src="/craudiovizailogo.png" 
+                  alt="CR AudioViz AI" 
+                  width={120}
+                  height={40}
+                  className="h-10 w-auto"
+                />
+                <button
+                  onClick={closeMobileMenu}
+                  className="min-h-[48px] min-w-[48px] inline-flex items-center justify-center rounded-lg hover:bg-gray-100 active:scale-95 transition-all"
+                  aria-label="Close menu"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+
+              {/* Navigation Links */}
+              <nav className="flex-1 overflow-y-auto p-4">
+                <div className="space-y-2">
+                  {navLinks.map((link) => (
                     <Link
-                      href="/admin"
-                      onClick={() => setIsOpen(false)}
-                      className="flex items-center px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100"
+                      key={link.id}
+                      href={link.href}
+                      onClick={closeMobileMenu}
+                      className={`block min-h-[48px] px-4 py-3 rounded-lg text-base font-medium transition-colors ${
+                        isActive(link.href)
+                          ? 'bg-purple-50 text-purple-600 font-semibold'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
                     >
-                      <Shield className="w-5 h-5 mr-3" />
-                      Admin Dashboard
+                      {link.label}
                     </Link>
+                  ))}
+                  
+                  <Link
+                    href="/team"
+                    onClick={closeMobileMenu}
+                    className={`block min-h-[48px] px-4 py-3 rounded-lg text-base font-medium transition-colors ${
+                      isActive('/team')
+                        ? 'bg-purple-50 text-purple-600 font-semibold'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    Meet the Team
+                  </Link>
+                </div>
+              </nav>
+
+              {/* User Actions Footer */}
+              {!loading && (
+                <div className="p-4 border-t border-gray-200 space-y-3">
+                  {user ? (
+                    <>
+                      <div className="px-4 py-2 bg-gray-50 rounded-lg">
+                        <p className="text-xs text-gray-500 mb-1">Signed in as</p>
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {user.email}
+                        </p>
+                      </div>
+                      {isAdmin && (
+                        <Link href="/admin" onClick={closeMobileMenu}>
+                          <MobileButton 
+                            variant="outline" 
+                            fullWidth
+                            icon={<Shield className="w-5 h-5" />}
+                            iconPosition="left"
+                          >
+                            Admin Dashboard
+                          </MobileButton>
+                        </Link>
+                      )}
+                      <MobileButton 
+                        onClick={handleLogout}
+                        variant="outline"
+                        fullWidth
+                        icon={<LogOut className="w-5 h-5" />}
+                        iconPosition="left"
+                      >
+                        Log Out
+                      </MobileButton>
+                    </>
+                  ) : (
+                    <>
+                      <Link href="/login" onClick={closeMobileMenu}>
+                        <MobileButton variant="outline" fullWidth>
+                          Log In
+                        </MobileButton>
+                      </Link>
+                      <Link href="/signup" onClick={closeMobileMenu}>
+                        <MobileButton 
+                          variant="primary" 
+                          fullWidth
+                          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                        >
+                          Get Started Free
+                        </MobileButton>
+                      </Link>
+                    </>
                   )}
-                  <Link
-                    href="/dashboard"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100"
-                  >
-                    <User className="w-5 h-5 mr-3" />
-                    Dashboard
-                  </Link>
-                  <button
-                    onClick={() => {
-                      handleSignOut()
-                      setIsOpen(false)
-                    }}
-                    className="flex items-center w-full px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100"
-                  >
-                    <LogOut className="w-5 h-5 mr-3" />
-                    Log Out
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    onClick={() => setIsOpen(false)}
-                    className="block w-full px-4 py-3 text-center text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-                  >
-                    Log In
-                  </Link>
-                  <Link
-                    href="/signup"
-                    onClick={() => setIsOpen(false)}
-                    className="block w-full px-4 py-3 text-center text-white bg-purple-600 rounded-lg hover:bg-purple-700"
-                  >
-                    Get Started
-                  </Link>
-                </>
+                </div>
               )}
             </div>
           </div>
-        </div>
+        </>
       )}
     </>
-  )
+  );
 }
